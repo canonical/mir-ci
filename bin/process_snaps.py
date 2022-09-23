@@ -53,6 +53,9 @@ SNAPS = {
     "ubuntu-frame-osk": {
         "beta": {"recipe": "ubuntu-frame-osk-beta"},
     },
+    "ubuntu-frame-vnc": {
+        "edge": {"recipe": "ubuntu-frame-vnc-edge"},
+    },
     "mesa-core20": {
         "beta": {"recipe": "mesa-core20-beta"},
     },
