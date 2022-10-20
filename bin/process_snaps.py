@@ -184,6 +184,8 @@ if __name__ == '__main__':
         for channel, snap_map in channels.items():
             logger.info("Processing channel %s for snap %s…", channel, snap)
 
+            archive = ubuntu
+
             try:
                 snap_recipe = lp.snaps.getByName(owner=team, name=snap_map["recipe"])
                 logger.debug("Got snap: %s", snap_recipe)
@@ -193,11 +195,11 @@ if __name__ == '__main__':
                 continue
 
             if "ppa" in snap_map:
-                ppa = team.getPPAByName(name=snap_map["ppa"])
+                archive = team.getPPAByName(name=snap_map["ppa"])
                 latest_source = None
-                logger.debug("Got ppa: %s", ppa)
+                logger.debug("Got ppa: %s", archive)
 
-                sources = ppa.getPublishedSources(
+                sources = archive.getPublishedSources(
                     source_name=SOURCE_NAME,
                     distro_series=series)
 
@@ -282,7 +284,7 @@ if __name__ == '__main__':
 
             logger.info("Triggering %s…", snap_recipe.description or snap_recipe.name)
 
-            snap_recipe.requestBuilds(archive=ppa,
+            snap_recipe.requestBuilds(archive=archive,
                                       pocket=snap_recipe.auto_build_pocket)
             logger.debug("Triggered builds: %s", snap_recipe.web_link)
 
