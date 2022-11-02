@@ -35,8 +35,8 @@ SNAPS = {
         "beta": {"ppa": "rc", "recipe": "mir-kiosk-beta"},
     },
     "mir-test-tools": {
-        "edge": {"ppa": "dev", "recipe": "mir-test-tools-edge"},
-        "beta": {"ppa": "rc", "recipe": "mir-test-tools-beta"},
+        "edge": {"ppa": "dev", "recipe": "mir-test-tools-20-edge"},
+        "beta": {"ppa": "rc", "recipe": "mir-test-tools-20-beta"},
     },
     "egmde": {
         "edge": {"ppa": "dev", "recipe": "egmde-mir-edge"},
@@ -47,15 +47,15 @@ SNAPS = {
         "beta": {"ppa": "rc", "recipe": "egmde-confined-desktop-beta"},
     },
     "ubuntu-frame": {
-        "edge": {"ppa": "dev", "recipe": "ubuntu-frame-edge"},
-        "beta": {"ppa": "rc", "recipe": "ubuntu-frame-beta"},
+        "edge": {"ppa": "dev", "recipe": "ubuntu-frame-20-edge"},
+        "beta": {"ppa": "rc", "recipe": "ubuntu-frame-20-beta"},
     },
     "ubuntu-frame-osk": {
-        "beta": {"recipe": "ubuntu-frame-osk-beta"},
+        "beta": {"recipe": "ubuntu-frame-osk-20-beta"},
     },
     "ubuntu-frame-vnc": {
-        "beta": {"recipe": "ubuntu-frame-vnc-beta"},
-        "edge": {"recipe": "ubuntu-frame-vnc-edge"},
+        "beta": {"recipe": "ubuntu-frame-vnc-20-beta"},
+        "edge": {"recipe": "ubuntu-frame-vnc-20-edge"},
     },
     "mesa-core20": {
         "beta": {"recipe": "mesa-core20-beta"},
