@@ -25,7 +25,7 @@ logger.setLevel(logging.INFO)
 
 APPLICATION = "mir-ci"
 LAUNCHPAD = "production"
-RELEASE = "focal"
+DEFAULT_RELEASE = "focal"
 TEAM = "mir-team"
 SOURCE_NAME = "mir"
 
@@ -49,6 +49,7 @@ SNAPS = {
     "ubuntu-frame": {
         "edge": {"ppa": "dev", "recipe": "ubuntu-frame-20-edge"},
         "beta": {"ppa": "rc", "recipe": "ubuntu-frame-20-beta"},
+        "22/edge": {"ppa": "dev", "recipe": "ubuntu-frame-22-edge", "release": "jammy"},
     },
     "ubuntu-frame-osk": {
         "beta": {"recipe": "ubuntu-frame-osk-20-beta"},
@@ -173,8 +174,15 @@ if __name__ == '__main__':
     ubuntu = lp.distributions["ubuntu"]
     logger.debug("Got ubuntu: %s", ubuntu)
 
-    series = ubuntu.getSeries(name_or_version=RELEASE)
-    logger.debug("Got series: %s", series)
+    serie = {}
+
+    def getSeries(name):
+        if name in serie:
+             return serie[name]
+
+        serie[name] = ubuntu.getSeries(name_or_version=name)
+        logger.debug("Got series: %s", serie[name])
+        return serie[name]
 
     team = lp.people[TEAM]
     logger.debug("Got team: %s", team)
@@ -200,7 +208,7 @@ if __name__ == '__main__':
 
                 sources = ppa.getPublishedSources(
                     source_name=SOURCE_NAME,
-                    distro_series=series)
+                    distro_series=getSeries(snap_map.get("release", DEFAULT_RELEASE)))
 
                 if not sources:
                     logger.error("Did not find %s in %s/%s", SOURCE_NAME, TEAM, snap_map["ppa"])
