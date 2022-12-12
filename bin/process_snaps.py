@@ -37,6 +37,7 @@ SNAPS = {
     "mir-test-tools": {
         "edge": {"ppa": "dev", "recipe": "mir-test-tools-20-edge"},
         "beta": {"ppa": "rc", "recipe": "mir-test-tools-20-beta"},
+        "22/edge": {"ppa": "dev", "recipe": "mir-test-tools-22-edge", "release": "jammy"},
     },
     "egmde": {
         "edge": {"ppa": "dev", "recipe": "egmde-mir-edge"},
