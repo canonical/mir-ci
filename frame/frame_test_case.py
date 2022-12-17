@@ -1,6 +1,10 @@
 from unittest import TestCase
 import subprocess
+import os
 import time
+
+long_timeout = 10
+min_frame_run_time = 0.5
 
 class Program:
     def __init__(self, name: str, args: list[str] = []):
@@ -10,33 +14,51 @@ class Program:
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT)
         self.output = ''
+        self.killed = False
 
-    def kill(self) -> None:
-        self.process.terminate()
-        try:
-            raw_output, _ = self.process.communicate(timeout=1)
-            had_to_kill = False
-        except subprocess.TimeoutExpired:
-            self.process.kill()
-            raw_output, _ = self.process.communicate()
-            had_to_kill = True
+    def wait(self, timeout=long_timeout) -> None:
+        raw_output, _ = self.process.communicate(timeout=timeout)
         self.output = raw_output.decode('utf-8').strip()
         if self.process.returncode != 0:
             message = self.name
-            if had_to_kill:
+            if self.killed:
                 message += ' refused to terminate'
             else:
                 message += ' closed with exit code ' + str(self.process.returncode)
             if self.output:
-                message += ':\n' + self.output
+                message += ':\n\n' + self.output
             else:
                 message += ' and no output'
             raise RuntimeError(message)
 
+    def kill(self) -> None:
+        if self.process.returncode == None:
+            self.process.terminate()
+            try:
+                self.wait(timeout=1)
+            except subprocess.TimeoutExpired:
+                pass
+        if self.process.returncode == None:
+            self.process.kill()
+            self.killed = True
+            self.wait()
+
 class FrameTestCase(TestCase):
     def setUp(self) -> None:
+        os.environ['WAYLAND_DISPLAY'] = 'wayland-99'
         self.frame = Program('ubuntu-frame')
-        time.sleep(0.5)
+        self.start_time = time.time()
+        try:
+            inotify = Program('inotifywait', ['--event', 'create', os.environ['XDG_RUNTIME_DIR']])
+            inotify.wait()
+        except:
+            self.frame.kill()
+            raise
 
     def tearDown(self) -> None:
+        # If frame is run for less than ~20ms it tends to not shut down correctly
+        # TODO: fix frame
+        sleep_time = self.start_time + min_frame_run_time - time.time()
+        if sleep_time > 0:
+            time.sleep(sleep_time)
         self.frame.kill()
