@@ -33,6 +33,9 @@ SNAPS = {
     "confined-shell": {
         "edge": {"recipe": "confined-shell-edge"},
     },
+    "mircade": {
+        "edge": {"recipe": "mircade-edge"},
+    },
     "mir-kiosk": {
         "edge": {"ppa": "dev", "recipe": "mir-kiosk-edge"},
         "beta": {"ppa": "rc", "recipe": "mir-kiosk-beta"},
