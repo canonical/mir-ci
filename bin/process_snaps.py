@@ -30,6 +30,9 @@ TEAM = "mir-team"
 SOURCE_NAME = "mir"
 
 SNAPS = {
+    "confined-shell": {
+        "edge": {"recipe": "confined-shell-edge"},
+    },
     "mir-kiosk": {
         "edge": {"ppa": "dev", "recipe": "mir-kiosk-edge"},
         "beta": {"ppa": "rc", "recipe": "mir-kiosk-beta"},
