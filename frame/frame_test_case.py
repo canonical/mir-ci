@@ -4,7 +4,7 @@ import os
 import time
 
 long_timeout = 10
-min_frame_run_time = 0.5
+min_frame_run_time = 0.1
 
 class Program:
     def __init__(self, name: str, args: list[str] = []):
@@ -47,16 +47,16 @@ class FrameTestCase(TestCase):
     def setUp(self) -> None:
         os.environ['WAYLAND_DISPLAY'] = 'wayland-99'
         self.frame = Program('ubuntu-frame')
-        self.start_time = time.time()
         try:
             inotify = Program('inotifywait', ['--event', 'create', os.environ['XDG_RUNTIME_DIR']])
             inotify.wait()
         except:
             self.frame.kill()
             raise
+        self.start_time = time.time()
 
     def tearDown(self) -> None:
-        # If frame is run for less than ~20ms it tends to not shut down correctly
+        # If frame is run for too short a period of time it tends to not shut down correctly
         # TODO: fix frame
         sleep_time = self.start_time + min_frame_run_time - time.time()
         if sleep_time > 0:
