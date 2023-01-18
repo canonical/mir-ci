@@ -43,6 +43,9 @@ SNAPS = {
     "mir-kiosk-kodi": {
         "edge": {"recipe": "mir-kiosk-kodi-edge"},
     },
+    "mir-kiosk-scummvm": {
+        "edge": {"recipe": "mir-kiosk-scummvm-edge"},
+    },
     "mir-test-tools": {
         "edge": {"ppa": "dev", "recipe": "mir-test-tools-20-edge"},
         "beta": {"ppa": "rc", "recipe": "mir-test-tools-20-beta"},
