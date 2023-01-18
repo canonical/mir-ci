@@ -38,7 +38,7 @@ SNAPS = {
     },
     "mir-kiosk": {
         "edge": {"ppa": "dev", "recipe": "mir-kiosk-edge"},
-        "beta": {"ppa": "rc", "recipe": "mir-kiosk-beta"},
+        "beta": {"ppa": "release", "recipe": "mir-kiosk-beta"},
     },
     "mir-kiosk-kodi": {
         "edge": {"recipe": "mir-kiosk-kodi-edge"},
@@ -48,20 +48,20 @@ SNAPS = {
     },
     "mir-test-tools": {
         "edge": {"ppa": "dev", "recipe": "mir-test-tools-20-edge"},
-        "beta": {"ppa": "rc", "recipe": "mir-test-tools-20-beta"},
+        "beta": {"ppa": "release", "recipe": "mir-test-tools-20-beta"},
         "22/edge": {"ppa": "dev", "recipe": "mir-test-tools-22-edge", "release": "jammy"},
     },
     "egmde": {
         "edge": {"ppa": "dev", "recipe": "egmde-mir-edge"},
-        "beta": {"ppa": "rc", "recipe": "egmde-mir-beta"},
+        "beta": {"ppa": "release", "recipe": "egmde-mir-beta"},
     },
     "egmde-confined-desktop": {
         "edge": {"ppa": "dev", "recipe": "egmde-confined-desktop-edge"},
-        "beta": {"ppa": "rc", "recipe": "egmde-confined-desktop-beta"},
+        "beta": {"ppa": "release", "recipe": "egmde-confined-desktop-beta"},
     },
     "ubuntu-frame": {
         "edge": {"ppa": "dev", "recipe": "ubuntu-frame-20-edge"},
-        "beta": {"ppa": "rc", "recipe": "ubuntu-frame-20-beta"},
+        "beta": {"ppa": "release", "recipe": "ubuntu-frame-20-beta"},
         "22/edge": {"ppa": "dev", "recipe": "ubuntu-frame-22-edge", "release": "jammy"},
     },
     "ubuntu-frame-osk": {
@@ -76,7 +76,7 @@ SNAPS = {
     },
     "mir-kiosk-x11": {
         "edge": {"ppa": "dev", "recipe": "mir-kiosk-x11-edge"},
-        "beta": {"ppa": "rc", "recipe": "mir-kiosk-x11-beta"},
+        "beta": {"ppa": "release", "recipe": "mir-kiosk-x11-beta"},
     },
 }
 
