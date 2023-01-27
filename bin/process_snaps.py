@@ -43,6 +43,9 @@ SNAPS = {
     "mir-kiosk-kodi": {
         "edge": {"recipe": "mir-kiosk-kodi-edge"},
     },
+    "mir-kiosk-neverputt": {
+        "edge": {"recipe": "mir-kiosk-neverputt-edge"},
+    },
     "mir-kiosk-scummvm": {
         "edge": {"recipe": "mir-kiosk-scummvm-edge"},
     },
