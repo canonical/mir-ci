@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 import unittest
 suite = unittest.TestSuite()
 suite.addTest(unittest.TestLoader().discover('.'))
