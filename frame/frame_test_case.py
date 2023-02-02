@@ -22,6 +22,9 @@ class Program:
         self.output = ''
         self.killed = False
 
+    def assert_running(self) -> None:
+        assert self.process.poll() is None, self.name + ' is dead'
+
     def wait(self, timeout=long_timeout) -> None:
         raw_output, _ = self.process.communicate(timeout=timeout)
         self.output = raw_output.decode('utf-8').strip()
@@ -74,6 +77,7 @@ class FrameTestCase(TestCase):
         wayland_display = 'wayland-99'
         os.environ['WAYLAND_DISPLAY'] = wayland_display
         self.frame = Program('ubuntu-frame')
+        self.programs: list[Program] = []
         try:
             wait_for_wayland_display(wayland_display)
         except:
@@ -81,10 +85,20 @@ class FrameTestCase(TestCase):
             raise
         self.start_time = time.time()
 
+    def program(self, name: str, args: list[str] = []) -> Program:
+        program = Program(name, args)
+        self.programs.append(program)
+        return program
+
     def tearDown(self) -> None:
         # If frame is run for too short a period of time it tends to not shut down correctly
         # TODO: fix frame
         sleep_time = self.start_time + min_frame_run_time - time.time()
         if sleep_time > 0:
             time.sleep(sleep_time)
+        for program in self.programs:
+            try:
+                program.kill()
+            except:
+                pass
         self.frame.kill()
