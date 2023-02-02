@@ -3,6 +3,7 @@ import inotify.adapters
 import subprocess
 import os
 import time
+import signal
 
 long_timeout = 10
 min_frame_run_time = 0.1
@@ -13,7 +14,11 @@ class Program:
         self.process = subprocess.Popen(
             [name] + args,
             stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT)
+            stderr=subprocess.STDOUT,
+            close_fds=True,
+            preexec_fn=os.setsid)
+        # Without setsid killing the subprocess doesn't kill the whole process tree,
+        # see https://pymotw.com/2/subprocess/#process-groups-sessions
         self.output = ''
         self.killed = False
 
@@ -34,13 +39,13 @@ class Program:
 
     def kill(self) -> None:
         if self.process.returncode == None:
-            self.process.terminate()
+            os.killpg(self.process.pid, signal.SIGTERM)
             try:
                 self.wait(timeout=1)
             except subprocess.TimeoutExpired:
                 pass
         if self.process.returncode == None:
-            self.process.kill()
+            os.killpg(self.process.pid, signal.SIGKILL)
             self.killed = True
             self.wait()
 
