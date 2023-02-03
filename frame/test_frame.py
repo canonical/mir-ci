@@ -1,6 +1,8 @@
-from frame_test_case import FrameTestCase
+from frame_test_case import DisplayServer
+from unittest import TestCase
 import time
 
-class FrameSmokeTests(FrameTestCase):
+class FrameSmokeTests(TestCase):
     def test_frame_can_run(self) -> None:
-        pass
+        with DisplayServer('ubuntu-frame') as server:
+            pass
