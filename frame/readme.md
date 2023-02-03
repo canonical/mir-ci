@@ -1,7 +1,10 @@
 # Ubuntu Frame Integration Tests
 
 To run:
-`./run_all.py`
+`python3 -m unittest`
+
+or, to inside of a virtual X11 server:
+`xvfb-run python3 -m unittest`
 
 To typecheck tests:
 `mypy .`
