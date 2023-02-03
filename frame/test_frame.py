@@ -1,7 +1,7 @@
 from frame_test_case import FrameTestCase
 import time
 
-short_wait_time = 1
+short_wait_time = 5
 
 class FrameSmokeTests(FrameTestCase):
     def test_frame_can_run(self) -> None:
