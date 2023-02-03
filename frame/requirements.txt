@@ -1,1 +1,2 @@
-inotify=0.2.10
+inotify==0.2.10
+parameterized==0.8.1
