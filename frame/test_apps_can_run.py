@@ -20,3 +20,9 @@ class TestAppsCanRun(FrameTestCase):
 
     def test_kodi(self) -> None:
         self.run_test('mir-kiosk-kodi')
+
+    def test_gedit(self) -> None:
+        self.run_test('gedit')
+
+    def test_qterminal(self) -> None:
+        self.run_test('qterminal')

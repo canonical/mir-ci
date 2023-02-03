@@ -88,6 +88,7 @@ class FrameTestCase(TestCase):
             self.frame.kill()
             raise
         self.start_time = time.time()
+        os.environ['QT_QPA_PLATFORM'] = 'wayland'
 
     def program(self, name: str, args: list[str] = []) -> Program:
         program = Program(name, args)
