@@ -1,4 +1,3 @@
-from unittest import TestCase
 import inotify.adapters
 import subprocess
 import os
@@ -76,11 +75,20 @@ def wait_for_wayland_display(name: str) -> None:
     # Raise timeout error if we didn't return
     raise RuntimeError('Wayland display ' + name + ' did not appear')
 
-class FrameTestCase(TestCase):
-    def setUp(self) -> None:
+class DisplayServer:
+    def __init__(self, name: str, args: list[str] = []) -> None:
+        self.name = name
+        self.args = args
+
+    def program(self, name: str, args: list[str] = []) -> Program:
+        program = Program(name, args)
+        self.programs.append(program)
+        return program
+
+    def __enter__(self) -> 'Server':
         wayland_display = 'wayland-99'
         os.environ['WAYLAND_DISPLAY'] = wayland_display
-        self.frame = Program('ubuntu-frame')
+        self.frame = Program(self.name, self.args)
         self.programs: list[Program] = []
         try:
             wait_for_wayland_display(wayland_display)
@@ -89,13 +97,9 @@ class FrameTestCase(TestCase):
             raise
         self.start_time = time.time()
         os.environ['QT_QPA_PLATFORM'] = 'wayland'
+        return self
 
-    def program(self, name: str, args: list[str] = []) -> Program:
-        program = Program(name, args)
-        self.programs.append(program)
-        return program
-
-    def tearDown(self) -> None:
+    def __exit__(self, *args):
         # If frame is run for too short a period of time it tends to not shut down correctly
         # TODO: fix frame
         sleep_time = self.start_time + min_frame_run_time - time.time()
