@@ -64,6 +64,10 @@ def wait_for_wayland_display(name: str) -> None:
     # Set up inotify
     i = inotify.adapters.Inotify()
     i.add_watch(runtime_dir, mask=inotify.constants.IN_CREATE)
+    # Check if display has already appeared Since we've already created the watch it might be seen
+    # by both this check and inotify, but there's no way it's seen by neither.
+    if os.path.exists(os.path.join(runtime_dir, name)):
+        return
     # Wait for display to appear
     for event in i.event_gen(timeout_s=long_timeout, yield_nones=False):
         (_, type_names, path, filename) = event
