@@ -114,6 +114,7 @@ STORE_HEADERS = {
 }
 
 CHECK_NOTICES_PATH = "/snap/bin/review-tools.check-notices"
+CHECK_NOTICES_ARGS = ["--ignore-pockets", "esm-apps"]
 
 
 def get_store_snap(processor, snap, channel):
@@ -159,7 +160,7 @@ def check_snap_notices(store_snaps):
         )
 
         try:
-            notices = subprocess.check_output([CHECK_NOTICES_PATH] + snaps)
+            notices = subprocess.check_output([CHECK_NOTICES_PATH] + CHECK_NOTICES_ARGS + snaps)
             logger.debug("Got check_notices output:\n%s", notices.decode())
         except subprocess.CalledProcessError as e:
             logger.error("Failed to check notices:\n%s", e.output)
