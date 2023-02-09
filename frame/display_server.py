@@ -2,7 +2,7 @@ import inotify.adapters
 import os
 import time
 
-from program import Program
+from program import Program, Command
 
 display_appear_timeout = 10
 min_frame_run_time = 0.1
@@ -32,19 +32,18 @@ def wait_for_wayland_display(name: str) -> None:
     raise RuntimeError('Wayland display ' + name + ' did not appear')
 
 class DisplayServer:
-    def __init__(self, name: str, args: list[str] = []) -> None:
-        self.name = name
-        self.args = args
+    def __init__(self, command: Command) -> None:
+        self.command = command
 
-    def program(self, name: str, args: list[str] = []) -> Program:
-        program = Program(name, args)
+    def program(self, command: Command) -> Program:
+        program = Program(command)
         self.programs.append(program)
         return program
 
     def __enter__(self) -> 'DisplayServer':
         wayland_display = 'wayland-99'
         os.environ['WAYLAND_DISPLAY'] = wayland_display
-        self.frame = Program(self.name, self.args)
+        self.frame = Program(self.command)
         self.programs: list[Program] = []
         try:
             wait_for_wayland_display(wayland_display)
