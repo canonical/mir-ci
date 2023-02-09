@@ -1,14 +1,19 @@
 import subprocess
 import os
 import signal
+from typing import Union
 
 default_wait_timeout = 10
 
+Command = Union[str, list[str]]
+
 class Program:
-    def __init__(self, name: str, args: list[str] = []):
-        self.name = name
+    def __init__(self, command: Command):
+        if isinstance(command, str):
+            command = [command]
+        self.name = command[0]
         self.process = subprocess.Popen(
-            [name] + args,
+            command,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             close_fds=True,
