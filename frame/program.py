@@ -8,12 +8,14 @@ default_wait_timeout = 10
 Command = Union[str, list[str]]
 
 class Program:
-    def __init__(self, command: Command):
+    def __init__(self, command: Command, env: dict[str, str] = {}):
         if isinstance(command, str):
             command = [command]
         self.name = command[0]
+        env = {**os.environ, **env}
         self.process = subprocess.Popen(
             command,
+            env=env,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             close_fds=True,
