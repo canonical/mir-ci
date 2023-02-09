@@ -7,8 +7,7 @@ from program import Program, Command
 display_appear_timeout = 10
 min_frame_run_time = 0.1
 
-def wait_for_wayland_display(name: str) -> None:
-    runtime_dir = os.environ['XDG_RUNTIME_DIR']
+def clear_wayland_display(runtime_dir: str, name: str) -> None:
     # Clear out any existing display before waiting for the new one
     for path in [
         os.path.join(runtime_dir, name),
@@ -16,6 +15,8 @@ def wait_for_wayland_display(name: str) -> None:
     ]:
         if os.path.exists(path):
             os.remove(path)
+
+def wait_for_wayland_display(runtime_dir: str, name: str) -> None:
     # Set up inotify
     i = inotify.adapters.Inotify()
     i.add_watch(runtime_dir, mask=inotify.constants.IN_CREATE)
@@ -43,10 +44,12 @@ class DisplayServer:
     def __enter__(self) -> 'DisplayServer':
         wayland_display = 'wayland-99'
         os.environ['WAYLAND_DISPLAY'] = wayland_display
+        runtime_dir = os.environ['XDG_RUNTIME_DIR']
+        clear_wayland_display(runtime_dir, wayland_display)
         self.frame = Program(self.command)
         self.programs: list[Program] = []
         try:
-            wait_for_wayland_display(wayland_display)
+            wait_for_wayland_display(runtime_dir, wayland_display)
         except:
             self.frame.kill()
             raise
