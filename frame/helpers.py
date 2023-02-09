@@ -1,6 +1,7 @@
 def combine(*arg):
     result = [()]
     for input_list in arg:
+        assert isinstance(input_list, list), 'combine input not all lists'
         partial_result = result
         result = []
         for partial_tuple in partial_result:
