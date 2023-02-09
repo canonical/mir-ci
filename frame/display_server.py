@@ -1,55 +1,11 @@
 import inotify.adapters
-import subprocess
 import os
 import time
-import signal
 
-long_timeout = 10
+from program import Program
+
+display_appear_timeout = 10
 min_frame_run_time = 0.1
-
-class Program:
-    def __init__(self, name: str, args: list[str] = []):
-        self.name = name
-        self.process = subprocess.Popen(
-            [name] + args,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            close_fds=True,
-            preexec_fn=os.setsid)
-        # Without setsid killing the subprocess doesn't kill the whole process tree,
-        # see https://pymotw.com/2/subprocess/#process-groups-sessions
-        self.output = ''
-        self.killed = False
-
-    def assert_running(self) -> None:
-        assert self.process.poll() is None, self.name + ' is dead'
-
-    def wait(self, timeout=long_timeout) -> None:
-        raw_output, _ = self.process.communicate(timeout=timeout)
-        self.output = raw_output.decode('utf-8').strip()
-        if self.process.returncode != 0:
-            message = self.name
-            if self.killed:
-                message += ' refused to terminate'
-            else:
-                message += ' closed with exit code ' + str(self.process.returncode)
-            if self.output:
-                message += ':\n\n' + self.output
-            else:
-                message += ' and no output'
-            raise RuntimeError(message)
-
-    def kill(self) -> None:
-        if self.process.returncode == None:
-            os.killpg(self.process.pid, signal.SIGTERM)
-            try:
-                self.wait(timeout=1)
-            except subprocess.TimeoutExpired:
-                pass
-        if self.process.returncode == None:
-            os.killpg(self.process.pid, signal.SIGKILL)
-            self.killed = True
-            self.wait()
 
 def wait_for_wayland_display(name: str) -> None:
     runtime_dir = os.environ['XDG_RUNTIME_DIR']
@@ -68,7 +24,7 @@ def wait_for_wayland_display(name: str) -> None:
     if os.path.exists(os.path.join(runtime_dir, name)):
         return
     # Wait for display to appear
-    for event in i.event_gen(timeout_s=long_timeout, yield_nones=False):
+    for event in i.event_gen(timeout_s=display_appear_timeout, yield_nones=False):
         (_, type_names, path, filename) = event
         if filename == name:
             return

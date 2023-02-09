@@ -1,4 +1,4 @@
-from frame_test_case import DisplayServer
+from display_server import DisplayServer
 from parameterized import parameterized
 from unittest import TestCase
 from helpers import combine, all_servers

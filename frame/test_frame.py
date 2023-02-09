@@ -1,6 +1,7 @@
-from frame_test_case import DisplayServer
 from unittest import TestCase
 import time
+
+from display_server import DisplayServer
 
 class FrameSmokeTests(TestCase):
     def test_frame_can_run(self) -> None:
