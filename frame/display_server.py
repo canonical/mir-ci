@@ -37,7 +37,10 @@ class DisplayServer:
         self.command = command
 
     def program(self, command: Command) -> Program:
-        program = Program(command)
+        program = Program(command, env={
+            'DISPLAY': 'no',
+            'QT_QPA_PLATFORM': 'wayland',
+        })
         self.programs.append(program)
         return program
 
@@ -54,7 +57,6 @@ class DisplayServer:
             self.frame.kill()
             raise
         self.start_time = time.time()
-        os.environ['QT_QPA_PLATFORM'] = 'wayland'
         return self
 
     def __exit__(self, *args):
