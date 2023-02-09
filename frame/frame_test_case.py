@@ -85,7 +85,7 @@ class DisplayServer:
         self.programs.append(program)
         return program
 
-    def __enter__(self) -> 'Server':
+    def __enter__(self) -> 'DisplayServer':
         wayland_display = 'wayland-99'
         os.environ['WAYLAND_DISPLAY'] = wayland_display
         self.frame = Program(self.name, self.args)
