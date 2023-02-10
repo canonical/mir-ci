@@ -1,2 +1,3 @@
-inotify==0.2.10
-parameterized==0.8.1
+inotify
+parameterized
+mypy
