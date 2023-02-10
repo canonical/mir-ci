@@ -1,0 +1,52 @@
+name: Test
+
+on:
+  push:
+    branches:
+    - staging
+    - trying
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+jobs:
+  RunTests:
+    strategy:
+      fail-fast: false
+      matrix:
+        server:
+        - mir-kiosk
+        - ubuntu-frame
+        include:
+        - server: egmde
+          classic: true
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/setup-python@v4
+    - uses: actions/checkout@v3
+
+    - name: Set up dependencies
+      run: |
+        sudo apt-get --yes --no-install-recommends install \
+          gedit \
+          gsettings-desktop-schemas \
+          qterminal \
+          xvfb
+
+        sudo snap install ${{ matrix.server }} ${{ matrix.classic && '--classic' || '' }}
+
+        sudo snap install \
+          mir-kiosk-kodi \
+          mir-kiosk-neverputt \
+          mir-kiosk-scummvm \
+          wpe-webkit-mir-kiosk
+
+        pip install -r frame/requirements.txt
+
+    - name: Run the tests
+      env:
+        MIR_TEST_SERVER: ${{ matrix.server }}
+      working-directory: frame
+      run: |
+        xvfb-run python -m unittest
