@@ -24,7 +24,7 @@ def assert_all_are_valid_servers(iterable: Iterable[str]) -> None:
 
 def filter_servers(servers: list[str]) -> list[str]:
     assert_all_are_valid_servers(servers)
-    allowed_servers = os.environ['MIR_TEST_SERVER']
+    allowed_servers = os.environ.get('MIR_TEST_SERVER')
     if allowed_servers:
         allowed_set = set(allowed_servers.split(','))
         assert_all_are_valid_servers(allowed_set)
