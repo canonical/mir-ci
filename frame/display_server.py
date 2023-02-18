@@ -33,24 +33,27 @@ def wait_for_wayland_display(runtime_dir: str, name: str) -> None:
 class DisplayServer:
     def __init__(self, command: Command) -> None:
         self.command = command
+        # Snaps require the display to be in the form "waland-<number>". The 00 prefix lets us
+        # easily identify displays created by this test suit and remove them in bulk if a bunch
+        # don't get cleaned up properly.
+        self.display_name = 'wayland-00' + str(os.getpid())
 
     def program(self, command: Command) -> Program:
         program = Program(command, env={
             'DISPLAY': 'no',
             'QT_QPA_PLATFORM': 'wayland',
+            'WAYLAND_DISPLAY': self.display_name,
         })
         self.programs.append(program)
         return program
 
     def __enter__(self) -> 'DisplayServer':
-        wayland_display = 'wayland-99'
-        os.environ['WAYLAND_DISPLAY'] = wayland_display
         runtime_dir = os.environ['XDG_RUNTIME_DIR']
-        clear_wayland_display(runtime_dir, wayland_display)
-        self.frame = Program(self.command)
+        clear_wayland_display(runtime_dir, self.display_name)
+        self.frame = Program(self.command, env={'WAYLAND_DISPLAY': self.display_name})
         self.programs: list[Program] = []
         try:
-            wait_for_wayland_display(runtime_dir, wayland_display)
+            wait_for_wayland_display(runtime_dir, self.display_name)
         except:
             self.frame.kill()
             raise
