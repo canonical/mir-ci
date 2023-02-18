@@ -17,6 +17,5 @@ class TestAppsCanRun(TestCase):
     ]))
     def test_app_can_run(self, server, app) -> None:
         with DisplayServer(server) as server:
-            app = server.program(app)
-            time.sleep(short_wait_time)
-            app.assert_running()
+            with server.program(app) as app:
+                time.sleep(short_wait_time)
