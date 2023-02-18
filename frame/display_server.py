@@ -39,19 +39,16 @@ class DisplayServer:
         self.display_name = 'wayland-00' + str(os.getpid())
 
     def program(self, command: Command) -> Program:
-        program = Program(command, env={
+        return Program(command, env={
             'DISPLAY': 'no',
             'QT_QPA_PLATFORM': 'wayland',
             'WAYLAND_DISPLAY': self.display_name,
         })
-        self.programs.append(program)
-        return program
 
     def __enter__(self) -> 'DisplayServer':
         runtime_dir = os.environ['XDG_RUNTIME_DIR']
         clear_wayland_display(runtime_dir, self.display_name)
         self.frame = Program(self.command, env={'WAYLAND_DISPLAY': self.display_name})
-        self.programs: list[Program] = []
         try:
             wait_for_wayland_display(runtime_dir, self.display_name)
         except:
@@ -66,9 +63,4 @@ class DisplayServer:
         sleep_time = self.start_time + min_frame_run_time - time.time()
         if sleep_time > 0:
             time.sleep(sleep_time)
-        for program in self.programs:
-            try:
-                program.kill()
-            except:
-                pass
         self.frame.kill()
