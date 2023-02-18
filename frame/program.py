@@ -10,12 +10,14 @@ Command = Union[str, list[str]]
 class Program:
     def __init__(self, command: Command, env: dict[str, str] = {}):
         if isinstance(command, str):
-            command = [command]
-        self.name = command[0]
-        env = os.environ | env
+            self.command = [command]
+        else:
+            self.command = command
+        self.env = os.environ | env
+        self.name = self.command[0]
         self.process = subprocess.Popen(
-            command,
-            env=env,
+            self.command,
+            env=self.env,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             close_fds=True,
@@ -54,3 +56,14 @@ class Program:
             os.killpg(self.process.pid, signal.SIGKILL)
             self.killed = True
             self.wait()
+
+    def __enter__(self) -> 'Program':
+        return self
+
+    def __exit__(self, *args):
+        if self.process.returncode == None:
+            self.assert_running()
+            try:
+                self.kill()
+            except:
+                pass
