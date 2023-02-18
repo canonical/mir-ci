@@ -17,7 +17,6 @@ def clear_wayland_display(runtime_dir: str, name: str) -> None:
             os.remove(path)
 
 def wait_for_wayland_display(runtime_dir: str, name: str) -> None:
-    # Set up inotify
     i = inotify.adapters.Inotify()
     i.add_watch(runtime_dir, mask=inotify.constants.IN_CREATE)
     # Check if display has already appeared Since we've already created the watch it might be seen
@@ -29,7 +28,6 @@ def wait_for_wayland_display(runtime_dir: str, name: str) -> None:
         (_, type_names, path, filename) = event
         if filename == name:
             return
-    # Raise timeout error if we didn't return
     raise RuntimeError('Wayland display ' + name + ' did not appear')
 
 class DisplayServer:
