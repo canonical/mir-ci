@@ -12,7 +12,7 @@ class Program:
         if isinstance(command, str):
             command = [command]
         self.name = command[0]
-        env = {**os.environ, **env}
+        env = os.environ | env
         self.process = subprocess.Popen(
             command,
             env=env,
