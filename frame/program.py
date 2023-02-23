@@ -3,7 +3,7 @@ import os
 import signal
 from typing import Union
 
-default_wait_timeout = 10
+default_wait_timeout = default_term_timeout = 10
 
 Command = Union[str, list[str], tuple[str, ...]]
 
@@ -64,17 +64,17 @@ class Program:
                 message += ' closed with exit code ' + str(self.process.returncode)
             raise RuntimeError(message)
 
-    def kill(self) -> None:
+    def kill(self, timeout=default_term_timeout) -> None:
         if self.process.returncode == None:
             os.killpg(self.process.pid, signal.SIGTERM)
             try:
-                self.wait(timeout=1)
+                self.wait(timeout=timeout)
             except subprocess.TimeoutExpired:
                 pass
         if self.process.returncode == None:
             os.killpg(self.process.pid, signal.SIGKILL)
             self.killed = True
-            self.wait()
+            self.wait(timeout=timeout)
 
     def __enter__(self) -> 'Program':
         return self
