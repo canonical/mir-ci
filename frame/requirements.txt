@@ -1,3 +1,4 @@
 inotify
 parameterized
 mypy
+pytest
