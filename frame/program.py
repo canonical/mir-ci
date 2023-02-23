@@ -28,21 +28,23 @@ class Program:
         self.killed = False
 
     def assert_running(self) -> None:
-        assert self.process.poll() is None, self.name + ' is dead'
+        if self.process.poll() is not None:
+            try:
+                self.wait()
+            except:
+                pass
+            assert False, self.name + ' is dead'
 
     def wait(self, timeout=default_wait_timeout) -> None:
         raw_output, _ = self.process.communicate(timeout=timeout)
         self.output = raw_output.decode('utf-8').strip()
+        print(self.name + ' output:\n', self.output)
         if self.process.returncode != 0:
             message = self.name
             if self.killed:
                 message += ' refused to terminate'
             else:
                 message += ' closed with exit code ' + str(self.process.returncode)
-            if self.output:
-                message += ':\n\n' + self.output
-            else:
-                message += ' and no output'
             raise RuntimeError(message)
 
     def kill(self) -> None:
