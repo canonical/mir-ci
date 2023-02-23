@@ -7,6 +7,23 @@ default_wait_timeout = 10
 
 Command = Union[str, list[str]]
 
+def format_output(name: str, output: str) -> str:
+    '''
+    After collecting a program's output into a string, this function wraps it in a border for easy
+    reading
+    '''
+    l_pad = 36 - len(name) // 2
+    r_pad = l_pad
+    if len(name) % 2 == 1:
+        r_pad -= 1
+    l_pad = max(l_pad, 1)
+    r_pad = max(r_pad, 1)
+    header = '─' * l_pad + '┤ ' + name + ' ├' + '─' * r_pad
+    divider = '\n│'
+    body = divider.join(' ' + line for line in output.strip().splitlines())
+    footer = '─' * 78
+    return '╭' + header + divider + body + '\n╰' + footer
+
 class Program:
     def __init__(self, command: Command, env: dict[str, str] = {}):
         if isinstance(command, str):
@@ -38,7 +55,7 @@ class Program:
     def wait(self, timeout=default_wait_timeout) -> None:
         raw_output, _ = self.process.communicate(timeout=timeout)
         self.output = raw_output.decode('utf-8').strip()
-        print(self.name + ' output:\n', self.output)
+        print('\n' + format_output(self.name, self.output))
         if self.process.returncode != 0:
             message = self.name
             if self.killed:
