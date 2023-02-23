@@ -65,3 +65,9 @@ jobs:
       working-directory: frame
       run: |
         xvfb-run python -m pytest
+
+    - if: ${{ failure() && runner.debug }}
+      name: Setup upterm session
+      uses: lhotari/action-upterm@v1
+      with:
+        limit-access-to-actor: true
