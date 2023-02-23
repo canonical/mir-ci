@@ -49,4 +49,4 @@ jobs:
         MIR_TEST_SERVER: ${{ matrix.server }}
       working-directory: frame
       run: |
-        xvfb-run python -m unittest
+        xvfb-run python -m pytest
