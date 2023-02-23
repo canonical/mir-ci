@@ -1,13 +1,14 @@
 from display_server import DisplayServer
 from parameterized import parameterized
 from unittest import TestCase
-from helpers import combine, all_servers
+from helpers import all_servers
+import itertools
 import time
 
 short_wait_time = 3
 
 class TestAppsCanRun(TestCase):
-    @parameterized.expand(combine(all_servers(), [
+    @parameterized.expand(itertools.product(all_servers(), [
         'wpe-webkit-mir-kiosk.cog',
         'mir-kiosk-neverputt',
         'mir-kiosk-scummvm',
