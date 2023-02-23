@@ -5,7 +5,7 @@ import time
 from program import Program, Command
 
 display_appear_timeout = 10
-min_frame_run_time = 0.1
+min_mir_run_time = 0.1
 
 def clear_wayland_display(runtime_dir: str, name: str) -> None:
     # Clear out any existing display before waiting for the new one
@@ -48,19 +48,19 @@ class DisplayServer:
     def __enter__(self) -> 'DisplayServer':
         runtime_dir = os.environ['XDG_RUNTIME_DIR']
         clear_wayland_display(runtime_dir, self.display_name)
-        self.frame = Program(self.command, env={'WAYLAND_DISPLAY': self.display_name})
+        self.server = Program(self.command, env={'WAYLAND_DISPLAY': self.display_name})
         try:
             wait_for_wayland_display(runtime_dir, self.display_name)
         except:
-            self.frame.kill()
+            self.server.kill()
             raise
         self.start_time = time.time()
         return self
 
     def __exit__(self, *args):
-        # If frame is run for too short a period of time it tends to not shut down correctly
-        # TODO: fix frame
-        sleep_time = self.start_time + min_frame_run_time - time.time()
+        # If Mir is run for too short a period of time it tends to not shut down correctly
+        # See https://github.com/MirServer/mir/issues/2845
+        sleep_time = self.start_time + min_mir_run_time - time.time()
         if sleep_time > 0:
             time.sleep(sleep_time)
-        self.frame.kill()
+        self.server.kill()
