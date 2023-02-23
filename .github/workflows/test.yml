@@ -31,16 +31,28 @@ jobs:
         sudo apt-get --yes --no-install-recommends install \
           gedit \
           gsettings-desktop-schemas \
+          qtwayland5 \
           qterminal \
           xvfb
 
         sudo snap install ${{ matrix.server }} ${{ matrix.classic && '--classic' || '' }}
 
-        sudo snap install \
-          mir-kiosk-kodi \
-          mir-kiosk-neverputt \
-          mir-kiosk-scummvm \
+        SNAPS="
+          mir-kiosk-kodi
+          mir-kiosk-neverputt
+          mir-kiosk-scummvm
           wpe-webkit-mir-kiosk
+        "
+
+        sudo snap install $SNAPS
+
+        for snap in $SNAPS; do
+          if [ -x /snap/$snap/current/bin/setup.sh ]; then
+            /snap/$snap/current/bin/setup.sh
+          else
+            sudo snap connect $snap:wayland ${{ matrix.server }}
+          fi
+        done
 
         pip install -r frame/requirements.txt
 
