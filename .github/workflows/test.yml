@@ -64,7 +64,24 @@ jobs:
         MIR_TEST_SERVER: ${{ matrix.server }}
       working-directory: frame
       run: |
+        # set up coredumps
+        ulimit -c unlimited
+        echo "/tmp/corefile-%e-%p-%t" | sudo tee /proc/sys/kernel/core_pattern
+
         xvfb-run python -m pytest
+
+    - if: ${{ failure() }}
+      name: Collect any core dumps
+      run: |
+        sudo find /tmp/ -name corefile-* -exec chown $UID {} \; -exec mv -v {} . \;
+
+    - if: ${{ failure() }}
+      name: Upload any core dumps
+      uses: actions/upload-artifact@v3
+      with:
+        name: core-dumps
+        path: corefile-*
+        if-no-files-found: ignore
 
     - if: ${{ failure() && runner.debug }}
       name: Setup upterm session
