@@ -25,7 +25,7 @@ logger.setLevel(logging.DEBUG)
 
 APPLICATION = "mir-ci"
 LAUNCHPAD = "production"
-DEFAULT_RELEASE = "focal"
+DEFAULT_RELEASE = "jammy"
 TEAM = "mir-team"
 SOURCE_NAME = "mir"
 
@@ -34,11 +34,11 @@ SNAPS = {
         "edge": {"recipe": "confined-shell-edge"},
     },
     "mircade": {
-        "edge": {"recipe": "mircade-edge"},
+        "edge": {"ppa": "dev", "recipe": "mircade-edge", "release": "focal"},
     },
     "mir-kiosk": {
-        "edge": {"ppa": "dev", "recipe": "mir-kiosk-edge"},
-        "beta": {"ppa": "rc", "recipe": "mir-kiosk-beta"},
+        "edge": {"ppa": "dev", "recipe": "mir-kiosk-edge", "release": "focal"},
+        "beta": {"ppa": "rc", "recipe": "mir-kiosk-beta", "release": "focal"},
     },
     "mir-kiosk-kodi": {
         "edge": {"recipe": "mir-kiosk-kodi-edge", "non-uniform": True},
@@ -50,32 +50,40 @@ SNAPS = {
         "edge": {"recipe": "mir-kiosk-scummvm-edge"},
     },
     "mir-test-tools": {
-        "edge": {"ppa": "dev", "recipe": "mir-test-tools-20-edge"},
-        "beta": {"ppa": "rc", "recipe": "mir-test-tools-20-beta"},
-        "22/edge": {"ppa": "dev", "recipe": "mir-test-tools-22-edge", "release": "jammy"},
+        "edge": {"ppa": "dev", "recipe": "mir-test-tools-20-edge", "release": "focal"},
+        "beta": {"ppa": "rc", "recipe": "mir-test-tools-20-beta", "release": "focal"},
+        "22/edge": {"ppa": "dev", "recipe": "mir-test-tools-22-edge"},
+        "22/beta": {"ppa": "rc", "recipe": "mir-test-tools-22-beta"},
     },
     "egmde": {
-        "edge": {"ppa": "dev", "recipe": "egmde-mir-edge"},
-        "beta": {"ppa": "rc", "recipe": "egmde-mir-beta"},
+        "edge": {"ppa": "dev", "recipe": "egmde-mir-edge", "release": "focal"},
+        "beta": {"ppa": "rc", "recipe": "egmde-mir-beta", "release": "focal"},
     },
     "ubuntu-frame": {
-        "edge": {"ppa": "dev", "recipe": "ubuntu-frame-20-edge"},
-        "beta": {"ppa": "rc", "recipe": "ubuntu-frame-20-beta"},
-        "22/edge": {"ppa": "dev", "recipe": "ubuntu-frame-22-edge", "release": "jammy"},
+        "edge": {"ppa": "dev", "recipe": "ubuntu-frame-20-edge", "release": "focal"},
+        "beta": {"ppa": "rc", "recipe": "ubuntu-frame-20-beta", "release": "focal"},
+        "22/edge": {"ppa": "dev", "recipe": "ubuntu-frame-22-edge"},
+        "22/beta": {"ppa": "rc", "recipe": "ubuntu-frame-22-beta"},
     },
     "ubuntu-frame-osk": {
         "beta": {"recipe": "ubuntu-frame-osk-20-beta"},
+        "22/edge": {"recipe": "ubuntu-frame-osk-22-edge"},
+        "22/beta": {"recipe": "ubuntu-frame-osk-22-beta"},
     },
     "ubuntu-frame-vnc": {
         "beta": {"recipe": "ubuntu-frame-vnc-20-beta"},
-        "edge": {"recipe": "ubuntu-frame-vnc-20-edge"},
+        "22/edge": {"recipe": "ubuntu-frame-vnc-22-edge"},
+        "22/beta": {"recipe": "ubuntu-frame-vnc-22-beta"},
     },
     "mesa-core20": {
         "beta": {"recipe": "mesa-core20-beta"},
     },
+    "mesa-core22": {
+        "beta": {"recipe": "mesa-core22-beta"},
+    },
     "mir-kiosk-x11": {
-        "edge": {"ppa": "dev", "recipe": "mir-kiosk-x11-edge"},
-        "beta": {"ppa": "rc", "recipe": "mir-kiosk-x11-beta"},
+        "edge": {"ppa": "dev", "recipe": "mir-kiosk-x11-edge", "release": "focal"},
+        "beta": {"ppa": "rc", "recipe": "mir-kiosk-x11-beta", "release": "focal"},
     },
 }
 
