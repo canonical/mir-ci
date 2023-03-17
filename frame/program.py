@@ -5,7 +5,7 @@ from typing import Union
 
 default_wait_timeout = 10
 
-Command = Union[str, list[str]]
+Command = Union[str, list[str], tuple[str, ...]]
 
 def format_output(name: str, output: str) -> str:
     '''
@@ -27,9 +27,9 @@ def format_output(name: str, output: str) -> str:
 class Program:
     def __init__(self, command: Command, env: dict[str, str] = {}):
         if isinstance(command, str):
-            self.command = [command]
+            self.command: tuple[str, ...] = (command,)
         else:
-            self.command = command
+            self.command = tuple(command)
         self.env = os.environ | env
         self.name = self.command[0]
         self.process = subprocess.Popen(
