@@ -41,7 +41,7 @@ SNAPS = {
         "beta": {"ppa": "rc", "recipe": "mir-kiosk-beta"},
     },
     "mir-kiosk-kodi": {
-        "edge": {"recipe": "mir-kiosk-kodi-edge"},
+        "edge": {"recipe": "mir-kiosk-kodi-edge", "non-uniform": True},
     },
     "mir-kiosk-neverputt": {
         "edge": {"recipe": "mir-kiosk-neverputt-edge"},
@@ -284,7 +284,7 @@ if __name__ == '__main__':
 
             versions = {snap["version"] for snap in store_snaps}
             versions_dict = {snap["architecture"][0]: snap["version"] for snap in store_snaps}
-            if len(versions) > 1:
+            if len(versions) > 1 and not snap_map.get("non-uniform", False):
                 logger.error("::error::Non-uniform versions of snap %s: %s", snap_recipe.web_link, versions_dict)
                 errors.append(RuntimeError("Non-uniform versions of snap"))
             else:
