@@ -21,7 +21,7 @@ import requests  # fades
 
 logger = logging.getLogger("mir.process_snaps")
 logger.addHandler(logging.StreamHandler())
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 
 APPLICATION = "mir-ci"
 LAUNCHPAD = "production"
@@ -216,7 +216,7 @@ if __name__ == '__main__':
                 snap_recipe = lp.snaps.getByName(owner=team, name=snap_map["recipe"])
                 logger.debug("Got snap: %s", snap_recipe)
             except lp_errors.NotFound as ex:
-                logger.error("Snap recipe not found: %s", snap_map["recipe"])
+                logger.error("::error::Snap recipe not found: %s", snap_map["recipe"])
                 errors.append(ex)
                 continue
 
@@ -230,7 +230,7 @@ if __name__ == '__main__':
                     distro_series=getSeries(snap_map.get("release", DEFAULT_RELEASE)))
 
                 if not sources:
-                    logger.error("Did not find %s in %s/%s", SOURCE_NAME, TEAM, snap_map["ppa"])
+                    logger.error("::error::Did not find %s in %s/%s", SOURCE_NAME, TEAM, snap_map["ppa"])
                     continue
 
                 for source in sources:
@@ -241,7 +241,7 @@ if __name__ == '__main__':
                     break
 
                 if not latest_source:
-                    logger.error("Did not find a valid source for %s in %s/%s", SOURCE_NAME, TEAM, snap_map["ppa"])
+                    logger.error("::error::Did not find a valid source for %s in %s/%s", SOURCE_NAME, TEAM, snap_map["ppa"])
                     continue
 
                 logger.debug("Latest source: %s", latest_source.display_name)
@@ -282,7 +282,13 @@ if __name__ == '__main__':
                 for processor in snap_recipe.processors
             )))
 
-            logger.debug("Got store versions: %s", {snap["architecture"][0]: snap["version"] for snap in store_snaps})
+            versions = {snap["version"] for snap in store_snaps}
+            versions_dict = {snap["architecture"][0]: snap["version"] for snap in store_snaps}
+            if len(versions) > 1:
+                logger.error("::error::Non-uniform versions of snap %s: %s", snap_recipe.web_link, versions_dict)
+                errors.append(RuntimeError("Non-uniform versions of snap"))
+            else:
+                logger.debug("Got store versions: %s", versions_dict)
 
             if all(store_snap is None
                    or mir_version is None
@@ -308,7 +314,8 @@ if __name__ == '__main__':
                     )
                     continue
 
-            logger.info("Triggering %s…", snap_recipe.description or snap_recipe.name)
+            # warning so it gets surfaced by GitHub Actions
+            logger.info("::warning::Triggering %s…", snap_recipe.description or snap_recipe.name)
 
             snap_recipe.requestBuilds(archive=archive,
                                       pocket=snap_recipe.auto_build_pocket)
