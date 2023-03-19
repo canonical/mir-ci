@@ -40,9 +40,9 @@ SNAPS = {
         "edge": {"ppa": "dev", "recipe": "mir-kiosk-edge"},
         "beta": {"ppa": "rc", "recipe": "mir-kiosk-beta"},
     },
-    "mir-kiosk-kodi": {
-        "edge": {"recipe": "mir-kiosk-kodi-edge", "non-uniform": True},
-    },
+#    "mir-kiosk-kodi": {
+#        "edge": {"recipe": "mir-kiosk-kodi-edge", "non-uniform": True},
+#    },
     "mir-kiosk-neverputt": {
         "edge": {"recipe": "mir-kiosk-neverputt-edge"},
     },
@@ -58,10 +58,10 @@ SNAPS = {
         "edge": {"ppa": "dev", "recipe": "egmde-mir-edge"},
         "beta": {"ppa": "rc", "recipe": "egmde-mir-beta"},
     },
-    "egmde-confined-desktop": {
-        "edge": {"ppa": "dev", "recipe": "egmde-confined-desktop-edge"},
-        "beta": {"ppa": "rc", "recipe": "egmde-confined-desktop-beta"},
-    },
+#    "egmde-confined-desktop": {
+#        "edge": {"ppa": "dev", "recipe": "egmde-confined-desktop-edge"},
+#        "beta": {"ppa": "rc", "recipe": "egmde-confined-desktop-beta"},
+#    },
     "ubuntu-frame": {
         "edge": {"ppa": "dev", "recipe": "ubuntu-frame-20-edge"},
         "beta": {"ppa": "rc", "recipe": "ubuntu-frame-20-beta"},
