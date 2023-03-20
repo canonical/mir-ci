@@ -58,10 +58,6 @@ SNAPS = {
         "edge": {"ppa": "dev", "recipe": "egmde-mir-edge"},
         "beta": {"ppa": "rc", "recipe": "egmde-mir-beta"},
     },
-#    "egmde-confined-desktop": {
-#        "edge": {"ppa": "dev", "recipe": "egmde-confined-desktop-edge"},
-#        "beta": {"ppa": "rc", "recipe": "egmde-confined-desktop-beta"},
-#    },
     "ubuntu-frame": {
         "edge": {"ppa": "dev", "recipe": "ubuntu-frame-20-edge"},
         "beta": {"ppa": "rc", "recipe": "ubuntu-frame-20-beta"},
