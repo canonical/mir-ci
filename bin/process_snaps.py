@@ -33,6 +33,10 @@ SNAPS = {
     "confined-shell": {
         "edge": {"recipe": "confined-shell-edge"},
     },
+    "graphics-test-tools": {
+        "beta": {"recipe": "graphics-test-tools-20-beta"},
+        "22/beta": {"recipe": "graphics-test-tools-22-beta"},
+    },
     "mircade": {
         "edge": {"ppa": "dev", "recipe": "mircade-edge", "release": "focal"},
     },
