@@ -40,9 +40,9 @@ SNAPS = {
         "edge": {"ppa": "dev", "recipe": "mir-kiosk-edge"},
         "beta": {"ppa": "rc", "recipe": "mir-kiosk-beta"},
     },
-#    "mir-kiosk-kodi": {
-#        "edge": {"recipe": "mir-kiosk-kodi-edge", "non-uniform": True},
-#    },
+    "mir-kiosk-kodi": {
+        "edge": {"recipe": "mir-kiosk-kodi-edge", "non-uniform": True},
+    },
     "mir-kiosk-neverputt": {
         "edge": {"recipe": "mir-kiosk-neverputt-edge"},
     },
