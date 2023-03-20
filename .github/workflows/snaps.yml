@@ -1,6 +1,10 @@
 name: Snaps
 
 on:
+  push:
+    branches:
+    - staging
+    - trying
   workflow_dispatch:
   schedule:
   - cron: '0 * * * *'
