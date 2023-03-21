@@ -38,7 +38,7 @@ SNAPS = {
         "22/beta": {"recipe": "graphics-test-tools-22-beta"},
     },
     "mircade": {
-        "edge": {"ppa": "dev", "recipe": "mircade-edge", "release": "focal"},
+        "edge": {"recipe": "mircade-edge"},
     },
     "mir-kiosk": {
         "edge": {"ppa": "dev", "recipe": "mir-kiosk-edge", "release": "focal"},
