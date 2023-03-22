@@ -38,12 +38,12 @@ class DisplayServer:
         # don't get cleaned up properly.
         self.display_name = 'wayland-00' + str(os.getpid())
 
-    def program(self, command: Command) -> Program:
+    def program(self, command: Command, env: dict[str, str] = {}) -> Program:
         return Program(command, env={
             'DISPLAY': 'no',
             'QT_QPA_PLATFORM': 'wayland',
             'WAYLAND_DISPLAY': self.display_name,
-        })
+        } | env)
 
     def __enter__(self) -> 'DisplayServer':
         runtime_dir = os.environ['XDG_RUNTIME_DIR']
