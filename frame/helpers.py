@@ -5,6 +5,7 @@ complete_server_list = [
     'ubuntu-frame',
     'mir-kiosk',
     'egmde',
+    'confined-shell',
 ]
 
 def assert_all_are_valid_servers(iterable: Iterable[str]) -> None:
