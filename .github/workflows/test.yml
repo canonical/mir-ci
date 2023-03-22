@@ -16,9 +16,6 @@ jobs:
         server:
         - mir-kiosk
         - ubuntu-frame
-        include:
-        - server: egmde
-          classic: true
 
     runs-on: ubuntu-latest
 
@@ -38,7 +35,7 @@ jobs:
           qterminal \
           xvfb
 
-        sudo snap install ${{ matrix.server }} ${{ matrix.classic && '--classic' || '' }}
+        sudo snap install ${{ matrix.server }}
 
         SNAPS="
           mir-kiosk-kodi
