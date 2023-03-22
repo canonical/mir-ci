@@ -13,7 +13,7 @@ class TestAppsCanRun(TestCase):
         'mir-kiosk-neverputt',
         'mir-kiosk-scummvm',
         'mir-kiosk-kodi',
-        'gedit',
+        ('gedit', '-s'), # -s prevents multiple instances from using the same process/window/display
         'qterminal',
     ]))
     def test_app_can_run(self, server, app) -> None:
