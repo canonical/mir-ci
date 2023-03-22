@@ -1,5 +1,6 @@
 status = [
           "ProcessSnaps",
+          "RunTests (%)",
 ]
 block-labels = [ "no-merge" ]
 timeout-sec = 1800
