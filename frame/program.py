@@ -1,11 +1,13 @@
 import subprocess
 import os
+from pathlib import Path
 import signal
+import tempfile
 from typing import Union
 
 default_wait_timeout = default_term_timeout = 10
 
-Command = Union[str, list[str], tuple[str, ...]]
+Command = Union[str, list[str], tuple[str, ...], 'AppFixture']
 
 def format_output(name: str, output: str) -> str:
     '''
@@ -24,13 +26,46 @@ def format_output(name: str, output: str) -> str:
     footer = '─' * 78
     return '╭' + header + divider + body + '\n╰' + footer
 
+
+class AppFixture:
+    executable: Union[None, str] = None
+
+    def __init__(self, *args: str) -> None:
+        self.args = args
+
+    def __enter__(self) -> 'AppFixture':
+        self._tempdir = tempfile.TemporaryDirectory()
+        self.temppath = Path(self._tempdir.name)
+        return self
+
+    def __exit__(self, *args) -> None:
+        del self.temppath
+        self._tempdir.cleanup()
+        del self._tempdir
+
+    def _assert_cm(self) -> None:
+        assert hasattr(self, '_tempdir'), "AppFixture used without context management"
+
+    def command(self) -> tuple[str, ...]:
+        self._assert_cm()
+        assert self.executable is not None, "AppFixture.executable is unset"
+        return (self.executable,) + self.args
+
+    def env(self) -> dict[str, str]:
+        self._assert_cm()
+        return {}
+
+
 class Program:
     def __init__(self, command: Command, env: dict[str, str] = {}):
-        if isinstance(command, str):
-            self.command: tuple[str, ...] = (command,)
+        self.env = os.environ | env
+        if isinstance(command, AppFixture):
+            self.command: tuple[str, ...] = command.command()
+            self.env |= command.env()
+        elif isinstance(command, str):
+            self.command = (command,)
         else:
             self.command = tuple(command)
-        self.env = os.environ | env
         self.name = self.command[0]
         self.process = subprocess.Popen(
             self.command,
