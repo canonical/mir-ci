@@ -2,3 +2,4 @@ inotify
 parameterized
 mypy
 pytest
+asciinema
