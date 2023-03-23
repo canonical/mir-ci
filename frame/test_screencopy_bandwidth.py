@@ -44,3 +44,13 @@ class TestScreencopyBandwidth(TestCase):
     def test_compositor_alone(self, server) -> None:
         with DisplayServer(server) as s:
             time.sleep(long_wait_time)
+
+    @parameterized.expand(itertools.product(all_servers(), [
+        "qterminal",
+        ("gedit", "-s"),
+        "mir-kiosk-kodi",
+    ]))
+    def test_inactive_app(self, server, app) -> None:
+        with DisplayServer(server) as s:
+            with s.program(app):
+                time.sleep(long_wait_time)
