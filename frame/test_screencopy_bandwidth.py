@@ -39,3 +39,8 @@ class TestScreencopyBandwidth(TestCase):
                     p.wait(app[1])
                 else:
                     time.sleep(long_wait_time)
+
+    @parameterized.expand(all_servers())
+    def test_compositor_alone(self, server) -> None:
+        with DisplayServer(server) as s:
+            time.sleep(long_wait_time)
