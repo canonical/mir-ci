@@ -5,7 +5,9 @@ from helpers import all_servers
 from program import AppFixture
 import itertools
 import os
+import time
 
+long_wait_time = 10
 
 ASCIINEMA_CAST = f'{os.path.dirname(__file__)}/data/demo.cast'
 
@@ -28,8 +30,12 @@ class QTerminal(AppFixture):
 class TestScreencopyBandwidth(TestCase):
     @parameterized.expand(itertools.product(all_servers(), [
         (QTerminal('--execute', f'asciinema play {ASCIINEMA_CAST}'), 15),
+        (AppFixture("mir-kiosk-neverputt"), None),
     ]))
-    def test_app_can_run(self, server, app) -> None:
+    def test_active_app(self, server, app) -> None:
         with DisplayServer(server) as s, app[0] as a:
             with s.program(a) as p:
-                p.wait(app[1])
+                if app[1] is not None:
+                    p.wait(app[1])
+                else:
+                    time.sleep(long_wait_time)
