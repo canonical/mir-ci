@@ -20,6 +20,9 @@ jobs:
         server:
         - mir-kiosk
         - ubuntu-frame
+        include:
+        - server: confined-shell
+          channel: edge
 
     runs-on: ubuntu-latest
 
@@ -39,7 +42,9 @@ jobs:
           qterminal \
           xvfb
 
-        sudo snap install ${{ matrix.server }}
+        sudo snap install ${{ matrix.server }} ${{ matrix.channel && format('--channel {0}', matrix.channel) || '' }}
+        [ -x /snap/${{ matrix.server }}/current/bin/setup.sh ] && sudo /snap/${{ matrix.server }}/current/bin/setup.sh
+        sudo snap connect ${{ matrix.server }}:graphics-core22 mesa-core22 || true
 
         SNAPS="
           mir-kiosk-kodi
