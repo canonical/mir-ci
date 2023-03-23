@@ -7,7 +7,7 @@ from protocols.wayland.wl_registry import WlRegistryProxy
 from protocols.wayland.wl_output import WlOutputProxy
 from protocols.wayland.wl_buffer import WlBufferProxy
 from protocols.wayland.wl_shm import WlShmProxy
-from typing import Optional
+from typing import Optional, Any
 import os
 import stat
 import ctypes
@@ -135,18 +135,20 @@ class ScreencopyTracker:
             self.shm_data = None
         if self.dispatch_thread.is_alive():
             self.dispatch_thread.join()
+
+    def properties(self) -> dict[str, Any]:
         total_possible_pixels = max(
             self.frame_count * self.buffer_width * self.buffer_height,
             self.total_damage,
             1
         )
-        print(
-            f'{self.frame_count} frames\n'
-            f'{self.buffer_width}x{self.buffer_height} resolution\n'
-            f'{self.buffer_width * self.buffer_height / 1000000.0:0.2f}m pixels per frame\n'
-            f'{self.total_damage / 1000000.0:0.2f}m total pixels\n'
-            f'{self.total_damage * 100.0 / total_possible_pixels:0.1f}% of pixels per frame'
-        )
+        return {
+            'frame count': self.frame_count,
+            'resolution': (self.buffer_width, self.buffer_height),
+            'pixels per frame': self.buffer_width * self.buffer_height,
+            'total pixels damaged': self.total_damage,
+            'percent of pixels damaged per frame': self.total_damage * 100.0 / total_possible_pixels,
+        }
 
 if __name__ == '__main__':
     import time
