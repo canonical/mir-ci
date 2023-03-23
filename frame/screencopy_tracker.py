@@ -31,6 +31,8 @@ def shm_open() -> int:
     return open_result
 
 class ScreencopyTracker:
+    required_extensions = ('zwlr_screencopy_manager_v1',)
+
     def __init__(self, display_name: str) -> None:
         self.display_name = display_name
         self.display: Optional[pywayland.client.Display] = None
