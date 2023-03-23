@@ -31,7 +31,11 @@ class AppFixture:
     executable: Union[None, str] = None
 
     def __init__(self, *args: str) -> None:
-        self.args = args
+        if self.executable is None:
+            assert len(args) > 0, "No command to run"
+            self.args = args
+        else:
+            self.args = (self.executable,) + args
 
     def __enter__(self) -> 'AppFixture':
         self._tempdir = tempfile.TemporaryDirectory()
@@ -48,8 +52,7 @@ class AppFixture:
 
     def command(self) -> tuple[str, ...]:
         self._assert_cm()
-        assert self.executable is not None, "AppFixture.executable is unset"
-        return (self.executable,) + self.args
+        return self.args
 
     def env(self) -> dict[str, str]:
         self._assert_cm()
