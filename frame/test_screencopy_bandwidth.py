@@ -31,7 +31,7 @@ class TestScreencopyBandwidth:
         (AppFixture("mir-kiosk-neverputt"), None),
     ])
     def test_active_app(self, record_property, server, app) -> None:
-        with DisplayServer(server) as s, app[0] as a:
+        with DisplayServer(server, add_extensions=ScreencopyTracker.required_extensions) as s, app[0] as a:
             tracker = ScreencopyTracker(s.display_name)
             with tracker:
                 with s.program(a) as p:
@@ -44,7 +44,7 @@ class TestScreencopyBandwidth:
 
     @pytest.mark.parametrize('server', all_servers())
     def test_compositor_alone(self, record_property, server) -> None:
-        with DisplayServer(server) as s:
+        with DisplayServer(server, add_extensions=ScreencopyTracker.required_extensions) as s:
             tracker = ScreencopyTracker(s.display_name)
             with tracker:
                 time.sleep(long_wait_time)
@@ -58,7 +58,7 @@ class TestScreencopyBandwidth:
         "mir-kiosk-kodi",
     ])
     def test_inactive_app(self, record_property, server, app) -> None:
-        with DisplayServer(server) as s:
+        with DisplayServer(server, add_extensions=ScreencopyTracker.required_extensions) as s:
             tracker = ScreencopyTracker(s.display_name)
             with tracker:
                 with s.program(app):
