@@ -1,8 +1,7 @@
-from unittest import TestCase
 import subprocess
 import os
 
-class TestTest(TestCase):
+class TestTest:
     def test_project_typechecks(self) -> None:
         project_path = os.path.dirname(__file__)
         assert os.path.isfile(os.path.join(project_path, 'requirements.txt')), 'project path not detected correctly'
