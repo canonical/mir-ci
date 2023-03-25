@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 import signal
 import tempfile
-from typing import Union
+from typing import Optional, Union
 
 default_wait_timeout = default_term_timeout = 10
 
@@ -28,14 +28,16 @@ def format_output(name: str, output: str) -> str:
 
 
 class AppFixture:
-    executable: Union[None, str] = None
+    executable: Optional[str] = None
+    id: Optional[str] = None
 
-    def __init__(self, *args: str) -> None:
+    def __init__(self, *args: str, id: Optional[str]=None) -> None:
         if self.executable is None:
             assert len(args) > 0, "No command to run"
             self.args = args
         else:
             self.args = (self.executable,) + args
+        self.id = id
 
     def __enter__(self) -> 'AppFixture':
         self._tempdir = tempfile.TemporaryDirectory()
@@ -57,6 +59,14 @@ class AppFixture:
     def env(self) -> dict[str, str]:
         self._assert_cm()
         return {}
+
+
+def appids(val: Union[AppFixture, tuple[str, ...]]) -> Optional[str]:
+    if isinstance(val, AppFixture):
+        return val.id or val.args[0]
+    elif isinstance(val, tuple):
+        return val[0]
+    return None
 
 
 class Program:
