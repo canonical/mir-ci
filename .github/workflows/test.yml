@@ -74,7 +74,14 @@ jobs:
         ulimit -c unlimited
         echo "/tmp/corefile-%e-%p-%t" | sudo tee /proc/sys/kernel/core_pattern
 
-        xvfb-run python -m pytest --junitxml=junit.xml
+        xvfb-run python -m pytest --junitxml=junit-${{ matrix.server }}.xml
+
+    - name: Upload junit report
+      uses: actions/upload-artifact@v2
+      if: success() || failure()
+      with:
+        name: test-results
+        path: frame/junit-${{ matrix.server }}.xml
 
     - if: ${{ failure() }}
       name: Collect any core dumps
