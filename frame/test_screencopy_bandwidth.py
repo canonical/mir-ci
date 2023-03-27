@@ -32,21 +32,18 @@ class TestScreencopyBandwidth:
     ], ids=lambda x: appids(x[0]))
     def test_active_app(self, record_property, server, app) -> None:
         with DisplayServer(server, add_extensions=ScreencopyTracker.required_extensions) as s, app[0] as a:
-            tracker = ScreencopyTracker(s.display_name)
-            with tracker:
-                with s.program(a) as p:
-                    if app[1] is not None:
-                        p.wait(app[1])
-                    else:
-                        time.sleep(long_wait_time)
+            with ScreencopyTracker(s.display_name) as tracker, s.program(a) as p:
+                if app[1] is not None:
+                    p.wait(app[1])
+                else:
+                    time.sleep(long_wait_time)
             for name, val in tracker.properties().items():
                 record_property(name, val)
 
     @pytest.mark.parametrize('server', all_servers())
     def test_compositor_alone(self, record_property, server) -> None:
         with DisplayServer(server, add_extensions=ScreencopyTracker.required_extensions) as s:
-            tracker = ScreencopyTracker(s.display_name)
-            with tracker:
+            with ScreencopyTracker(s.display_name) as tracker:
                 time.sleep(long_wait_time)
             for name, val in tracker.properties().items():
                 record_property(name, val)
@@ -59,9 +56,7 @@ class TestScreencopyBandwidth:
     ], ids=appids)
     def test_inactive_app(self, record_property, server, app) -> None:
         with DisplayServer(server, add_extensions=ScreencopyTracker.required_extensions) as s:
-            tracker = ScreencopyTracker(s.display_name)
-            with tracker:
-                with s.program(app):
-                    time.sleep(long_wait_time)
+            with ScreencopyTracker(s.display_name) as tracker, s.program(app):
+                time.sleep(long_wait_time)
             for name, val in tracker.properties().items():
                 record_property(name, val)
