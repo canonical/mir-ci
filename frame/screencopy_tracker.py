@@ -1,12 +1,10 @@
-import pywayland
-import pywayland.client
 from protocols import WlOutput, WlBuffer, WlShm, ZwlrScreencopyManagerV1
 from protocols.wlr_screencopy_unstable_v1.zwlr_screencopy_manager_v1 import ZwlrScreencopyManagerV1Proxy
 from protocols.wlr_screencopy_unstable_v1.zwlr_screencopy_frame_v1 import ZwlrScreencopyFrameV1Proxy
-from protocols.wayland.wl_registry import WlRegistryProxy
 from protocols.wayland.wl_output import WlOutputProxy
 from protocols.wayland.wl_buffer import WlBufferProxy
 from protocols.wayland.wl_shm import WlShmProxy
+from wayland_client import WaylandClient
 from typing import Optional, Any
 import os
 import stat
@@ -30,20 +28,17 @@ def shm_open() -> int:
     assert unlink_result >= 0, f'Error {unlink_result} unlinking SHM file {name}: {os.strerror(ctypes.get_errno())}'
     return open_result
 
-class ScreencopyTracker:
+class ScreencopyTracker(WaylandClient):
     required_extensions = ('zwlr_screencopy_manager_v1',)
 
     def __init__(self, display_name: str) -> None:
-        self.display_name = display_name
-        self.display: Optional[pywayland.client.Display] = None
-        self.registry: Optional[WlRegistryProxy] = None
+        super().__init__(display_name)
         self.screencopy_manager: Optional[ZwlrScreencopyManagerV1Proxy] = None
         self.output: Optional[WlOutputProxy] = None
         self.shm: Optional[WlShmProxy] = None
         self.frame: Optional[ZwlrScreencopyFrameV1Proxy] = None
         self.buffer: Optional[WlBufferProxy] = None
         self.shm_data: Optional[mmap.mmap] = None
-        self.dispatch_thread = threading.Thread(name=f'{display_name}-dispatch', target=self._dispatch)
         self.frame_count = 0
         self.total_damage = 0
         self.buffer_width = 0
@@ -51,17 +46,21 @@ class ScreencopyTracker:
         self.buffer_size = 0
         self.pending_damage = 0
 
-    def _dispatch(self) -> None:
-        while self.display is not None:
-            self.display.dispatch(block=True)
-
-    def _registry_global(self, registry, id_num: int, iface_name: str, version: int) -> None:
+    def registry_global(self, registry, id_num: int, iface_name: str, version: int) -> None:
         if iface_name == ZwlrScreencopyManagerV1.name:
             self.screencopy_manager = registry.bind(id_num, ZwlrScreencopyManagerV1, version)
         elif iface_name == WlOutput.name:
             self.output = registry.bind(id_num, WlOutput, version)
         elif iface_name == WlShm.name:
             self.shm = shm = registry.bind(id_num, WlShm, version)
+
+    def connected(self) -> None:
+        self.copy_frame(True)
+
+    def disconnected(self) -> None:
+        if self.shm_data is not None:
+            self.shm_data.close()
+            self.shm_data = None
 
     def _frame_buffer(self, frame, format: int, width: int, height: int, stride: int) -> None:
         assert self.buffer_width == 0 or self.buffer_width == width, 'Buffer width changed'
@@ -111,33 +110,6 @@ class ScreencopyTracker:
         else:
             frame.copy_with_damage(self.buffer)
 
-    def __enter__(self) -> 'ScreencopyTracker':
-        try:
-            display = pywayland.client.Display(self.display_name)
-            display.connect()
-            self.display = display
-            self.registry = registry = self.display.get_registry()
-            registry.dispatcher['global'] = self._registry_global
-            self.display.roundtrip()
-            self.copy_frame(True)
-            self.dispatch_thread.start()
-            return self
-        except:
-            self.__exit__()
-            raise
-
-    def __exit__(self, *args) -> None:
-        if self.display is not None:
-            display = self.display
-            self.display = None
-            display.roundtrip()
-            display.disconnect()
-        if self.shm_data is not None:
-            self.shm_data.close()
-            self.shm_data = None
-        if self.dispatch_thread.is_alive():
-            self.dispatch_thread.join()
-
     def properties(self) -> dict[str, Any]:
         total_possible_pixels = max(
             self.frame_count * self.buffer_width * self.buffer_height,
@@ -154,5 +126,8 @@ class ScreencopyTracker:
 
 if __name__ == '__main__':
     import time
-    with ScreencopyTracker(os.environ['WAYLAND_DISPLAY']) as s:
+    import pprint
+    tracker = ScreencopyTracker(os.environ['WAYLAND_DISPLAY'])
+    with tracker:
         time.sleep(5)
+    pprint.pprint(tracker.properties())
