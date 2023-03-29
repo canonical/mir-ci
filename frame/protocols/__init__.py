@@ -3,10 +3,10 @@ import pywayland
 import pywayland.scanner
 
 def generate_protocol(name, imports: dict[str, str]) -> dict[str, str]:
-    input_path = Path(__file__).parent.parent / 'data' / f'{name}.xml'
+    input_path = Path(__file__).parents[1] / 'data' / f'{name}.xml'
     proto = pywayland.scanner.Protocol.parse_file(str(input_path))
     proto_imports = {iface.name: proto.name for iface in proto.interface}
-    output_dir = Path(__file__).parent.parent / 'protocols'
+    output_dir = Path(__file__).parents[1] / 'protocols'
     proto.output(str(output_dir), proto_imports | imports)
     return proto_imports
 
