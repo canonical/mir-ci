@@ -84,10 +84,9 @@ class ScreencopyTracker(WaylandClient):
 
     def _frame_ready(self, frame, tv_sec_hi, tv_sec_lo, tv_nsec) -> None:
         self.frame_count += 1
-        if self.pending_damage:
-            self.total_damage += self.pending_damage
-        else:
-            self.total_damage += self.buffer_width * self.buffer_height
+        self.total_damage += (self.pending_damage
+            if self.pending_damage
+            else (self.buffer_width * self.buffer_height))
         self.pending_damage = 0
         assert self.frame is not None, 'Frame is None'
         if self.display is not None:
