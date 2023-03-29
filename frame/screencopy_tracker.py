@@ -102,7 +102,7 @@ class ScreencopyTracker(WaylandClient):
         frame.dispatcher['buffer'] = self._frame_buffer
         frame.dispatcher['damage'] = self._frame_damage
         frame.dispatcher['ready'] = self._frame_ready
-        self.display.roundtrip()
+        self.roundtrip()
         assert self.buffer is not None, 'No buffer info given'
         if is_initial:
             frame.copy(self.buffer)
