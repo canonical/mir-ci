@@ -3,6 +3,7 @@ import pywayland.client
 from protocols.wayland.wl_registry import WlRegistryProxy
 from typing import Optional
 from abc import abstractmethod
+import time
 import asyncio
 
 class WaylandClient:
@@ -17,6 +18,9 @@ class WaylandClient:
         except Exception as e:
             asyncio.get_event_loop().remove_writer(self.display.get_fd())
             raise
+
+    def timestamp(self) -> int:
+        return int(time.monotonic() * 1000)
 
     @abstractmethod
     def registry_global(self, registry, id_num: int, iface_name: str, version: int) -> None:
