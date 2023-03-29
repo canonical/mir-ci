@@ -1,13 +1,13 @@
-import os
+from pathlib import Path
 import pywayland
 import pywayland.scanner
 
 def generate_protocol(name, imports: dict[str, str]) -> dict[str, str]:
-    input_path = os.path.join(os.path.dirname(__file__), '../data', name + '.xml')
-    proto = pywayland.scanner.Protocol.parse_file(input_path)
+    input_path = Path(__file__).parent.parent / 'data' / f'{name}.xml'
+    proto = pywayland.scanner.Protocol.parse_file(str(input_path))
     proto_imports = {iface.name: proto.name for iface in proto.interface}
-    output_dir = os.path.join(os.path.dirname(__file__), '../protocols')
-    proto.output(output_dir, proto_imports | imports)
+    output_dir = Path(__file__).parent.parent / 'protocols'
+    proto.output(str(output_dir), proto_imports | imports)
     return proto_imports
 
 core_imports = generate_protocol('wayland', {})
