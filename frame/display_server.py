@@ -31,8 +31,9 @@ def wait_for_wayland_display(runtime_dir: str, name: str) -> None:
     raise RuntimeError('Wayland display ' + name + ' did not appear')
 
 class DisplayServer:
-    def __init__(self, command: Command) -> None:
+    def __init__(self, command: Command, add_extensions: tuple[str, ...] = ()) -> None:
         self.command = command
+        self.add_extensions = add_extensions
         # Snaps require the display to be in the form "waland-<number>". The 00 prefix lets us
         # easily identify displays created by this test suit and remove them in bulk if a bunch
         # don't get cleaned up properly.
@@ -48,7 +49,10 @@ class DisplayServer:
     def __enter__(self) -> 'DisplayServer':
         runtime_dir = os.environ['XDG_RUNTIME_DIR']
         clear_wayland_display(runtime_dir, self.display_name)
-        self.server = Program(self.command, env={'WAYLAND_DISPLAY': self.display_name})
+        self.server = Program(self.command, env={
+            'WAYLAND_DISPLAY': self.display_name,
+            'MIR_SERVER_ADD_WAYLAND_EXTENSIONS': ','.join(self.add_extensions),
+        })
         try:
             wait_for_wayland_display(runtime_dir, self.display_name)
         except:
