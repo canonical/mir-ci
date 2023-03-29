@@ -1,4 +1,4 @@
-from protocols import WlOutput, WlBuffer, WlShm, ZwlrScreencopyManagerV1
+from protocols import WlOutput, WlShm, ZwlrScreencopyManagerV1
 from protocols.wlr_screencopy_unstable_v1.zwlr_screencopy_manager_v1 import ZwlrScreencopyManagerV1Proxy
 from protocols.wlr_screencopy_unstable_v1.zwlr_screencopy_frame_v1 import ZwlrScreencopyFrameV1Proxy
 from protocols.wayland.wl_output import WlOutputProxy
@@ -10,7 +10,6 @@ import os
 import stat
 import ctypes
 import mmap
-import threading
 
 libc = ctypes.cdll.LoadLibrary(None) # type: ignore
 shm_counter = 0
@@ -52,7 +51,7 @@ class ScreencopyTracker(WaylandClient):
         elif iface_name == WlOutput.name:
             self.output = registry.bind(id_num, WlOutput, version)
         elif iface_name == WlShm.name:
-            self.shm = shm = registry.bind(id_num, WlShm, version)
+            self.shm = registry.bind(id_num, WlShm, version)
 
     def connected(self) -> None:
         self.copy_frame(True)
@@ -85,9 +84,10 @@ class ScreencopyTracker(WaylandClient):
 
     def _frame_ready(self, frame, tv_sec_hi, tv_sec_lo, tv_nsec) -> None:
         self.frame_count += 1
-        self.total_damage += (self.pending_damage
-            if self.pending_damage
-            else (self.buffer_width * self.buffer_height))
+        if self.pending_damage:
+            self.total_damage += self.pending_damage
+        else:
+            self.total_damage += self.buffer_width * self.buffer_height
         self.pending_damage = 0
         assert self.frame is not None, 'Frame is None'
         if self.display is not None:
@@ -114,7 +114,7 @@ class ScreencopyTracker(WaylandClient):
         total_possible_pixels = max(
             self.frame_count * self.buffer_width * self.buffer_height,
             self.total_damage,
-            1
+            1 # prevent divide by zero
         )
         return {
             'frame count': self.frame_count,
