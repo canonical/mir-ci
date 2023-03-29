@@ -90,9 +90,9 @@ class ScreencopyTracker(WaylandClient):
             else (self.buffer_width * self.buffer_height))
         self.pending_damage = 0
         assert self.frame is not None, 'Frame is None'
-        assert self.display is not None, 'No display'
-        self.copy_frame(False)
-        self.display.flush()
+        if self.display is not None:
+            self.copy_frame(False)
+            self.display.flush()
 
     def copy_frame(self, is_initial: bool) -> None:
         assert self.screencopy_manager is not None, f'{ZwlrScreencopyManagerV1.name} not supported'
