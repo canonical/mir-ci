@@ -16,6 +16,18 @@ class WaylandClient:
         while self.display is not None:
             self.display.dispatch(block=True)
 
+    def roundtrip(self) -> None:
+        # Use this instead of display.roundtrip()
+        # Otherwise there will be multiple dispatchers, which can deadlock
+        assert self.display is not None, 'No display'
+        callback = self.display.sync()
+        event = threading.Event()
+        def done(callback, callback_data):
+            event.set()
+        callback.dispatcher['done'] = done
+        self.display.flush()
+        assert event.wait(10), 'Roundtrip failed'
+
     @abstractmethod
     def registry_global(self, registry, id_num: int, iface_name: str, version: int) -> None:
         pass
@@ -30,14 +42,17 @@ class WaylandClient:
 
     def __enter__(self) -> 'WaylandClient':
         try:
-            display = pywayland.client.Display(self.display_name)
-            display.connect()
-            self.display = display
+            self.display = pywayland.client.Display(self.display_name)
+            self.display.connect()
+            def roundtrip():
+                raise NotImplementedError(
+                    'Use WaylandClient.roundtrip() instead of Display.roundtrip() to avoid deadlock')
+            self.display.roundtrip = roundtrip # type: ignore
+            self._dispatch_thread.start()
             self._registry = registry = self.display.get_registry()
             registry.dispatcher['global'] = self.registry_global
-            self.display.roundtrip()
+            self.roundtrip()
             self.connected()
-            self._dispatch_thread.start()
             return self
         except:
             self.__exit__()
@@ -46,8 +61,14 @@ class WaylandClient:
     def __exit__(self, *args) -> None:
         if self.display is not None:
             display = self.display
-            self.display = None
-            display.roundtrip()
+            callback = self.display.sync()
+            event = threading.Event()
+            def done(callback, callback_data):
+                self.display = None
+                event.set()
+            callback.dispatcher['done'] = done
+            display.flush()
+            assert event.wait(10), 'Shutdown roundtrip failed'
             display.disconnect()
         if self._dispatch_thread.is_alive():
             self._dispatch_thread.join()
