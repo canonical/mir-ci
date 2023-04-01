@@ -56,7 +56,7 @@ class DisplayServer:
         clear_wayland_display(runtime_dir, self.display_name)
         self.server = await Program(self.command, env={
             'WAYLAND_DISPLAY': self.display_name,
-            'MIR_SERVER_ADD_WAYLAND_EXTENSIONS': ','.join(self.add_extensions),
+            'MIR_SERVER_ADD_WAYLAND_EXTENSIONS': ':'.join(self.add_extensions),
         }).__aenter__()
         try:
             wait_for_wayland_display(runtime_dir, self.display_name)
