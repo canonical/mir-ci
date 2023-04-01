@@ -1,4 +1,5 @@
 from display_server import DisplayServer
+from pathlib import Path
 import pytest
 import os
 import re
@@ -7,6 +8,7 @@ import apps
 
 try:
     from screencopy_tracker import ScreencopyTracker
+    from virtual_pointer import VirtualPointer, Button
 except ModuleNotFoundError as e:
     pass
 
@@ -61,3 +63,24 @@ class TestScreencopyBandwidth:
         async with server as s, tracker, s.program(app):
             await asyncio.sleep(long_wait_time)
         _record_properties(record_property, server, tracker, 2)
+
+    async def test_app_dragged_around(self, record_property, server) -> None:
+        async def pause():
+            await asyncio.sleep(0.2)
+        extensions = ScreencopyTracker.required_extensions + VirtualPointer.required_extensions
+        app_path = Path(__file__).parent / 'clients' / 'maximizing_gtk_app.py'
+        server = DisplayServer(server, add_extensions=extensions)
+        app = server.program(('python3', str(app_path)))
+        tracker = ScreencopyTracker(server.display_name)
+        pointer = VirtualPointer(server.display_name)
+        async with server, tracker, app, pointer:
+            await asyncio.sleep(1)
+            pointer.move_to_proportional(0.5, 0.03)
+            await pause()
+            pointer.button(Button.LEFT, True)
+            await pause()
+            for y in range(4):
+                for x in range(4):
+                    pointer.move_to_proportional((x + 0.5) / 4, (y + 0.5) / 4)
+                    await pause()
+        _record_properties(record_property, server, tracker, 16)
