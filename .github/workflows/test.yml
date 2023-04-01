@@ -52,6 +52,7 @@ jobs:
       working-directory: frame
       run: |
         sudo apt-get --yes --no-install-recommends install \
+          libgtk-4-dev \
           xvfb
 
         pip install -r requirements.txt
