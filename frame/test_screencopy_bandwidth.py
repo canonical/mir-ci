@@ -23,6 +23,7 @@ class QTerminal(AppFixture):
             'XDG_CONFIG_HOME': str(self.temppath)
         }
 
+@pytest.mark.performance
 class TestScreencopyBandwidth:
     @pytest.mark.parametrize('app', [
         (QTerminal('--execute', f'asciinema play {ASCIINEMA_CAST}', id='asciinema'), 15),

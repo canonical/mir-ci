@@ -5,6 +5,7 @@ import time
 short_wait_time = 3
 
 class TestAppsCanRun:
+    @pytest.mark.smoke
     @pytest.mark.parametrize('app', [
         'wpe-webkit-mir-kiosk.cog',
         'mir-kiosk-neverputt',

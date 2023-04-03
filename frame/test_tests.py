@@ -1,7 +1,10 @@
 import subprocess
 import os
 
+import pytest
+
 class TestTest:
+    @pytest.mark.self
     def test_project_typechecks(self) -> None:
         project_path = os.path.dirname(__file__)
         assert os.path.isfile(os.path.join(project_path, 'requirements.txt')), 'project path not detected correctly'
