@@ -26,7 +26,7 @@ class QTerminal(AppFixture):
 @pytest.mark.performance
 class TestScreencopyBandwidth:
     @pytest.mark.parametrize('app', [
-        (QTerminal('--execute', f'asciinema play {ASCIINEMA_CAST}', id='asciinema'), 15),
+        (QTerminal('--execute', f'python3 -m asciinema play {ASCIINEMA_CAST}', id='asciinema'), 15),
         (AppFixture("mir-kiosk-neverputt"), None),
     ], ids=lambda x: appids(x[0]))
     def test_active_app(self, record_property, server, app) -> None:
