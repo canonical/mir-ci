@@ -1,6 +1,5 @@
 from display_server import DisplayServer
 from screencopy_tracker import ScreencopyTracker
-from helpers import all_servers
 from program import AppFixture, appids
 import pytest
 import os
@@ -25,7 +24,6 @@ class QTerminal(AppFixture):
         }
 
 class TestScreencopyBandwidth:
-    @pytest.mark.parametrize('server', all_servers())
     @pytest.mark.parametrize('app', [
         (QTerminal('--execute', f'asciinema play {ASCIINEMA_CAST}', id='asciinema'), 15),
         (AppFixture("mir-kiosk-neverputt"), None),
@@ -41,7 +39,6 @@ class TestScreencopyBandwidth:
             for name, val in tracker.properties().items():
                 record_property(name, val)
 
-    @pytest.mark.parametrize('server', all_servers())
     def test_compositor_alone(self, record_property, server) -> None:
         with DisplayServer(server, add_extensions=ScreencopyTracker.required_extensions) as s:
             tracker = ScreencopyTracker(s.display_name)
@@ -50,7 +47,6 @@ class TestScreencopyBandwidth:
             for name, val in tracker.properties().items():
                 record_property(name, val)
 
-    @pytest.mark.parametrize('server', all_servers())
     @pytest.mark.parametrize('app', [
         "qterminal",
         ("gedit", "-s"),
