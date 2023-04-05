@@ -108,6 +108,7 @@ class ScreencopyTracker(WaylandClient):
             frame.copy(self.buffer)
         else:
             frame.copy_with_damage(self.buffer)
+        self.display.flush()
 
     def properties(self) -> dict[str, Any]:
         total_possible_pixels = max(
