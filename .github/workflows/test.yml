@@ -66,15 +66,13 @@ jobs:
         pip install -r frame/requirements.txt
 
     - name: Run the tests
-      env:
-        MIR_TEST_SERVER: ${{ matrix.server }}
       working-directory: frame
       run: |
         # set up coredumps
         ulimit -c unlimited
         echo "/tmp/corefile-%e-%p-%t" | sudo tee /proc/sys/kernel/core_pattern
 
-        xvfb-run python -m pytest --junitxml=junit-${{ matrix.server }}.xml
+        xvfb-run python -m pytest -k ${{ matrix.server }} --junitxml=junit-${{ matrix.server }}.xml
 
     - name: Upload junit report
       uses: actions/upload-artifact@v2

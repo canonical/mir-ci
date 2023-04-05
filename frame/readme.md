@@ -6,11 +6,11 @@
 To run inside of a virtual X11 server:
 `xvfb-run -a pytest`
 
-To only run tests for a specific server, set `MIR_TEST_SERVER`:
-`MIR_TEST_SERVER=ubuntu-frame xvfb-run -a pytest`
+To only run tests for a specific server, use `-k EXPRESSION`:
+`xvfb-run -a pytest -k ubuntu-frame`
 
-To run tests for some but not all servers a list can be specified:
-`MIR_TEST_SERVER=ubuntu-frame,mir-kiosk xvfb-run -a pytest`
+To run tests for some but not all servers, you can use logical expressions:
+`xvfb-run -a pytest -k 'ubuntu-frame or mir-kiosk'`
 
 To record test properties:
 `xvfb-run -a pytest --junitxml=junit.xml`
