@@ -10,6 +10,14 @@ long_wait_time = 10
 
 ASCIINEMA_CAST = f'{os.path.dirname(__file__)}/data/demo.cast'
 
+def record_screencopy_properties(record_property, tracker: ScreencopyTracker, min_frames: int):
+    for name, val in tracker.properties().items():
+        record_property(name, val)
+    frames = tracker.properties()['frame count']
+    assert frames >= min_frames, (
+        f'expected to capture at least {min_frames} frames, but only got {frames}'
+    )
+
 @pytest.mark.performance
 class TestScreencopyBandwidth:
     @pytest.mark.parametrize('app', [
@@ -24,16 +32,14 @@ class TestScreencopyBandwidth:
                     p.wait(app[1])
                 else:
                     await asyncio.sleep(long_wait_time)
-            for name, val in tracker.properties().items():
-                record_property(name, val)
+            record_screencopy_properties(record_property, tracker, 10)
 
     async def test_compositor_alone(self, record_property, server) -> None:
         with DisplayServer(server, add_extensions=ScreencopyTracker.required_extensions) as s:
             tracker = ScreencopyTracker(s.display_name)
             with tracker:
                 await asyncio.sleep(long_wait_time)
-            for name, val in tracker.properties().items():
-                record_property(name, val)
+            record_screencopy_properties(record_property, tracker, 1)
 
     @pytest.mark.parametrize('app', [
         apps.qterminal(),
@@ -45,5 +51,4 @@ class TestScreencopyBandwidth:
             tracker = ScreencopyTracker(s.display_name)
             with tracker, s.program(app):
                 await asyncio.sleep(long_wait_time)
-            for name, val in tracker.properties().items():
-                record_property(name, val)
+            record_screencopy_properties(record_property, tracker, 2)
