@@ -129,5 +129,8 @@ if __name__ == '__main__':
     import pprint
     tracker = ScreencopyTracker(os.environ['WAYLAND_DISPLAY'])
     with tracker:
-        time.sleep(5)
+        try:
+            time.sleep(60)
+        except KeyboardInterrupt:
+            pass
     pprint.pprint(tracker.properties())
