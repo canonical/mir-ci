@@ -1,12 +1,10 @@
 from display_server import DisplayServer
-from helpers import all_servers
 import pytest
 import time
 
 short_wait_time = 3
 
 class TestAppsCanRun:
-    @pytest.mark.parametrize('server', all_servers())
     @pytest.mark.parametrize('app', [
         'wpe-webkit-mir-kiosk.cog',
         'mir-kiosk-neverputt',
