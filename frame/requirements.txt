@@ -1,5 +1,4 @@
 inotify
-mypy
 pytest
 asciinema
 pywayland
