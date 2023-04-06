@@ -25,6 +25,7 @@ class QTerminal(AppFixture):
 
 @pytest.mark.performance
 class TestScreencopyBandwidth:
+    @pytest.mark.usefixtures('deps_skip')
     @pytest.mark.parametrize('app', [
         (QTerminal('--execute', f'python3 -m asciinema play {ASCIINEMA_CAST}', id='asciinema'), 15),
         (AppFixture("mir-kiosk-neverputt"), None),
