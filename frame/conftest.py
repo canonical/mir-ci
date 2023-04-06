@@ -4,11 +4,17 @@ import subprocess
 
 from typing import Optional
 
+import argparse
 import pytest
 
 RELEASE_PPA = 'mir-team/release'
 RELEASE_PPA_ENTRY = f'https://ppa.launchpadcontent.net/{RELEASE_PPA}/ubuntu {platform.freedesktop_os_release()["VERSION_CODENAME"]}/main'
 APT_INSTALL = ('sudo', 'DEBIAN_FRONTEND=noninteractive', 'apt-get', 'install', '--yes')
+
+def pytest_addoption(parser):
+    parser.addoption(
+        "--install", help="Whether the fixtures should manage their dependencies", action=argparse.BooleanOptionalAction
+    )
 
 @pytest.fixture(scope='session')
 def ppa() -> None:
@@ -16,14 +22,14 @@ def ppa() -> None:
         subprocess.check_call((*APT_INSTALL, 'software-properties-common'))
         subprocess.check_call(('sudo', 'add-apt-repository', '--yes', f'ppa:{RELEASE_PPA}'))
 
-@pytest.fixture(scope='module', params=(
+@pytest.fixture(scope='session', params=(
     pytest.param('ubuntu-frame', id='ubuntu_frame'),
     pytest.param('mir-kiosk', id='mir_kiosk'),
     pytest.param({'snap': 'confined-shell', 'channel': 'edge'}, id='confined_shell'),
     pytest.param({'cmd': 'mir_demo_server', 'debs': ('mir-test-tools', 'mir-graphics-drivers-desktop')}, id='mir_demo_server'),
 ))
 def server(request: pytest.FixtureRequest) -> str:
-    install: bool = getattr(request.module, 'install', False)
+    install: bool = request.config.getoption("--install", False)
     if isinstance(request.param, dict):
         cmd: str = request.param.get('cmd', request.param.get('snap'))
         debs: Optional[tuple[str]] = request.param.get('debs')
