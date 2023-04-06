@@ -14,8 +14,11 @@ See more:
 https://docs.pytest.org/en/latest/how-to/usage.html#specifying-which-tests-to-run
 
 ## To install dependencies
-`pytest install_deps.py`
-`pytest -k confined_shell install_deps.py`
+Just add `--install` to your test invocation. There's a dummy `deps.py` test module
+if you don't want to also run the tests:
+`pytest --install deps.py`
+`pytest -k confined_shell --install deps.py`
+`pytest -k confined_shell --install`
 
 ## To run
 `pytest`
