@@ -1,7 +1,9 @@
 import platform
 import shutil
 import subprocess
+import types
 
+import pip
 from typing import Optional
 
 import argparse
@@ -53,3 +55,14 @@ def server(request: pytest.FixtureRequest) -> str:
                 if shutil.which(f'/snap/{snap}/current/bin/setup.sh'):
                     subprocess.check_call(('sudo', f'/snap/{snap}/current/bin/setup.sh'))
     return cmd
+
+@pytest.fixture(scope='session')
+def mypy(request) -> types.ModuleType:
+    try:
+        return __import__('mypy.api')
+    except ModuleNotFoundError:
+        if request.config.getoption("--install", False):
+            pip.main(['install', 'mypy'])
+            return __import__('mypy.api')
+        else:
+            pytest.skip('mypy not found')
