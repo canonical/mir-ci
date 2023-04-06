@@ -69,7 +69,7 @@ jobs:
         done
 
         pip install -r requirements.txt
-        python -m pytest -v ${{ steps.pytest-args.outputs.args }} --install deps.py
+        python -m pytest -v ${{ steps.pytest-args.outputs.args }} --deps
 
     - name: Run the tests
       working-directory: frame

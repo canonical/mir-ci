@@ -14,15 +14,14 @@ See more:
 https://docs.pytest.org/en/latest/how-to/usage.html#specifying-which-tests-to-run
 
 ## To install dependencies
-Just add `--install` to your test invocation. There's a dummy `deps.py` test module
-if you don't want to also run the tests:
-`pytest --install deps.py`
-`pytest -k confined_shell --install deps.py`
-`pytest -k confined_shell --install`
+Just add `--deps` to your test invocation. It will install all the dependencies
+for the selected tests, but skip them.
+`pytest --deps`
+`pytest -k confined_shell --deps`
 
 ## To run
 `pytest`
-`pytest -k mir_kiosk install_deps.py`
+`pytest -k mir_kiosk`
 
 To run inside of a virtual X11 server:
 `xvfb-run -a pytest`

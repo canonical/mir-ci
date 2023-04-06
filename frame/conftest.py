@@ -3,10 +3,8 @@ import shutil
 import subprocess
 import types
 
-import pip
 from typing import Optional
 
-import argparse
 import pytest
 
 RELEASE_PPA = 'mir-team/release'
@@ -15,7 +13,7 @@ APT_INSTALL = ('sudo', 'DEBIAN_FRONTEND=noninteractive', 'apt-get', 'install', '
 
 def pytest_addoption(parser):
     parser.addoption(
-        "--install", help="Whether the fixtures should manage their dependencies", action=argparse.BooleanOptionalAction
+        '--deps', help='Only install the test dependencies', action='store_true'
     )
 
 @pytest.fixture(scope='session')
@@ -31,7 +29,6 @@ def ppa() -> None:
     pytest.param({'cmd': 'mir_demo_server', 'debs': ('mir-test-tools', 'mir-graphics-drivers-desktop')}, id='mir_demo_server'),
 ))
 def server(request: pytest.FixtureRequest) -> str:
-    install: bool = request.config.getoption("--install", False)
     if isinstance(request.param, dict):
         cmd: str = request.param.get('cmd', request.param.get('snap'))
         debs: Optional[tuple[str]] = request.param.get('debs')
@@ -43,10 +40,8 @@ def server(request: pytest.FixtureRequest) -> str:
         snap = request.param
         channel = 'latest/stable'
 
-    if shutil.which(cmd) is None:
-        if not install:
-            pytest.skip(f'server executable not found: {cmd}')
-        else:
+    if request.config.getoption("--deps", False):
+        if shutil.which(cmd) is None:
             if debs is not None:
                 request.getfixturevalue('ppa')
                 subprocess.check_call((*APT_INSTALL, *debs))
@@ -54,15 +49,28 @@ def server(request: pytest.FixtureRequest) -> str:
                 subprocess.check_call(('sudo', 'snap', 'install', snap, '--channel', channel))
                 if shutil.which(f'/snap/{snap}/current/bin/setup.sh'):
                     subprocess.check_call(('sudo', f'/snap/{snap}/current/bin/setup.sh'))
+        pytest.skip("dependency installed")
+
+    if shutil.which(cmd) is None:
+        pytest.skip(f'server executable not found: {cmd}')
+
     return cmd
 
 @pytest.fixture(scope='session')
 def mypy(request) -> types.ModuleType:
+    deps: bool = request.config.getoption("--deps", False)
     try:
-        return __import__('mypy.api')
+        mypy = __import__('mypy.api')
     except ModuleNotFoundError:
-        if request.config.getoption("--install", False):
-            pip.main(['install', 'mypy'])
-            return __import__('mypy.api')
-        else:
-            pytest.skip('mypy not found')
+        if deps:
+            subprocess.check_call(('pip', 'install', 'mypy'))
+            pytest.skip("dependency installed")
+    else:
+        if deps:
+            pytest.skip("dependency installed")
+    return mypy
+
+@pytest.fixture(scope='session')
+def deps_skip(request) -> None:
+    if request.config.getoption('--deps', False):
+        pytest.skip('dependency-only run')
