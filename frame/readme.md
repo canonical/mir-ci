@@ -1,16 +1,28 @@
 # Ubuntu Frame Integration Tests
 
+## To select a subset of tests
+This applies to any use of `pytest` below. To select a subset of tests,
+use `-k EXPRESSION`, replacing hyphens with underscores:
+
+`-k ubuntu_frame`
+
+You can use logical expressions:
+
+`-k ubuntu_frame or mir_demo_server`
+
+See more:
+https://docs.pytest.org/en/latest/how-to/usage.html#specifying-which-tests-to-run
+
+## To install dependencies
+`pytest install_deps.py`
+`pytest -k confined_shell install_deps.py`
+
 ## To run
 `pytest`
+`pytest -k mir_kiosk install_deps.py`
 
 To run inside of a virtual X11 server:
 `xvfb-run -a pytest`
-
-To only run tests for a specific server, use `-k EXPRESSION`:
-`xvfb-run -a pytest -k ubuntu-frame`
-
-To run tests for some but not all servers, you can use logical expressions:
-`xvfb-run -a pytest -k 'ubuntu-frame or mir-kiosk'`
 
 To record test properties:
 `xvfb-run -a pytest --junitxml=junit.xml`
