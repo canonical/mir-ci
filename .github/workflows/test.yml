@@ -18,11 +18,10 @@ jobs:
       fail-fast: false
       matrix:
         server:
-        - mir-kiosk
-        - ubuntu-frame
-        include:
-        - server: confined-shell
-          channel: edge
+        - mir_kiosk
+        - ubuntu_frame
+        - confined_shell
+        - mir_demo_server
 
     runs-on: ubuntu-latest
 
@@ -34,6 +33,7 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: Set up dependencies
+      working-directory: frame
       run: |
         sudo apt-get --yes --no-install-recommends install \
           gedit \
@@ -41,10 +41,6 @@ jobs:
           qtwayland5 \
           qterminal \
           xvfb
-
-        sudo snap install ${{ matrix.server }} ${{ matrix.channel && format('--channel {0}', matrix.channel) || '' }}
-        [ -x /snap/${{ matrix.server }}/current/bin/setup.sh ] && sudo /snap/${{ matrix.server }}/current/bin/setup.sh
-        sudo snap connect ${{ matrix.server }}:graphics-core22 mesa-core22 || true
 
         SNAPS="
           mir-kiosk-kodi
@@ -58,12 +54,11 @@ jobs:
         for snap in $SNAPS; do
           if [ -x /snap/$snap/current/bin/setup.sh ]; then
             /snap/$snap/current/bin/setup.sh
-          else
-            sudo snap connect $snap:wayland ${{ matrix.server }}
           fi
         done
 
-        pip install -r frame/requirements.txt
+        pip install -r requirements.txt
+        python -m pytest -vk ${{ matrix.server }} install_deps.py
 
     - name: Run the tests
       working-directory: frame
