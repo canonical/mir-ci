@@ -13,7 +13,7 @@ ASCIINEMA_CAST = f'{os.path.dirname(__file__)}/data/demo.cast'
 @pytest.mark.performance
 class TestScreencopyBandwidth:
     @pytest.mark.parametrize('app', [
-        apps.qterminal('--execute', f'python3 -m asciinema play {ASCIINEMA_CAST}', id='asciinema', extra=15),
+        apps.qterminal('--execute', f'python3 -m asciinema play {ASCIINEMA_CAST}', pip_pkgs=('asciinema',), id='asciinema', extra=15),
         apps.snap('mir-kiosk-neverputt', extra=False)
     ])
     def test_active_app(self, record_property, server, app) -> None:
