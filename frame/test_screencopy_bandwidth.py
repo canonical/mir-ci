@@ -5,6 +5,8 @@ import pytest
 import os
 import time
 
+import apps
+
 long_wait_time = 10
 
 ASCIINEMA_CAST = f'{os.path.dirname(__file__)}/data/demo.cast'
@@ -25,7 +27,6 @@ class QTerminal(AppFixture):
 
 @pytest.mark.performance
 class TestScreencopyBandwidth:
-    @pytest.mark.usefixtures('deps_skip')
     @pytest.mark.parametrize('app', [
         (QTerminal('--execute', f'python3 -m asciinema play {ASCIINEMA_CAST}', id='asciinema'), 15),
         (AppFixture("mir-kiosk-neverputt"), None),
@@ -50,10 +51,10 @@ class TestScreencopyBandwidth:
                 record_property(name, val)
 
     @pytest.mark.parametrize('app', [
-        "qterminal",
-        ("gedit", "-s"),
-        "mir-kiosk-kodi",
-    ], ids=appids)
+        apps.qterminal(),
+        apps.gedit(),
+        apps.snap('mir-kiosk-kodi'),
+    ])
     def test_inactive_app(self, record_property, server, app) -> None:
         with DisplayServer(server, add_extensions=ScreencopyTracker.required_extensions) as s:
             tracker = ScreencopyTracker(s.display_name)
