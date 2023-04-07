@@ -3,30 +3,16 @@ import pywayland.client
 from protocols.wayland.wl_registry import WlRegistryProxy
 from typing import Optional
 from abc import abstractmethod
-import threading
+import asyncio
 
 class WaylandClient:
     def __init__(self, display_name: str) -> None:
-        self.display_name = display_name
-        self.display: Optional[pywayland.client.Display] = None
+        self.display = pywayland.client.Display(display_name)
         self._registry: Optional[WlRegistryProxy] = None
-        self._dispatch_thread = threading.Thread(name=f'{display_name}-dispatch', target=self._dispatch)
 
     def _dispatch(self) -> None:
-        while self.display is not None:
-            self.display.dispatch(block=True)
-
-    def roundtrip(self) -> None:
-        # Use this instead of display.roundtrip()
-        # Otherwise there will be multiple dispatchers, which can deadlock
-        assert self.display is not None, 'No display'
-        callback = self.display.sync()
-        event = threading.Event()
-        def done(callback, callback_data):
-            event.set()
-        callback.dispatcher['done'] = done
-        self.display.flush()
-        assert event.wait(10), 'Roundtrip failed'
+        self.display.read()
+        self.display.dispatch(block=False)
 
     @abstractmethod
     def registry_global(self, registry, id_num: int, iface_name: str, version: int) -> None:
@@ -42,34 +28,19 @@ class WaylandClient:
 
     def __enter__(self) -> 'WaylandClient':
         try:
-            self.display = pywayland.client.Display(self.display_name)
             self.display.connect()
-            def roundtrip():
-                raise NotImplementedError(
-                    'Use WaylandClient.roundtrip() instead of Display.roundtrip() to avoid deadlock')
-            self.display.roundtrip = roundtrip # type: ignore
-            self._dispatch_thread.start()
             self._registry = registry = self.display.get_registry()
             registry.dispatcher['global'] = self.registry_global
-            self.roundtrip()
+            self.display.roundtrip()
             self.connected()
+            asyncio.get_event_loop().add_writer(self.display.get_fd(), self._dispatch)
             return self
         except:
             self.__exit__()
             raise
 
     def __exit__(self, *args) -> None:
-        if self.display is not None:
-            display = self.display
-            callback = self.display.sync()
-            event = threading.Event()
-            def done(callback, callback_data):
-                self.display = None
-                event.set()
-            callback.dispatcher['done'] = done
-            display.flush()
-            assert event.wait(10), 'Shutdown roundtrip failed'
-            display.disconnect()
-        if self._dispatch_thread.is_alive():
-            self._dispatch_thread.join()
+        asyncio.get_event_loop().remove_writer(self.display.get_fd())
+        self.display.roundtrip()
+        self.display.disconnect()
         self.disconnected()

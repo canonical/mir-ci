@@ -10,6 +10,7 @@ import os
 import stat
 import ctypes
 import mmap
+import asyncio
 
 libc = ctypes.cdll.LoadLibrary(None) # type: ignore
 shm_counter = 0
@@ -102,7 +103,7 @@ class ScreencopyTracker(WaylandClient):
         frame.dispatcher['buffer'] = self._frame_buffer
         frame.dispatcher['damage'] = self._frame_damage
         frame.dispatcher['ready'] = self._frame_ready
-        self.roundtrip()
+        self.display.roundtrip()
         assert self.buffer is not None, 'No buffer info given'
         if is_initial:
             frame.copy(self.buffer)
@@ -125,12 +126,13 @@ class ScreencopyTracker(WaylandClient):
         }
 
 if __name__ == '__main__':
-    import time
     import pprint
     tracker = ScreencopyTracker(os.environ['WAYLAND_DISPLAY'])
-    with tracker:
-        try:
-            time.sleep(60)
-        except KeyboardInterrupt:
-            pass
+    async def capture_frames():
+        with tracker:
+            await asyncio.sleep(60)
+    try:
+        asyncio.run(capture_frames())
+    except KeyboardInterrupt:
+        pass
     pprint.pprint(tracker.properties())
