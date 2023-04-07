@@ -1,12 +1,18 @@
-import subprocess
 import os
+import subprocess
+
+import pytest
+
+import apps
 
 class TestTest:
-    def test_project_typechecks(self) -> None:
+    @pytest.mark.self
+    @pytest.mark.deps('python3', '-m', 'mypy', pip_pkgs=('mypy',))
+    def test_project_typechecks(self, deps) -> None:
         project_path = os.path.dirname(__file__)
         assert os.path.isfile(os.path.join(project_path, 'requirements.txt')), 'project path not detected correctly'
         result = subprocess.run(
-            ['mypy', project_path],
+            [*deps, project_path],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True)
