@@ -2,7 +2,6 @@ import pathlib
 import platform
 import shutil
 import subprocess
-import types
 
 from collections.abc import Iterator
 from typing import Any, Generator, Mapping, Optional, Union
@@ -12,7 +11,8 @@ import pytest
 RELEASE_PPA = 'mir-team/release'
 RELEASE_PPA_ENTRY = f'https://ppa.launchpadcontent.net/{RELEASE_PPA}/ubuntu {platform.freedesktop_os_release()["VERSION_CODENAME"]}/main'
 APT_INSTALL = ('sudo', 'DEBIAN_FRONTEND=noninteractive', 'apt-get', 'install', '--yes')
-DEP_FIXTURES = {'server', 'deps', 'mypy'}  # these are all the fixtures changing their behavior on `--deps`
+PIP = ('python3', '-m', 'pip')
+DEP_FIXTURES = {'server', 'deps'}  # these are all the fixtures changing their behavior on `--deps`
 
 def pytest_addoption(parser):
     parser.addoption(
@@ -136,20 +136,6 @@ def deps(request: pytest.FixtureRequest) -> list[str]:
         _deps_install(request, mark.kwargs and { 'cmd': mark.args } | mark.kwargs or mark.args[0])
 
     return _deps_install(request, closest.kwargs and {'cmd': mark.args } | closest.kwargs or closest.args[0])
-
-@pytest.fixture(scope='function')
-def mypy(request: pytest.FixtureRequest) -> types.ModuleType:
-    '''
-    Ensures mypy is available, installing it if `--deps` is given on the command line.
-    '''
-    deps: bool = request.config.getoption("--deps", False)
-    try:
-        mypy = __import__('mypy.api')
-    except ModuleNotFoundError:
-        if deps:
-            subprocess.check_call(('pip', 'install', 'mypy'))
-    _deps_skip(request)
-    return mypy
 
 @pytest.fixture(scope='function')
 def xdg(request: pytest.FixtureRequest, tmp_path: pathlib.Path) -> Generator:
