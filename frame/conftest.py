@@ -40,6 +40,7 @@ def _deps_install(request: pytest.FixtureRequest, spec: Union[str, Mapping[str, 
     `cmd: list[str]`: the command to run, optionally including arguments
     `debs: list[str]`: optional list of deb packages to install
     `snap: str`: optional snap to install
+    `pip_pkgs: list[str]`: optional list of python packages to install
     `channel: str`: the channel to install the snap from, defaults to `latest/stable`
     '''
     if isinstance(spec, dict):
@@ -47,15 +48,26 @@ def _deps_install(request: pytest.FixtureRequest, spec: Union[str, Mapping[str, 
         debs: Optional[tuple[str]] = spec.get('debs')
         snap: Optional[str] = spec.get('snap')
         channel: str = spec.get('channel', 'latest/stable')
+        pip_pkgs: tuple[str, ...] = spec.get('pip_pkgs', ())
     elif isinstance(spec, str):
         cmd = [spec]
         debs = None
         snap = spec
         channel = 'latest/stable'
+        pip_pkgs = ()
     else:
         raise TypeError('Bad value for argument `spec`')
 
     if request.config.getoption("--deps", False):
+        missing_pkgs = []
+        for pkg in pip_pkgs:
+            try:
+                __import__(pkg)
+            except ImportError:
+                missing_pkgs.append(pkg)
+        if missing_pkgs:
+            subprocess.check_call((*PIP, 'install', *missing_pkgs))
+
         if shutil.which(cmd[0]) is None:
             if debs is not None:
                 request.getfixturevalue('ppa')
@@ -68,6 +80,12 @@ def _deps_install(request: pytest.FixtureRequest, spec: Union[str, Mapping[str, 
 
     if shutil.which(cmd[0]) is None:
         pytest.skip(f'server executable not found: {cmd[0]}')
+
+    for pkg in pip_pkgs:
+        try:
+            __import__(pkg)
+        except ImportError:
+            pytest.skip(f'PIP package not found: {pkg}')
 
     return cmd
 
@@ -104,6 +122,7 @@ def deps(request: pytest.FixtureRequest) -> list[str]:
     @pytest.mark.deps('snap', snap='the-snap', channel='edge')  # where `snap` is the executable
     @pytest.mark.deps('app', debs=('deb-one', 'deb-two'))       # where `app` is the executable
     @pytest.mark.deps('other-app', cmd=('the-app', 'arg'))      # `the-app` is the executable
+    @pytest.mark.deps('pkg', pip_pkgs=('one','two'))            # `pkg` is the executable
     ```
     '''
     marks: Iterator[pytest.Mark] = request.node.iter_markers('deps')
@@ -114,9 +133,9 @@ def deps(request: pytest.FixtureRequest) -> list[str]:
         return []
 
     for mark in request.node.iter_markers('deps'):
-        _deps_install(request, mark.kwargs or mark.args[0])
+        _deps_install(request, mark.kwargs and { 'cmd': mark.args } | mark.kwargs or mark.args[0])
 
-    return _deps_install(request, closest.kwargs or closest.args[0])
+    return _deps_install(request, closest.kwargs and {'cmd': mark.args } | closest.kwargs or closest.args[0])
 
 @pytest.fixture(scope='function')
 def mypy(request: pytest.FixtureRequest) -> types.ModuleType:
