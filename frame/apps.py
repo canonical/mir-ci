@@ -2,36 +2,10 @@ import pytest
 
 from typing import Any, Optional, Union, Collection
 
-def snap(
-        snap: str,
-        *args: str,
+def _dependency(
+        cmd: Collection[str],
+        snap: Optional[str] = None,
         channel: str = 'latest/stable',
-        cmd: Collection[str] = (),
-        marks: Union[pytest.MarkDecorator, Collection[Union[pytest.MarkDecorator, pytest.Mark]]] = (),
-        id: Optional[str] = None,
-        extra: Any = None):
-
-    if isinstance(marks, pytest.Mark):
-        marks = (marks,)
-
-    ret = cmd or (snap, *args)
-    if extra is not None:
-        ret = (ret, extra)
-
-    return pytest.param(
-        ret,
-        marks=(                             # type: ignore
-            pytest.mark.deps(
-                cmd=cmd or (snap, *args),
-                snap=snap,
-                channel=channel),
-            *marks),
-        id=id or snap)
-
-def deb(
-        deb: str,
-        *args: str,
-        cmd: Collection[str] = (),
         debs: Collection[str] = (),
         marks: Union[pytest.MarkDecorator, Collection[Union[pytest.MarkDecorator, pytest.Mark]]] = (),
         id: Optional[str] = None,
@@ -40,7 +14,7 @@ def deb(
     if isinstance(marks, pytest.Mark):
         marks = (marks,)
 
-    ret = cmd or (deb, *args)
+    ret = cmd
     if extra is not None:
         ret = (ret, extra)
 
@@ -48,10 +22,40 @@ def deb(
         ret,
         marks=(                             # type: ignore
             pytest.mark.deps(
-                cmd=cmd or (deb, *args),
-                debs=debs or (deb,)),
+                cmd=cmd,
+                snap=snap,
+                debs=debs,
+                channel=channel),
             *marks),
-        id=id or deb)
+        id=id)
+
+def snap(
+        snap: str,
+        *args: str,
+        cmd: Collection[str] = (),
+        id=None,
+        **kwargs):
+
+    return _dependency(
+        cmd=cmd or (snap, *args),
+        snap=snap,
+        id=id or snap,
+        **kwargs
+    )
+
+def deb(
+        deb: str,
+        *args: str,
+        cmd: Collection[str] = (),
+        debs: Collection[str] = (),
+        id: Optional[str] = None,
+        **kwargs):
+
+    return _dependency(
+        cmd=cmd or (deb, *args),
+        debs=debs or (deb,),
+        id=id or deb,
+        **kwargs)
 
 def qterminal(*args: str, debs: Collection[str] = ('qterminal', 'qtwayland5'), marks=(), **kwargs):
     marks = (
