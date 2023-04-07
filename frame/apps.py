@@ -53,8 +53,11 @@ def deb(
             *marks),
         id=id or deb)
 
-def qterminal(*args: str, debs: Collection[str] = ('qterminal', 'qtwayland5'), **kwargs):
-    return deb('qterminal', *args, debs=debs, **kwargs)
+def qterminal(*args: str, debs: Collection[str] = ('qterminal', 'qtwayland5'), marks=(), **kwargs):
+    marks = (
+        pytest.mark.xdg(XDG_CONFIG_HOME={'qterminal.org/qterminal.ini': '[General]\nAskOnExit=false'}),
+        *marks)
+    return deb('qterminal', *args, debs=debs, marks=marks, **kwargs)
 
 def gedit(*args: str, **kwargs):
     return deb('gedit', '-s', *args, **kwargs)
