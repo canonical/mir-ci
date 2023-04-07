@@ -3,45 +3,59 @@ import shutil
 import subprocess
 import types
 
-from typing import Optional
+from collections.abc import Iterator
+from typing import Any, Mapping, Optional, Union
 
 import pytest
 
 RELEASE_PPA = 'mir-team/release'
 RELEASE_PPA_ENTRY = f'https://ppa.launchpadcontent.net/{RELEASE_PPA}/ubuntu {platform.freedesktop_os_release()["VERSION_CODENAME"]}/main'
 APT_INSTALL = ('sudo', 'DEBIAN_FRONTEND=noninteractive', 'apt-get', 'install', '--yes')
+DEP_FIXTURES = {'server', 'deps', 'mypy'}  # these are all the fixtures changing their behavior on `--deps`
 
 def pytest_addoption(parser):
     parser.addoption(
         '--deps', help='Only install the test dependencies', action='store_true'
     )
 
-@pytest.fixture(scope='session')
-def ppa() -> None:
-    if RELEASE_PPA_ENTRY not in subprocess.check_output(('apt-cache', 'policy')).decode():
-        subprocess.check_call((*APT_INSTALL, 'software-properties-common'))
-        subprocess.check_call(('sudo', 'add-apt-repository', '--yes', f'ppa:{RELEASE_PPA}'))
+def _deps_skip(request: pytest.FixtureRequest) -> None:
+    '''
+    Keep a record of fixtures affected by `--deps` and only skip the request
+    if all of them were evaluated already.
+    '''
+    assert request.fixturename in DEP_FIXTURES, f'`{request.fixturename}` not in DEP_FIXTURES'
+    assert request.scope == 'function', 'Dependency management only possible in `function` scope'
+    if request.config.getoption('--deps', False):
+        request.keywords.setdefault('depfixtures', set()).add(request.fixturename)
+        if request.keywords['depfixtures'] == DEP_FIXTURES.intersection(request.fixturenames):
+            pytest.skip('dependency-only run')
 
-@pytest.fixture(scope='session', params=(
-    pytest.param('ubuntu-frame', id='ubuntu_frame'),
-    pytest.param('mir-kiosk', id='mir_kiosk'),
-    pytest.param({'snap': 'confined-shell', 'channel': 'edge'}, id='confined_shell'),
-    pytest.param({'cmd': 'mir_demo_server', 'debs': ('mir-test-tools', 'mir-graphics-drivers-desktop')}, id='mir_demo_server'),
-))
-def server(request: pytest.FixtureRequest) -> str:
-    if isinstance(request.param, dict):
-        cmd: str = request.param.get('cmd', request.param.get('snap'))
-        debs: Optional[tuple[str]] = request.param.get('debs')
-        snap: Optional[str] = request.param.get('snap')
-        channel: str = request.param.get('channel', 'latest/stable')
-    else:
-        cmd = request.param
+def _deps_install(request: pytest.FixtureRequest, spec: Union[str, Mapping[str, Any]]) -> list[str]:
+    '''
+    Install dependencies for the command spec provided. If `spec` is a string, it's assumed
+    to be a snap and command name.
+
+    If `spec` is a dictionary, the following keys are supported:
+    `cmd: list[str]`: the command to run, optionally including arguments
+    `debs: list[str]`: optional list of deb packages to install
+    `snap: str`: optional snap to install
+    `channel: str`: the channel to install the snap from, defaults to `latest/stable`
+    '''
+    if isinstance(spec, dict):
+        cmd: list[str] = spec.get('cmd', []) or [spec.get('snap')]
+        debs: Optional[tuple[str]] = spec.get('debs')
+        snap: Optional[str] = spec.get('snap')
+        channel: str = spec.get('channel', 'latest/stable')
+    elif isinstance(spec, str):
+        cmd = [spec]
         debs = None
-        snap = request.param
+        snap = spec
         channel = 'latest/stable'
+    else:
+        raise TypeError('Bad value for argument `spec`')
 
     if request.config.getoption("--deps", False):
-        if shutil.which(cmd) is None:
+        if shutil.which(cmd[0]) is None:
             if debs is not None:
                 request.getfixturevalue('ppa')
                 subprocess.check_call((*APT_INSTALL, *debs))
@@ -49,28 +63,70 @@ def server(request: pytest.FixtureRequest) -> str:
                 subprocess.check_call(('sudo', 'snap', 'install', snap, '--channel', channel))
                 if shutil.which(f'/snap/{snap}/current/bin/setup.sh'):
                     subprocess.check_call(('sudo', f'/snap/{snap}/current/bin/setup.sh'))
-        pytest.skip("dependency installed")
+        _deps_skip(request)
 
-    if shutil.which(cmd) is None:
-        pytest.skip(f'server executable not found: {cmd}')
+    if shutil.which(cmd[0]) is None:
+        pytest.skip(f'server executable not found: {cmd[0]}')
 
     return cmd
 
 @pytest.fixture(scope='session')
-def mypy(request) -> types.ModuleType:
+def ppa() -> None:
+    '''
+    Ensures the mir-test/release PPA is enabled.
+    '''
+    if RELEASE_PPA_ENTRY not in subprocess.check_output(('apt-cache', 'policy')).decode():
+        subprocess.check_call((*APT_INSTALL, 'software-properties-common'))
+        subprocess.check_call(('sudo', 'add-apt-repository', '--yes', f'ppa:{RELEASE_PPA}'))
+
+@pytest.fixture(scope='function', params=(
+    pytest.param({'snap': 'ubuntu-frame', 'channel': '22/stable'}, id='ubuntu_frame'),
+    pytest.param('mir-kiosk', id='mir_kiosk'),
+    pytest.param({'snap': 'confined-shell', 'channel': 'edge'}, id='confined_shell'),
+    pytest.param({'cmd': ['mir_demo_server'], 'debs': ('mir-test-tools', 'mir-graphics-drivers-desktop')}, id='mir_demo_server'),
+))
+def server(request: pytest.FixtureRequest) -> list[str]:
+    '''
+    Parameterizes the servers (ubuntu-frame, mir-kiosk, confined-shell, mir_demo_server),
+    or installs them if `--deps` is given on the command line.
+    '''
+    return _deps_install(request, request.param)
+
+@pytest.fixture(scope='function')
+def deps(request: pytest.FixtureRequest) -> list[str]:
+    '''
+    Ensures the dependenciesa are available, or installs them if `--deps` is given on the command line.
+
+    You need to provide data through the `deps` mark:
+    ```
+    @pytest.mark.deps('snap')                                   # where `snap` is the snap name and executable
+    @pytest.mark.deps('snap', snap='the-snap', channel='edge')  # where `snap` is the executable
+    @pytest.mark.deps('app', debs=('deb-one', 'deb-two'))       # where `app` is the executable
+    @pytest.mark.deps('other-app', cmd=('the-app', 'arg'))      # `the-app` is the executable
+    ```
+    '''
+    marks: Iterator[pytest.Mark] = request.node.iter_markers('deps')
+    try:
+        closest: pytest.Mark = next(marks)
+    except StopIteration:
+        _deps_skip(request)
+        return []
+
+    for mark in request.node.iter_markers('deps'):
+        _deps_install(request, mark.kwargs or mark.args[0])
+
+    return _deps_install(request, closest.kwargs or closest.args[0])
+
+@pytest.fixture(scope='function')
+def mypy(request: pytest.FixtureRequest) -> types.ModuleType:
+    '''
+    Ensures mypy is available, installing it if `--deps` is given on the command line.
+    '''
     deps: bool = request.config.getoption("--deps", False)
     try:
         mypy = __import__('mypy.api')
     except ModuleNotFoundError:
         if deps:
             subprocess.check_call(('pip', 'install', 'mypy'))
-            pytest.skip("dependency installed")
-    else:
-        if deps:
-            pytest.skip("dependency installed")
+    _deps_skip(request)
     return mypy
-
-@pytest.fixture(scope='session')
-def deps_skip(request) -> None:
-    if request.config.getoption('--deps', False):
-        pytest.skip('dependency-only run')
