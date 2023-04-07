@@ -1,6 +1,6 @@
 import pytest
 
-from typing import Optional, Union, Collection
+from typing import Any, Optional, Union, Collection
 
 def snap(
         snap: str,
@@ -8,13 +8,18 @@ def snap(
         channel: str = 'latest/stable',
         cmd: Collection[str] = (),
         marks: Union[pytest.MarkDecorator, Collection[Union[pytest.MarkDecorator, pytest.Mark]]] = (),
-        id: Optional[str] = None):
+        id: Optional[str] = None,
+        extra: Any = None):
 
     if isinstance(marks, pytest.Mark):
         marks = (marks,)
 
+    ret = cmd or (snap, *args)
+    if extra is not None:
+        ret = (ret, extra)
+
     return pytest.param(
-        cmd or (snap, *args),
+        ret,
         marks=(                             # type: ignore
             pytest.mark.deps(
                 cmd=cmd or (snap, *args),
@@ -29,12 +34,18 @@ def deb(
         cmd: Collection[str] = (),
         debs: Collection[str] = (),
         marks: Union[pytest.MarkDecorator, Collection[Union[pytest.MarkDecorator, pytest.Mark]]] = (),
-        id: Optional[str] = None):
+        id: Optional[str] = None,
+        extra: Any = None):
+
     if isinstance(marks, pytest.Mark):
         marks = (marks,)
 
+    ret = cmd or (deb, *args)
+    if extra is not None:
+        ret = (ret, extra)
+
     return pytest.param(
-        cmd or (deb, *args),
+        ret,
         marks=(                             # type: ignore
             pytest.mark.deps(
                 cmd=cmd or (deb, *args),
