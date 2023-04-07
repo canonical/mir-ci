@@ -1,10 +1,11 @@
+import pathlib
 import platform
 import shutil
 import subprocess
 import types
 
 from collections.abc import Iterator
-from typing import Any, Mapping, Optional, Union
+from typing import Any, Generator, Mapping, Optional, Union
 
 import pytest
 
@@ -130,3 +131,28 @@ def mypy(request: pytest.FixtureRequest) -> types.ModuleType:
             subprocess.check_call(('pip', 'install', 'mypy'))
     _deps_skip(request)
     return mypy
+
+@pytest.fixture(scope='function')
+def xdg(request: pytest.FixtureRequest, tmp_path: pathlib.Path) -> Generator:
+    '''
+    Create a temporary directory, set environment variable to the temporary path,
+    and write contents to files within.
+
+    Use the `xdg` mark to provide data, e.g.:
+    @pytest.mark.xdg(XDG_CONFIG_HOME={'dir/file': 'contents'})
+    '''
+    if request.config.getoption('--deps'):
+        yield
+        return
+
+    with pytest.MonkeyPatch.context() as m:
+        for mark in request.node.iter_markers('xdg'):
+            for var, files in mark.kwargs.items():
+                var_path = tmp_path / var
+                var_path.mkdir(exist_ok=True)
+                m.setenv(var, str(var_path))
+                for file, contents in files.items():
+                    (var_path / file).parent.mkdir(exist_ok=True, parents=True)
+                    with open(var_path / file, 'w') as f:
+                        f.write(contents)
+        yield
