@@ -1,13 +1,11 @@
 import subprocess
 import os
-from pathlib import Path
 import signal
-import tempfile
-from typing import Optional, Union
+from typing import Union
 
 default_wait_timeout = default_term_timeout = 10
 
-Command = Union[str, list[str], tuple[str, ...], 'AppFixture']
+Command = Union[str, list[str], tuple[str, ...]]
 
 def format_output(name: str, output: str) -> str:
     '''
@@ -26,63 +24,16 @@ def format_output(name: str, output: str) -> str:
     footer = '─' * 78
     return '╭' + header + divider + body + '\n╰' + footer
 
-
-class AppFixture:
-    executable: Optional[str] = None
-    id: Optional[str] = None
-
-    def __init__(self, *args: str, id: Optional[str]=None) -> None:
-        if self.executable is None:
-            assert len(args) > 0, "No command to run"
-            self.args = args
-        else:
-            self.args = (self.executable,) + args
-        self.id = id
-
-    def __enter__(self) -> 'AppFixture':
-        self._tempdir = tempfile.TemporaryDirectory()
-        self.temppath = Path(self._tempdir.name)
-        return self
-
-    def __exit__(self, *args) -> None:
-        del self.temppath
-        self._tempdir.cleanup()
-        del self._tempdir
-
-    def _assert_cm(self) -> None:
-        assert hasattr(self, '_tempdir'), "AppFixture used without context management"
-
-    def command(self) -> tuple[str, ...]:
-        self._assert_cm()
-        return self.args
-
-    def env(self) -> dict[str, str]:
-        self._assert_cm()
-        return {}
-
-
-def appids(val: Union[AppFixture, tuple[str, ...]]) -> Optional[str]:
-    if isinstance(val, AppFixture):
-        return val.id or val.args[0]
-    elif isinstance(val, tuple):
-        return val[0]
-    return None
-
-
 class Program:
     def __init__(self, command: Command, env: dict[str, str] = {}):
-        self.env = os.environ | env
-        if isinstance(command, AppFixture):
-            self.command: tuple[str, ...] = command.command()
-            self.env |= command.env()
-        elif isinstance(command, str):
-            self.command = (command,)
+        if isinstance(command, str):
+            self.command: tuple[str, ...] = (command,)
         else:
             self.command = tuple(command)
         self.name = self.command[0]
         self.process = subprocess.Popen(
             self.command,
-            env=self.env,
+            env=os.environ | env,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             close_fds=True,
