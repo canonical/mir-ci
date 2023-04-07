@@ -1,6 +1,5 @@
 from display_server import DisplayServer
 from screencopy_tracker import ScreencopyTracker
-from program import AppFixture, appids
 import pytest
 import os
 import time
@@ -11,31 +10,17 @@ long_wait_time = 10
 
 ASCIINEMA_CAST = f'{os.path.dirname(__file__)}/data/demo.cast'
 
-class QTerminal(AppFixture):
-    executable = 'qterminal'
-
-    def env(self) -> dict[str, str]:
-        env = super().env()
-        config = self.temppath / 'qterminal.org' / 'qterminal.ini'
-        config.parent.mkdir(parents=True)
-        with open(config, 'w') as c:
-            c.write('[General]\nAskOnExit=false')
-
-        return env | {
-            'XDG_CONFIG_HOME': str(self.temppath)
-        }
-
 @pytest.mark.performance
 class TestScreencopyBandwidth:
     @pytest.mark.parametrize('app', [
-        (QTerminal('--execute', f'python3 -m asciinema play {ASCIINEMA_CAST}', id='asciinema'), 15),
-        (AppFixture("mir-kiosk-neverputt"), None),
-    ], ids=lambda x: appids(x[0]))
+        apps.qterminal('--execute', f'python3 -m asciinema play {ASCIINEMA_CAST}', id='asciinema', extra=15),
+        apps.snap('mir-kiosk-neverputt', extra=False)
+    ])
     def test_active_app(self, record_property, server, app) -> None:
-        with DisplayServer(server, add_extensions=ScreencopyTracker.required_extensions) as s, app[0] as a:
+        with DisplayServer(server, add_extensions=ScreencopyTracker.required_extensions) as s:
             tracker = ScreencopyTracker(s.display_name)
-            with tracker, s.program(a) as p:
-                if app[1] is not None:
+            with tracker, s.program(app[0]) as p:
+                if app[1]:
                     p.wait(app[1])
                 else:
                     time.sleep(long_wait_time)
