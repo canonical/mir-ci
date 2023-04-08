@@ -25,19 +25,19 @@ class TestScreencopyBandwidth:
         apps.snap('mir-kiosk-neverputt', extra=False)
     ])
     async def test_active_app(self, record_property, server, app) -> None:
-        with DisplayServer(server, add_extensions=ScreencopyTracker.required_extensions) as s:
+        async with DisplayServer(server, add_extensions=ScreencopyTracker.required_extensions) as s:
             tracker = ScreencopyTracker(s.display_name)
-            with tracker, s.program(app[0]) as p:
+            async with tracker, s.program(app[0]) as p:
                 if app[1]:
-                    p.wait(app[1])
+                    await asyncio.wait_for(p.wait(), timeout=app[1])
                 else:
                     await asyncio.sleep(long_wait_time)
             record_screencopy_properties(record_property, tracker, 10)
 
     async def test_compositor_alone(self, record_property, server) -> None:
-        with DisplayServer(server, add_extensions=ScreencopyTracker.required_extensions) as s:
+        async with DisplayServer(server, add_extensions=ScreencopyTracker.required_extensions) as s:
             tracker = ScreencopyTracker(s.display_name)
-            with tracker:
+            async with tracker:
                 await asyncio.sleep(long_wait_time)
             record_screencopy_properties(record_property, tracker, 1)
 
@@ -47,8 +47,8 @@ class TestScreencopyBandwidth:
         apps.snap('mir-kiosk-kodi'),
     ])
     async def test_inactive_app(self, record_property, server, app) -> None:
-        with DisplayServer(server, add_extensions=ScreencopyTracker.required_extensions) as s:
+        async with DisplayServer(server, add_extensions=ScreencopyTracker.required_extensions) as s:
             tracker = ScreencopyTracker(s.display_name)
-            with tracker, s.program(app):
+            async with tracker, s.program(app):
                 await asyncio.sleep(long_wait_time)
             record_screencopy_properties(record_property, tracker, 2)

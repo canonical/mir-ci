@@ -26,7 +26,7 @@ class WaylandClient:
     def disconnected(self) -> None:
         pass
 
-    def __enter__(self) -> 'WaylandClient':
+    async def __aenter__(self) -> 'WaylandClient':
         try:
             self.display.connect()
             self._registry = registry = self.display.get_registry()
@@ -36,10 +36,10 @@ class WaylandClient:
             asyncio.get_event_loop().add_writer(self.display.get_fd(), self._dispatch)
             return self
         except:
-            self.__exit__()
+            await self.__aexit__()
             raise
 
-    def __exit__(self, *args) -> None:
+    async def __aexit__(self, *args) -> None:
         asyncio.get_event_loop().remove_writer(self.display.get_fd())
         self.display.roundtrip()
         self.display.disconnect()
