@@ -1,7 +1,7 @@
-import subprocess
 import os
 import signal
-from typing import Union
+from typing import Union, Optional
+import asyncio
 
 default_wait_timeout = default_term_timeout = 10
 
@@ -31,28 +31,19 @@ class Program:
         else:
             self.command = tuple(command)
         self.name = self.command[0]
-        self.process = subprocess.Popen(
-            self.command,
-            env=os.environ | env,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            close_fds=True,
-            preexec_fn=os.setsid)
-        # Without setsid killing the subprocess doesn't kill the whole process tree,
-        # see https://pymotw.com/2/subprocess/#process-groups-sessions
+        self.env = env
+        self.process: Optional[asyncio.subprocess.Process] = None
         self.output = ''
+        self.waited_for = False
         self.killed = False
 
     def assert_running(self) -> None:
-        if self.process.poll() is not None:
-            try:
-                self.wait()
-            except:
-                pass
-            assert False, self.name + ' is dead'
+        assert self.process and self.process.returncode is None, self.name + ' is dead'
 
-    def wait(self, timeout=default_wait_timeout) -> None:
-        raw_output, _ = self.process.communicate(timeout=timeout)
+    async def wait(self) -> None:
+        assert self.process
+        raw_output, _ = await self.process.communicate()
+        self.waited_for = True
         self.output = raw_output.decode('utf-8').strip()
         print('\n' + format_output(self.name, self.output))
         if self.process.returncode != 0:
@@ -63,25 +54,40 @@ class Program:
                 message += ' closed with exit code ' + str(self.process.returncode)
             raise RuntimeError(message)
 
-    def kill(self, timeout=default_term_timeout) -> None:
-        if self.process.returncode == None:
+    async def kill(self, timeout=default_term_timeout) -> None:
+        assert self.process
+        if not self.waited_for:
             os.killpg(self.process.pid, signal.SIGTERM)
             try:
-                self.wait(timeout=timeout)
-            except subprocess.TimeoutExpired:
+                await asyncio.wait_for(self.wait(), timeout=timeout)
+            except asyncio.exceptions.TimeoutError:
                 pass
-        if self.process.returncode == None:
+        if not self.waited_for:
             os.killpg(self.process.pid, signal.SIGKILL)
             self.killed = True
-            self.wait(timeout=timeout)
+            try:
+                await asyncio.wait_for(self.wait(), timeout=1)
+            except asyncio.exceptions.TimeoutError:
+                raise RuntimeError('failed to kill ' + self.name)
 
-    def __enter__(self) -> 'Program':
+    async def __aenter__(self) -> 'Program':
+        self.process = await asyncio.create_subprocess_exec(
+            *self.command,
+            env=os.environ | self.env,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.STDOUT,
+            close_fds=True,
+            preexec_fn=os.setsid)
+        # Without setsid killing the subprocess doesn't kill the whole process tree,
+        # see https://pymotw.com/2/subprocess/#process-groups-sessions
+        # Without setsid killing the subprocess doesn't kill the whole process tree,
+        # see https://pymotw.com/2/subprocess/#process-groups-sessions
         return self
 
-    def __exit__(self, *args):
-        if self.process.returncode == None:
+    async def __aexit__(self, *args):
+        if not self.waited_for:
             self.assert_running()
             try:
-                self.kill()
+                await self.kill()
             except:
                 pass
