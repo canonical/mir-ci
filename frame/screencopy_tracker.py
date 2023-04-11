@@ -5,7 +5,7 @@ from protocols.wayland.wl_output import WlOutputProxy
 from protocols.wayland.wl_buffer import WlBufferProxy
 from protocols.wayland.wl_shm import WlShmProxy
 from wayland_client import WaylandClient
-from typing import Optional, Any
+from typing import Dict, Optional, Any
 import os
 import stat
 import ctypes
@@ -111,7 +111,7 @@ class ScreencopyTracker(WaylandClient):
             frame.copy_with_damage(self.buffer)
         self.display.flush()
 
-    def properties(self) -> dict[str, Any]:
+    def properties(self) -> Dict[str, Any]:
         total_possible_pixels = max(
             self.frame_count * self.buffer_width * self.buffer_height,
             self.total_damage,
