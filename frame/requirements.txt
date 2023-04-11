@@ -2,3 +2,4 @@ inotify
 pytest
 pytest-asyncio
 pywayland
+distro
