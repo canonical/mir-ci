@@ -1,11 +1,11 @@
 import subprocess
 import os
 import signal
-from typing import Union
+from typing import Dict, List, Tuple, Union
 
 default_wait_timeout = default_term_timeout = 10
 
-Command = Union[str, list[str], tuple[str, ...]]
+Command = Union[str, List[str], Tuple[str, ...]]
 
 def format_output(name: str, output: str) -> str:
     '''
@@ -25,7 +25,7 @@ def format_output(name: str, output: str) -> str:
     return '╭' + header + divider + body + '\n╰' + footer
 
 class Program:
-    def __init__(self, command: Command, env: dict[str, str] = {}):
+    def __init__(self, command: Command, env: Dict[str, str] = {}):
         if isinstance(command, str):
             self.command: tuple[str, ...] = (command,)
         else:
@@ -33,7 +33,7 @@ class Program:
         self.name = self.command[0]
         self.process = subprocess.Popen(
             self.command,
-            env=os.environ | env,
+            env=dict(os.environ, **env),
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             close_fds=True,
