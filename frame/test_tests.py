@@ -3,8 +3,6 @@ import subprocess
 
 import pytest
 
-import apps
-
 class TestTest:
     @pytest.mark.self
     @pytest.mark.deps('python3', '-m', 'mypy', pip_pkgs=('mypy',))
