@@ -3,7 +3,7 @@ import shutil
 import subprocess
 
 from collections.abc import Iterator
-from typing import Any, Generator, Mapping, Optional, Union
+from typing import Any, Generator, List, Mapping, Optional, Union
 
 import distro
 import pytest
@@ -31,7 +31,7 @@ def _deps_skip(request: pytest.FixtureRequest) -> None:
         if request.keywords['depfixtures'] == DEP_FIXTURES.intersection(request.fixturenames):
             pytest.skip('dependency-only run')
 
-def _deps_install(request: pytest.FixtureRequest, spec: Union[str, Mapping[str, Any]]) -> list[str]:
+def _deps_install(request: pytest.FixtureRequest, spec: Union[str, Mapping[str, Any]]) -> List[str]:
     '''
     Install dependencies for the command spec provided. If `spec` is a string, it's assumed
     to be a snap and command name.
@@ -44,7 +44,7 @@ def _deps_install(request: pytest.FixtureRequest, spec: Union[str, Mapping[str, 
     `channel: str`: the channel to install the snap from, defaults to `latest/stable`
     '''
     if isinstance(spec, dict):
-        cmd: list[str] = spec.get('cmd', []) or [spec.get('snap')]
+        cmd: List[str] = spec.get('cmd', []) or [spec.get('snap')]
         debs: Optional[tuple[str]] = spec.get('debs')
         snap: Optional[str] = spec.get('snap')
         channel: str = spec.get('channel', 'latest/stable')
@@ -104,7 +104,7 @@ def ppa() -> None:
     pytest.param({'snap': 'confined-shell', 'channel': 'edge'}, id='confined_shell'),
     pytest.param({'cmd': ['mir_demo_server'], 'debs': ('mir-test-tools', 'mir-graphics-drivers-desktop')}, id='mir_demo_server'),
 ))
-def server(request: pytest.FixtureRequest) -> list[str]:
+def server(request: pytest.FixtureRequest) -> List[str]:
     '''
     Parameterizes the servers (ubuntu-frame, mir-kiosk, confined-shell, mir_demo_server),
     or installs them if `--deps` is given on the command line.
@@ -112,7 +112,7 @@ def server(request: pytest.FixtureRequest) -> list[str]:
     return _deps_install(request, request.param)
 
 @pytest.fixture(scope='function')
-def deps(request: pytest.FixtureRequest) -> list[str]:
+def deps(request: pytest.FixtureRequest) -> List[str]:
     '''
     Ensures the dependenciesa are available, or installs them if `--deps` is given on the command line.
 
@@ -133,9 +133,9 @@ def deps(request: pytest.FixtureRequest) -> list[str]:
         return []
 
     for mark in request.node.iter_markers('deps'):
-        _deps_install(request, mark.kwargs and { 'cmd': mark.args } | mark.kwargs or mark.args[0])
+        _deps_install(request, mark.kwargs and dict({'cmd': mark.args}, **mark.kwargs) or mark.args[0])
 
-    return _deps_install(request, closest.kwargs and {'cmd': mark.args } | closest.kwargs or closest.args[0])
+    return _deps_install(request, closest.kwargs and dict({'cmd': closest.args}, **closest.kwargs) or closest.args[0])
 
 @pytest.fixture(scope='function')
 def xdg(request: pytest.FixtureRequest, tmp_path: pathlib.Path) -> Generator:
