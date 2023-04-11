@@ -3,6 +3,8 @@ import os
 import time
 import asyncio
 
+from typing import Dict, Tuple
+
 from program import Program, Command
 
 display_appear_timeout = 10
@@ -32,7 +34,7 @@ def wait_for_wayland_display(runtime_dir: str, name: str) -> None:
     raise RuntimeError('Wayland display ' + name + ' did not appear')
 
 class DisplayServer:
-    def __init__(self, command: Command, add_extensions: tuple[str, ...] = ()) -> None:
+    def __init__(self, command: Command, add_extensions: Tuple[str, ...] = ()) -> None:
         self.command = command
         self.add_extensions = add_extensions
         # Snaps require the display to be in the form "waland-<number>". The 00 prefix lets us
@@ -40,12 +42,14 @@ class DisplayServer:
         # don't get cleaned up properly.
         self.display_name = 'wayland-00' + str(os.getpid())
 
-    def program(self, command: Command, env: dict[str, str] = {}) -> Program:
-        return Program(command, env={
-            'DISPLAY': 'no',
-            'QT_QPA_PLATFORM': 'wayland',
-            'WAYLAND_DISPLAY': self.display_name,
-        } | env)
+    def program(self, command: Command, env: Dict[str, str] = {}) -> Program:
+        return Program(command, env=dict({
+                'DISPLAY': 'no',
+                'QT_QPA_PLATFORM': 'wayland',
+                'WAYLAND_DISPLAY': self.display_name
+            },
+            **env)
+        )
 
     async def __aenter__(self) -> 'DisplayServer':
         runtime_dir = os.environ['XDG_RUNTIME_DIR']
