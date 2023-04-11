@@ -1,15 +1,15 @@
 import pathlib
-import platform
 import shutil
 import subprocess
 
 from collections.abc import Iterator
 from typing import Any, Generator, Mapping, Optional, Union
 
+import distro
 import pytest
 
 RELEASE_PPA = 'mir-team/release'
-RELEASE_PPA_ENTRY = f'https://ppa.launchpadcontent.net/{RELEASE_PPA}/ubuntu {platform.freedesktop_os_release()["VERSION_CODENAME"]}/main'
+RELEASE_PPA_ENTRY = f'https://ppa.launchpadcontent.net/{RELEASE_PPA}/ubuntu {distro.codename()}/main'
 APT_INSTALL = ('sudo', 'DEBIAN_FRONTEND=noninteractive', 'apt-get', 'install', '--yes')
 PIP = ('python3', '-m', 'pip')
 DEP_FIXTURES = {'server', 'deps'}  # these are all the fixtures changing their behavior on `--deps`
