@@ -102,6 +102,7 @@ def ppa() -> None:
     pytest.param({'snap': 'ubuntu-frame', 'channel': '22/stable'}, id='ubuntu_frame'),
     pytest.param('mir-kiosk', id='mir_kiosk'),
     pytest.param({'snap': 'confined-shell', 'channel': 'edge'}, id='confined_shell'),
+    pytest.param({'snap': 'mir-test-tools', 'channel': '22/beta', 'cmd': ('mir-test-tools.demo-server',)}, id='mir_test_tools'),
     pytest.param({'cmd': ['mir_demo_server'], 'debs': ('mir-test-tools', 'mir-graphics-drivers-desktop')}, id='mir_demo_server'),
 ))
 def server(request: pytest.FixtureRequest) -> list[str]:
