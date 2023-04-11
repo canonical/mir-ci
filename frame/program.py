@@ -1,11 +1,11 @@
 import os
 import signal
-from typing import Union, Optional
+from typing import Dict, List, Tuple, Union, Optional
 import asyncio
 
 default_wait_timeout = default_term_timeout = 10
 
-Command = Union[str, list[str], tuple[str, ...]]
+Command = Union[str, List[str], Tuple[str, ...]]
 
 def format_output(name: str, output: str) -> str:
     '''
@@ -25,7 +25,7 @@ def format_output(name: str, output: str) -> str:
     return '╭' + header + divider + body + '\n╰' + footer
 
 class Program:
-    def __init__(self, command: Command, env: dict[str, str] = {}):
+    def __init__(self, command: Command, env: Dict[str, str] = {}):
         if isinstance(command, str):
             self.command: tuple[str, ...] = (command,)
         else:
@@ -73,7 +73,7 @@ class Program:
     async def __aenter__(self) -> 'Program':
         self.process = await asyncio.create_subprocess_exec(
             *self.command,
-            env=os.environ | self.env,
+            env=dict(os.environ, **self.env),
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.STDOUT,
             close_fds=True,

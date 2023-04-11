@@ -17,13 +17,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        python:
+        - '3.8'
+        - '3.10'
         server:
         - mir_kiosk
         - ubuntu_frame
         - confined_shell
         - mir_demo_server
         include:
-        - server: null
+        - python: '3.10'
+          server: null
           mark: self
 
     runs-on: ubuntu-latest
@@ -31,7 +35,7 @@ jobs:
     steps:
     - uses: actions/setup-python@v4
       with:
-        python-version: '3.10'
+        python-version: ${{ matrix.python }}
 
     - uses: actions/checkout@v3
 
