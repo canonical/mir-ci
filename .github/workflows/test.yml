@@ -43,7 +43,7 @@ jobs:
     - id: pytest-args
       name: Determine pytest arguments
       run: |
-        ARGS=()
+        ARGS=( --verbose --capture=no )
         [ -n '${{ matrix.server }}' ] && ARGS+=( -k ${{ matrix.server }} )
         [ -n '${{ matrix.mark }}' ] && ARGS+=( -m ${{ matrix.mark }} )
         echo args=${ARGS[@]} >> $GITHUB_OUTPUT
@@ -55,7 +55,7 @@ jobs:
           xvfb
 
         pip install -r requirements.txt
-        python -m pytest -v ${{ steps.pytest-args.outputs.args }} --deps
+        python -m pytest ${{ steps.pytest-args.outputs.args }} --deps
 
     - name: Run the tests
       working-directory: frame
@@ -64,7 +64,7 @@ jobs:
         ulimit -c unlimited
         echo "/tmp/corefile-%e-%p-%t" | sudo tee /proc/sys/kernel/core_pattern
 
-        xvfb-run python -m pytest -v ${{ steps.pytest-args.outputs.args }} --junitxml=junit-${{ matrix.server || matrix.mark }}-${{ matrix.python }}.xml
+        xvfb-run python -m pytest ${{ steps.pytest-args.outputs.args }} --junitxml=junit-${{ matrix.server || matrix.mark }}-${{ matrix.python }}.xml
 
     - name: Upload junit report
       uses: actions/upload-artifact@v3
