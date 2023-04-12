@@ -24,6 +24,7 @@ jobs:
         - mir_kiosk
         - ubuntu_frame
         - confined_shell
+        - mir_test_tools
         - mir_demo_server
         include:
         - python: '3.10'
