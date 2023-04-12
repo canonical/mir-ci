@@ -79,13 +79,13 @@ def _deps_install(request: pytest.FixtureRequest, spec: Union[str, Mapping[str, 
         _deps_skip(request)
 
     if shutil.which(cmd[0]) is None:
-        pytest.skip(f'server executable not found: {cmd[0]}')
+        pytest.fail(f'executable not found: {cmd[0]}')
 
     for pkg in pip_pkgs:
         try:
             __import__(pkg)
         except ImportError:
-            pytest.skip(f'PIP package not found: {pkg}')
+            pytest.fail(f'PIP package not found: {pkg}')
 
     return cmd
 
