@@ -18,11 +18,7 @@ def _record_properties(fixture, server, tracker):
         fixture(name, val)
     fixture('server_mode', SERVER_MODE_RE.search(server.server.output).group(1))
     fixture('server_renderer', SERVER_RENDERER_RE.search(server.server.output).group(1))
-
-def record_screencopy_properties(record_property, tracker: ScreencopyTracker, min_frames: int):
-    for name, val in tracker.properties().items():
-        record_property(name, val)
-    frames = tracker.properties()['frame count']
+    frames = tracker.properties()['frame_count']
     assert frames >= min_frames, (
         f'expected to capture at least {min_frames} frames, but only got {frames}'
     )
