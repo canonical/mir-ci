@@ -79,13 +79,13 @@ def _deps_install(request: pytest.FixtureRequest, spec: Union[str, Mapping[str, 
         _deps_skip(request)
 
     if shutil.which(cmd[0]) is None:
-        pytest.skip(f'server executable not found: {cmd[0]}')
+        pytest.fail(f'executable not found: {cmd[0]}')
 
     for pkg in pip_pkgs:
         try:
             __import__(pkg)
         except ImportError:
-            pytest.skip(f'PIP package not found: {pkg}')
+            pytest.fail(f'PIP package not found: {pkg}')
 
     return cmd
 
@@ -102,6 +102,7 @@ def ppa() -> None:
     pytest.param({'snap': 'ubuntu-frame', 'channel': '22/stable'}, id='ubuntu_frame'),
     pytest.param('mir-kiosk', id='mir_kiosk'),
     pytest.param({'snap': 'confined-shell', 'channel': 'edge'}, id='confined_shell'),
+    pytest.param({'snap': 'mir-test-tools', 'channel': '22/beta', 'cmd': ('mir-test-tools.demo-server',)}, id='mir_test_tools'),
     pytest.param({'cmd': ['mir_demo_server'], 'debs': ('mir-test-tools', 'mir-graphics-drivers-desktop')}, id='mir_demo_server'),
 ))
 def server(request: pytest.FixtureRequest) -> List[str]:
