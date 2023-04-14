@@ -118,11 +118,10 @@ class ScreencopyTracker(WaylandClient):
             1 # prevent divide by zero
         )
         return {
-            'frame count': self.frame_count,
+            'frame_count': self.frame_count,
             'resolution': (self.buffer_width, self.buffer_height),
-            'pixels per frame': self.buffer_width * self.buffer_height,
-            'total pixels damaged': self.total_damage,
-            'percent of pixels damaged per frame': self.total_damage * 100.0 / total_possible_pixels,
+            'total_damage': self.total_damage,
+            'percent_damage': self.total_damage * 100.0 / total_possible_pixels,
         }
 
 if __name__ == '__main__':
