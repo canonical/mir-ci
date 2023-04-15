@@ -11,8 +11,12 @@ class WaylandClient:
         self._registry: Optional[WlRegistryProxy] = None
 
     def _dispatch(self) -> None:
-        self.display.read()
-        self.display.dispatch(block=False)
+        try:
+            self.display.read()
+            self.display.dispatch(block=False)
+        except Exception as e:
+            asyncio.get_event_loop().remove_writer(self.display.get_fd())
+            raise
 
     @abstractmethod
     def registry_global(self, registry, id_num: int, iface_name: str, version: int) -> None:
