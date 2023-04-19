@@ -13,11 +13,15 @@ ASCIINEMA_CAST = f'{os.path.dirname(__file__)}/data/demo.cast'
 SERVER_MODE_RE = re.compile(r'Current mode ([0-9x]+ [0-9.]+Hz)')
 SERVER_RENDERER_RE = re.compile(r'GL renderer: (.*)$', re.MULTILINE)
 
-def _record_properties(fixture, server, tracker):
+def _record_properties(fixture, server, tracker, min_frames):
     for name, val in tracker.properties().items():
         fixture(name, val)
     fixture('server_mode', SERVER_MODE_RE.search(server.server.output).group(1))
     fixture('server_renderer', SERVER_RENDERER_RE.search(server.server.output).group(1))
+    frames = tracker.properties()['frame_count']
+    assert frames >= min_frames, (
+        f'expected to capture at least {min_frames} frames, but only got {frames}'
+    )
 
 @pytest.mark.performance
 class TestScreencopyBandwidth:
@@ -28,19 +32,19 @@ class TestScreencopyBandwidth:
     async def test_active_app(self, record_property, server, app) -> None:
         server = DisplayServer(server, add_extensions=ScreencopyTracker.required_extensions)
         tracker = ScreencopyTracker(server.display_name)
-        with server as s, tracker, s.program(app[0]) as p:
+        async with server as s, tracker, s.program(app[0]) as p:
             if app[1]:
-                p.wait(app[1])
+                await asyncio.wait_for(p.wait(), timeout=app[1])
             else:
                 await asyncio.sleep(long_wait_time)
-        _record_properties(record_property, server, tracker)
+        _record_properties(record_property, server, tracker, 10)
 
     async def test_compositor_alone(self, record_property, server) -> None:
         server = DisplayServer(server, add_extensions=ScreencopyTracker.required_extensions)
         tracker = ScreencopyTracker(server.display_name)
-        with server, tracker:
+        async with server, tracker:
             await asyncio.sleep(long_wait_time)
-        _record_properties(record_property, server, tracker)
+        _record_properties(record_property, server, tracker, 1)
 
     @pytest.mark.parametrize('app', [
         apps.qterminal(),
@@ -50,6 +54,6 @@ class TestScreencopyBandwidth:
     async def test_inactive_app(self, record_property, server, app) -> None:
         server = DisplayServer(server, add_extensions=ScreencopyTracker.required_extensions)
         tracker = ScreencopyTracker(server.display_name)
-        with server as s, tracker, s.program(app):
+        async with server as s, tracker, s.program(app):
             await asyncio.sleep(long_wait_time)
-        _record_properties(record_property, server, tracker)
+        _record_properties(record_property, server, tracker, 2)

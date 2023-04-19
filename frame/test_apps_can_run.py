@@ -16,7 +16,7 @@ class TestAppsCanRun:
         apps.gedit(),
         apps.qterminal(),
     ])
-    def test_app_can_run(self, server, app) -> None:
-        with DisplayServer(server) as server:
-            with server.program(app):
+    async def test_app_can_run(self, server, app) -> None:
+        async with DisplayServer(server) as server:
+            async with server.program(app):
                 time.sleep(short_wait_time)
