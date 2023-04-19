@@ -1,6 +1,7 @@
 import inotify.adapters
 import os
 import time
+import asyncio
 
 from typing import Dict, Tuple
 
@@ -50,25 +51,25 @@ class DisplayServer:
             **env)
         )
 
-    def __enter__(self) -> 'DisplayServer':
+    async def __aenter__(self) -> 'DisplayServer':
         runtime_dir = os.environ['XDG_RUNTIME_DIR']
         clear_wayland_display(runtime_dir, self.display_name)
-        self.server = Program(self.command, env={
+        self.server = await Program(self.command, env={
             'WAYLAND_DISPLAY': self.display_name,
             'MIR_SERVER_ADD_WAYLAND_EXTENSIONS': ','.join(self.add_extensions),
-        })
+        }).__aenter__()
         try:
             wait_for_wayland_display(runtime_dir, self.display_name)
         except:
-            self.server.kill()
+            await self.server.kill()
             raise
         self.start_time = time.time()
         return self
 
-    def __exit__(self, *args):
+    async def __aexit__(self, *args):
         # If Mir is run for too short a period of time it tends to not shut down correctly
         # See https://github.com/MirServer/mir/issues/2845
         sleep_time = self.start_time + min_mir_run_time - time.time()
         if sleep_time > 0:
-            time.sleep(sleep_time)
-        self.server.kill()
+            await asyncio.sleep(sleep_time)
+        await self.server.kill()

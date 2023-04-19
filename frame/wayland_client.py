@@ -11,8 +11,12 @@ class WaylandClient:
         self._registry: Optional[WlRegistryProxy] = None
 
     def _dispatch(self) -> None:
-        self.display.read()
-        self.display.dispatch(block=False)
+        try:
+            self.display.read()
+            self.display.dispatch(block=False)
+        except Exception as e:
+            asyncio.get_event_loop().remove_writer(self.display.get_fd())
+            raise
 
     @abstractmethod
     def registry_global(self, registry, id_num: int, iface_name: str, version: int) -> None:
@@ -26,7 +30,7 @@ class WaylandClient:
     def disconnected(self) -> None:
         pass
 
-    def __enter__(self) -> 'WaylandClient':
+    async def __aenter__(self) -> 'WaylandClient':
         try:
             self.display.connect()
             self._registry = registry = self.display.get_registry()
@@ -36,10 +40,10 @@ class WaylandClient:
             asyncio.get_event_loop().add_writer(self.display.get_fd(), self._dispatch)
             return self
         except:
-            self.__exit__()
+            await self.__aexit__()
             raise
 
-    def __exit__(self, *args) -> None:
+    async def __aexit__(self, *args) -> None:
         asyncio.get_event_loop().remove_writer(self.display.get_fd())
         self.display.roundtrip()
         self.display.disconnect()
