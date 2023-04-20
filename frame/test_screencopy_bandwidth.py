@@ -1,5 +1,4 @@
 from display_server import DisplayServer
-from screencopy_tracker import ScreencopyTracker
 import pytest
 import os
 import re
@@ -24,12 +23,14 @@ def _record_properties(fixture, server, tracker, min_frames):
     )
 
 @pytest.mark.performance
+@pytest.mark.deps('pywayland-scanner', pip_pkgs=('pywayland',))
 class TestScreencopyBandwidth:
     @pytest.mark.parametrize('app', [
         apps.qterminal('--execute', f'python3 -m asciinema play {ASCIINEMA_CAST}', pip_pkgs=('asciinema',), id='asciinema', extra=15),
         apps.snap('mir-kiosk-neverputt', extra=False)
     ])
     async def test_active_app(self, record_property, server, app) -> None:
+        from screencopy_tracker import ScreencopyTracker
         server = DisplayServer(server, add_extensions=ScreencopyTracker.required_extensions)
         tracker = ScreencopyTracker(server.display_name)
         async with server as s, tracker, s.program(app[0]) as p:
@@ -40,6 +41,7 @@ class TestScreencopyBandwidth:
         _record_properties(record_property, server, tracker, 10)
 
     async def test_compositor_alone(self, record_property, server) -> None:
+        from screencopy_tracker import ScreencopyTracker
         server = DisplayServer(server, add_extensions=ScreencopyTracker.required_extensions)
         tracker = ScreencopyTracker(server.display_name)
         async with server, tracker:
@@ -52,6 +54,7 @@ class TestScreencopyBandwidth:
         apps.snap('mir-kiosk-kodi'),
     ])
     async def test_inactive_app(self, record_property, server, app) -> None:
+        from screencopy_tracker import ScreencopyTracker
         server = DisplayServer(server, add_extensions=ScreencopyTracker.required_extensions)
         tracker = ScreencopyTracker(server.display_name)
         async with server as s, tracker, s.program(app):
