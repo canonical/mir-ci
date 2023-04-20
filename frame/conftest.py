@@ -58,7 +58,7 @@ def _deps_install(request: pytest.FixtureRequest, spec: Union[str, Mapping[str, 
         channel = 'latest/stable'
         pip_pkgs = ()
     else:
-        raise TypeError('Bad value for argument `spec`')
+        raise TypeError('Bad value for argument `spec`: ' + repr(spec))
 
     if request.config.getoption("--deps", False):
         missing_pkgs = []
