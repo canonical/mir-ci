@@ -64,12 +64,17 @@ class TestScreencopyBandwidth:
             await asyncio.sleep(long_wait_time)
         _record_properties(record_property, server, tracker, 2)
 
-    async def test_app_dragged_around(self, record_property, server) -> None:
+    @pytest.mark.parametrize('local_server', [
+        apps.confined_shell(),
+        apps.mir_test_tools(),
+        apps.mir_demo_server(),
+    ])
+    async def test_app_dragged_around(self, record_property, local_server) -> None:
         async def pause():
             await asyncio.sleep(0.2)
         extensions = ScreencopyTracker.required_extensions + VirtualPointer.required_extensions
         app_path = Path(__file__).parent / 'clients' / 'maximizing_gtk_app.py'
-        server = DisplayServer(server, add_extensions=extensions)
+        server = DisplayServer(local_server, add_extensions=extensions)
         app = server.program(('python3', str(app_path)))
         tracker = ScreencopyTracker(server.display_name)
         pointer = VirtualPointer(server.display_name)
