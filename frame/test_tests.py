@@ -8,8 +8,9 @@ from program import Program
 
 class TestTest:
     @pytest.mark.self
-    @pytest.mark.deps('python3', '-m', 'mypy', pip_pkgs=('mypy',))
+    @pytest.mark.deps('python3', '-m', 'mypy', pip_pkgs=('mypy', 'pywayland'))
     def test_project_typechecks(self, deps) -> None:
+        from protocols import WlOutput, WlShm, ZwlrScreencopyManagerV1  # noqa:F401
         project_path = os.path.dirname(__file__)
         assert os.path.isfile(os.path.join(project_path, 'requirements.txt')), 'project path not detected correctly'
         result = subprocess.run(
