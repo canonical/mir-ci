@@ -71,20 +71,34 @@ def _deps_install(request: pytest.FixtureRequest, spec: Union[str, Mapping[str, 
 
     if request.config.getoption("--deps", False):
         if debs:
-            try:
-                subprocess.check_call(('dpkg', '--status', *debs), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            except subprocess.CalledProcessError:
-                request.getfixturevalue('ppa')
-                subprocess.check_call((*APT_INSTALL, *debs))
+            checked_debs = request.session.keywords.setdefault('debs', set())
+            unchecked_debs = set(debs).difference(checked_debs)
+            if unchecked_debs:
+                try:
+                    subprocess.check_call(('dpkg', '--status', *unchecked_debs),
+                                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                except subprocess.CalledProcessError:
+                    request.getfixturevalue('ppa')
+                    subprocess.check_call((*APT_INSTALL, *unchecked_debs))
+                checked_debs.update(unchecked_debs)
         if snap:
-            try:
-                subprocess.check_call(('snap', 'list', snap), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            except subprocess.CalledProcessError:
-                subprocess.check_call(('sudo', 'snap', 'install', snap, '--channel', channel))
-                if shutil.which(f'/snap/{snap}/current/bin/setup.sh'):
-                    subprocess.check_call(('sudo', f'/snap/{snap}/current/bin/setup.sh'))
-                subprocess.call(('sudo', 'snap', 'connect', f'{snap}:login-session-control'),
-                                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            checked_snaps = request.session.keywords.setdefault('snaps', set())
+            if snap not in checked_snaps:
+                try:
+                    subprocess.check_call(('snap', 'list', snap),
+                                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                except subprocess.CalledProcessError:
+                    subprocess.check_call(('sudo', 'snap', 'install', snap, '--channel', channel))
+                    if shutil.which(f'/snap/{snap}/current/bin/setup.sh'):
+                        subprocess.check_call(('sudo', f'/snap/{snap}/current/bin/setup.sh'))
+                    subprocess.call(('sudo', 'snap', 'connect', f'{snap}:login-session-control'),
+                                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                checked_snaps.add(snap)
+
+        missing_pkgs = _find_pips(pip_pkgs)
+        if missing_pkgs:
+            subprocess.check_call((*PIP, 'install', *missing_pkgs))
+
         _deps_skip(request)
 
     return cmd
