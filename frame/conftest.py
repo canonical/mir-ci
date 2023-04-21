@@ -101,18 +101,20 @@ def ppa() -> None:
         subprocess.check_call(('sudo', 'add-apt-repository', '--yes', f'ppa:{RELEASE_PPA}'))
 
 @pytest.fixture(scope='function', params=(
-    apps.ubuntu_frame(),
-    apps.mir_kiosk(),
-    apps.confined_shell(),
-    apps.mir_test_tools(),
-    apps.mir_demo_server(),
+    apps.ubuntu_frame,
+    apps.mir_kiosk,
+    apps.confined_shell,
+    apps.mir_test_tools,
+    apps.mir_demo_server,
 ))
 def server(request: pytest.FixtureRequest) -> List[str]:
     '''
     Parameterizes the servers (ubuntu-frame, mir-kiosk, confined-shell, mir_demo_server),
     or installs them if `--deps` is given on the command line.
     '''
-    return request.param
+    # Have to evaluate the param ourselves, because you can't mark fixtures and so
+    # the `.deps(…)` mark never registers.
+    return _deps_install(request, request.param().marks[0].kwargs)
 
 @pytest.fixture(scope='function')
 def deps(request: pytest.FixtureRequest) -> List[str]:
