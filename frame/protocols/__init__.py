@@ -15,6 +15,8 @@ def generate_protocol(name, imports: Dict[str, str]) -> Dict[str, str]:
 
 core_imports = generate_protocol('wayland', {})
 generate_protocol('wlr-screencopy-unstable-v1', core_imports)
+generate_protocol('wlr-virtual-pointer-unstable-v1', core_imports)
 
 from .wayland import *
 from .wlr_screencopy_unstable_v1 import *
+from .wlr_virtual_pointer_unstable_v1 import *
