@@ -51,9 +51,6 @@ jobs:
     - name: Set up dependencies
       working-directory: frame
       run: |
-        sudo apt-get --yes --no-install-recommends install \
-          libgtk-4-dev
-
         pip install -r requirements.txt
         python -m pytest ${{ steps.pytest-args.outputs.args }} --deps
 

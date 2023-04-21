@@ -64,6 +64,7 @@ class TestScreencopyBandwidth:
             await asyncio.sleep(long_wait_time)
         _record_properties(record_property, server, tracker, 2)
 
+    @pytest.mark.deps(debs=('libgtk-4-dev',), pip_pkgs=(('pygobject', 'gi'),))
     @pytest.mark.parametrize('local_server', [
         apps.confined_shell(),
         apps.mir_test_tools(),
