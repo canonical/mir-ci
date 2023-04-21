@@ -21,6 +21,15 @@ def pytest_addoption(parser):
         '--deps', help='Only install the test dependencies', action='store_true'
     )
 
+def _find_pips(pips):
+    missing = []
+    for pkg in pips:
+        try:
+            __import__(isinstance(pkg, tuple) and pkg[1] or pkg)
+        except ImportError:
+            missing.append(isinstance(pkg, tuple) and pkg[0] or pkg)
+    return missing
+
 def _deps_skip(request: pytest.FixtureRequest) -> None:
     '''
     Keep a record of fixtures affected by `--deps` and only skip the request
@@ -61,35 +70,22 @@ def _deps_install(request: pytest.FixtureRequest, spec: Union[str, Mapping[str, 
         raise TypeError('Bad value for argument `spec`: ' + repr(spec))
 
     if request.config.getoption("--deps", False):
-        missing_pkgs = []
-        for pkg in pip_pkgs:
+        if debs:
             try:
-                __import__(pkg)
-            except ImportError:
-                missing_pkgs.append(pkg)
-        if missing_pkgs:
-            subprocess.check_call((*PIP, 'install', *missing_pkgs))
-
-        if shutil.which(cmd[0]) is None:
-            if debs is not None:
+                subprocess.check_call(('dpkg', '--status', *debs), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            except subprocess.CalledProcessError:
                 request.getfixturevalue('ppa')
                 subprocess.check_call((*APT_INSTALL, *debs))
-            if snap is not None:
+        if snap:
+            try:
+                subprocess.check_call(('snap', 'list', snap), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            except subprocess.CalledProcessError:
                 subprocess.check_call(('sudo', 'snap', 'install', snap, '--channel', channel))
                 if shutil.which(f'/snap/{snap}/current/bin/setup.sh'):
                     subprocess.check_call(('sudo', f'/snap/{snap}/current/bin/setup.sh'))
                 subprocess.call(('sudo', 'snap', 'connect', f'{snap}:login-session-control'),
                                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         _deps_skip(request)
-
-    if shutil.which(cmd[0]) is None:
-        pytest.fail(f'executable not found: {cmd[0]}')
-
-    for pkg in pip_pkgs:
-        try:
-            __import__(pkg)
-        except ImportError:
-            pytest.fail(f'PIP package not found: {pkg}')
 
     return cmd
 
@@ -129,7 +125,8 @@ def deps(request: pytest.FixtureRequest) -> List[str]:
     @pytest.mark.deps('snap', snap='the-snap', channel='edge')  # where `snap` is the executable
     @pytest.mark.deps('app', debs=('deb-one', 'deb-two'))       # where `app` is the executable
     @pytest.mark.deps('other-app', cmd=('the-app', 'arg'))      # `the-app` is the executable
-    @pytest.mark.deps('pkg', pip_pkgs=('one','two'))            # `pkg` is the executable
+    @pytest.mark.deps(pip_pkgs=('one','two'))                   # no executable, `one` and `two` installed with `pip`
+    @pytest.mark.deps(pip_pkgs=(('pkg', 'module'),))            # `module` import checked, `pkg` installed with `pip`
     ```
     '''
     marks: Iterator[pytest.Mark] = request.node.iter_markers('deps')
