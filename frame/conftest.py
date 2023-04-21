@@ -8,6 +8,8 @@ from typing import Any, Generator, List, Mapping, Optional, Union
 import distro
 import pytest
 
+import apps
+
 RELEASE_PPA = 'mir-team/release'
 RELEASE_PPA_ENTRY = f'https://ppa.launchpadcontent.net/{RELEASE_PPA}/ubuntu {distro.codename()}/main'
 APT_INSTALL = ('sudo', 'DEBIAN_FRONTEND=noninteractive', 'apt-get', 'install', '--yes')
@@ -56,7 +58,7 @@ def _deps_install(request: pytest.FixtureRequest, spec: Union[str, Mapping[str, 
         channel = 'latest/stable'
         pip_pkgs = ()
     else:
-        raise TypeError('Bad value for argument `spec`')
+        raise TypeError('Bad value for argument `spec`: ' + repr(spec))
 
     if request.config.getoption("--deps", False):
         missing_pkgs = []
@@ -99,18 +101,20 @@ def ppa() -> None:
         subprocess.check_call(('sudo', 'add-apt-repository', '--yes', f'ppa:{RELEASE_PPA}'))
 
 @pytest.fixture(scope='function', params=(
-    pytest.param({'snap': 'ubuntu-frame', 'channel': '22/stable'}, id='ubuntu_frame'),
-    pytest.param('mir-kiosk', id='mir_kiosk'),
-    pytest.param({'snap': 'confined-shell', 'channel': 'edge'}, id='confined_shell'),
-    pytest.param({'snap': 'mir-test-tools', 'channel': '22/beta', 'cmd': ('mir-test-tools.demo-server',)}, id='mir_test_tools'),
-    pytest.param({'cmd': ['mir_demo_server'], 'debs': ('mir-test-tools', 'mir-graphics-drivers-desktop')}, id='mir_demo_server'),
+    apps.ubuntu_frame,
+    apps.mir_kiosk,
+    apps.confined_shell,
+    apps.mir_test_tools,
+    apps.mir_demo_server,
 ))
 def server(request: pytest.FixtureRequest) -> List[str]:
     '''
     Parameterizes the servers (ubuntu-frame, mir-kiosk, confined-shell, mir_demo_server),
     or installs them if `--deps` is given on the command line.
     '''
-    return _deps_install(request, request.param)
+    # Have to evaluate the param ourselves, because you can't mark fixtures and so
+    # the `.deps(…)` mark never registers.
+    return _deps_install(request, request.param().marks[0].kwargs)
 
 @pytest.fixture(scope='function')
 def deps(request: pytest.FixtureRequest) -> List[str]:

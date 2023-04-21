@@ -12,7 +12,7 @@ def format_output(name: str, output: str) -> str:
     After collecting a program's output into a string, this function wraps it in a border for easy
     reading
     '''
-    l_pad = 36 - len(name) // 2
+    l_pad = 37 - len(name) // 2
     r_pad = l_pad
     if len(name) % 2 == 1:
         r_pad -= 1
