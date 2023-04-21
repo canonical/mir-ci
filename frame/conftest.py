@@ -78,6 +78,8 @@ def _deps_install(request: pytest.FixtureRequest, spec: Union[str, Mapping[str, 
                 subprocess.check_call(('sudo', 'snap', 'install', snap, '--channel', channel))
                 if shutil.which(f'/snap/{snap}/current/bin/setup.sh'):
                     subprocess.check_call(('sudo', f'/snap/{snap}/current/bin/setup.sh'))
+                subprocess.call(('sudo', 'snap', 'connect', f'{snap}:login-session-control'),
+                                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         _deps_skip(request)
 
     if shutil.which(cmd[0]) is None:
