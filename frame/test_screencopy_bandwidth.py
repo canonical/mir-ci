@@ -1,11 +1,14 @@
 from display_server import DisplayServer
-from screencopy_tracker import ScreencopyTracker
 import pytest
 import os
 import re
 import asyncio
-
 import apps
+
+try:
+    from screencopy_tracker import ScreencopyTracker
+except ModuleNotFoundError as e:
+    pass
 
 long_wait_time = 10
 
@@ -24,6 +27,7 @@ def _record_properties(fixture, server, tracker, min_frames):
     )
 
 @pytest.mark.performance
+@pytest.mark.deps('pywayland-scanner', pip_pkgs=('pywayland',))
 class TestScreencopyBandwidth:
     @pytest.mark.parametrize('app', [
         apps.qterminal('--execute', f'python3 -m asciinema play {ASCIINEMA_CAST}', pip_pkgs=('asciinema',), id='asciinema', extra=15),
