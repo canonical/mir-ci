@@ -21,6 +21,7 @@ class TestTest:
         if result.returncode != 0:
             raise RuntimeError('`$ mypy ' + project_path + '` failed:\n\n' + result.stdout)
 
+@pytest.mark.self
 class TestProgram:
     async def test_program_gives_output(self) -> None:
         p = Program(['printf', '%s - %s', 'abc', 'xyz'])
