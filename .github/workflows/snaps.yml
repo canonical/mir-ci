@@ -5,10 +5,8 @@ concurrency:
   cancel-in-progress: true
 
 on:
-  push:
-    branches:
-    - staging
-    - trying
+  merge_group:
+    types: [checks_requested]
   workflow_dispatch:
   schedule:
   - cron: '0 * * * *'
