@@ -12,7 +12,7 @@ class Button(IntEnum):
     MIDDLE = 0x112
 
 class VirtualPointer(WaylandClient):
-    required_extensions = ('zwlr_virtual_pointer_manager_v1',)
+    required_extensions = (ZwlrVirtualPointerManagerV1.name,)
 
     def __init__(self, display_name: str) -> None:
         super().__init__(display_name)
