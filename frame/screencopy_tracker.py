@@ -29,7 +29,7 @@ def shm_open() -> int:
     return open_result
 
 class ScreencopyTracker(WaylandClient):
-    required_extensions = ('zwlr_screencopy_manager_v1',)
+    required_extensions = (ZwlrScreencopyManagerV1.name,)
 
     def __init__(self, display_name: str) -> None:
         super().__init__(display_name)
