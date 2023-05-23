@@ -21,7 +21,10 @@ class VirtualPointer(WaylandClient):
 
     def registry_global(self, registry, id_num: int, iface_name: str, version: int) -> None:
         if iface_name == ZwlrVirtualPointerManagerV1.name:
-            self.pointer_manager = manager = registry.bind(id_num, ZwlrVirtualPointerManagerV1, version)
+            self.pointer_manager = manager = registry.bind(
+                id_num,
+                ZwlrVirtualPointerManagerV1,
+                min(ZwlrVirtualPointerManagerV1.version, version))
             self.pointer = manager.create_virtual_pointer(None)
 
     def connected(self) -> None:
