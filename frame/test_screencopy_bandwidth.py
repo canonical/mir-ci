@@ -54,7 +54,7 @@ class TestScreencopyBandwidth:
 
     @pytest.mark.parametrize('app', [
         apps.qterminal(),
-        apps.gedit(),
+        apps.pluma(),
         apps.snap('mir-kiosk-kodi'),
     ])
     async def test_inactive_app(self, record_property, server, app) -> None:
