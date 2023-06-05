@@ -77,8 +77,8 @@ def qterminal(*args: str, debs: Collection[str] = ('qterminal', 'qtwayland5'), m
         *marks)
     return deb('qterminal', *args, debs=debs, marks=marks, **kwargs)
 
-def gedit(*args: str, **kwargs):
-    return deb('gedit', '-s', *args, **kwargs)
+def pluma(*args: str, **kwargs):
+    return deb('pluma', *args, **kwargs)
 
 def wpe(*args: str, cmd: Collection[str] = (), **kwargs):
     return snap('wpe-webkit-mir-kiosk', cmd=cmd or ('wpe-webkit-mir-kiosk.cog', *args), **kwargs)
