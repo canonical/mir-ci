@@ -29,7 +29,7 @@ def shm_open() -> int:
     return open_result
 
 class ScreencopyTracker(WaylandClient):
-    required_extensions = ('zwlr_screencopy_manager_v1',)
+    required_extensions = (ZwlrScreencopyManagerV1.name,)
 
     def __init__(self, display_name: str) -> None:
         super().__init__(display_name)
@@ -48,11 +48,14 @@ class ScreencopyTracker(WaylandClient):
 
     def registry_global(self, registry, id_num: int, iface_name: str, version: int) -> None:
         if iface_name == ZwlrScreencopyManagerV1.name:
-            self.screencopy_manager = registry.bind(id_num, ZwlrScreencopyManagerV1, version)
+            self.screencopy_manager = registry.bind(
+                id_num,
+                ZwlrScreencopyManagerV1,
+                min(ZwlrScreencopyManagerV1.version, version))
         elif iface_name == WlOutput.name:
-            self.output = registry.bind(id_num, WlOutput, version)
+            self.output = registry.bind(id_num, WlOutput, min(WlOutput.version, version))
         elif iface_name == WlShm.name:
-            self.shm = registry.bind(id_num, WlShm, version)
+            self.shm = registry.bind(id_num, WlShm, min(WlShm.version, version))
 
     def connected(self) -> None:
         self.copy_frame(True)
