@@ -13,7 +13,7 @@ class TestAppsCanRun:
         apps.snap('mir-kiosk-neverputt'),
         apps.snap('mir-kiosk-scummvm'),
         apps.snap('mir-kiosk-kodi'),
-        apps.gedit(),
+        apps.pluma(),
         apps.qterminal(),
     ])
     async def test_app_can_run(self, server, app) -> None:
