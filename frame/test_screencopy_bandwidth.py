@@ -80,7 +80,7 @@ class TestScreencopyBandwidth:
         tracker = ScreencopyTracker(server.display_name)
         pointer = VirtualPointer(server.display_name)
         async with server, tracker, app, pointer:
-            await asyncio.sleep(1)
+            await asyncio.sleep(2)
             pointer.move_to_absolute(pointer.output_width / 2, 10)
             await pause()
             pointer.button(Button.LEFT, True)
