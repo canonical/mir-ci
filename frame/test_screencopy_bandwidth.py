@@ -64,7 +64,7 @@ class TestScreencopyBandwidth:
             await asyncio.sleep(long_wait_time)
         _record_properties(record_property, server, tracker, 2)
 
-    @pytest.mark.deps(debs=('libgtk-4-dev',), pip_pkgs=(('pygobject', 'gi'),))
+    @pytest.mark.deps(debs=('libgtk-4-dev', 'dbus-daemon'), pip_pkgs=(('pygobject', 'gi'),))
     @pytest.mark.parametrize('local_server', [
         apps.confined_shell(),
         apps.mir_test_tools(),
@@ -76,7 +76,7 @@ class TestScreencopyBandwidth:
         extensions = ScreencopyTracker.required_extensions + VirtualPointer.required_extensions
         app_path = Path(__file__).parent / 'clients' / 'maximizing_gtk_app.py'
         server = DisplayServer(local_server, add_extensions=extensions)
-        app = server.program(('python3', str(app_path)))
+        app = server.program(('dbus-run-session', 'python3', str(app_path)))
         tracker = ScreencopyTracker(server.display_name)
         pointer = VirtualPointer(server.display_name)
         async with server, tracker, app, pointer:
