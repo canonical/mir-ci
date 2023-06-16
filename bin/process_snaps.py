@@ -85,6 +85,9 @@ SNAPS = {
     "mesa-core22": {
         "beta": {"recipe": "mesa-core22-beta"},
     },
+    "nvidia-core22": {
+        "beta": {"recipe": "nvidia-core22-beta"},
+    },
     "mir-kiosk-x11": {
         "edge": {"ppa": "dev", "recipe": "mir-kiosk-x11-edge", "release": "focal"},
         "beta": {"ppa": "rc", "recipe": "mir-kiosk-x11-beta", "release": "focal"},
