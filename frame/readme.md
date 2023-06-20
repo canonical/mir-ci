@@ -1,5 +1,10 @@
 # Ubuntu Frame Integration Tests
 
+**NB:** Your working directory needs to be `frame` for this to work.
+
+## To install suite dependencies
+`pip install -r requirements.txt`
+
 ## To select a subset of tests
 This applies to any use of `pytest` below. To select a subset of tests,
 use `-k EXPRESSION`, replacing hyphens with underscores:
@@ -13,7 +18,7 @@ You can use logical expressions:
 See more:
 https://docs.pytest.org/en/latest/how-to/usage.html#specifying-which-tests-to-run
 
-## To install dependencies
+## To install test dependencies
 Just add `--deps` to your test invocation. It will install all the dependencies
 for the selected tests, but skip them.
 `pytest --deps`
@@ -29,6 +34,6 @@ To run inside of a virtual X11 server:
 To record test properties:
 `xvfb-run -a pytest --junitxml=junit.xml`
 
-## To typecheck tests
-(this is also run as part of the test suite)
-`mypy .`
+## To run self-tests
+This type checks and tests for the test helpers.
+`pytest -m self`
