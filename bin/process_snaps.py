@@ -59,6 +59,10 @@ SNAPS = {
         "22/edge": {"ppa": "dev", "recipe": "mir-test-tools-22-edge"},
         "22/beta": {"ppa": "rc", "recipe": "mir-test-tools-22-beta"},
     },
+    "miriway": {
+        "edge": {"ppa": "dev", "recipe": "miriway-edge"},
+        "beta": {"ppa": "rc", "recipe": "miriway-beta"},
+    },
     "egmde": {
         "edge": {"ppa": "dev", "recipe": "egmde-mir-edge", "release": "focal"},
         "beta": {"ppa": "rc", "recipe": "egmde-mir-beta", "release": "focal"},
