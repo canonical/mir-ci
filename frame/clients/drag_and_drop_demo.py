@@ -12,31 +12,31 @@ DRAG_ACTION = Gdk.DragAction.COPY
 class DragDropWindow(Gtk.Window):
     def __init__(self):
         super().__init__(title="Drag and Drop Demo")
+        self.fullscreen()
 
-        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
-        self.add(vbox)
+        self.drop_area = DropArea()
+        self.iconview = DragSourceIconView()
+
+        dropbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        dropbox.pack_start(self.drop_buttons(), False, False, 0)
+        dropbox.pack_start(self.drop_area, True, True, 0)
 
         hbox = Gtk.Box(spacing=12)
-        vbox.pack_start(hbox, True, True, 0)
-
-        self.iconview = DragSourceIconView()
-        self.drop_area = DropArea()
-
-        hbox.pack_start(self.iconview, True, True, 0)
-        hbox.pack_start(self.drop_area, True, True, 0)
-
-        button_box = Gtk.Box(spacing=6)
-        vbox.pack_start(button_box, True, False, 0)
-
-        image_button = Gtk.RadioButton.new_with_label_from_widget(None, "Images")
-        image_button.connect("toggled", self.add_image_targets)
-        button_box.pack_start(image_button, True, False, 0)
-
-        text_button = Gtk.RadioButton.new_with_label_from_widget(image_button, "Text")
-        text_button.connect("toggled", self.add_text_targets)
-        button_box.pack_start(text_button, True, False, 0)
+        hbox.pack_start(self.iconview, False, True, 0)
+        hbox.pack_start(dropbox, True, True, 0)
+        self.add(hbox)
 
         self.add_image_targets()
+
+    def drop_buttons(self):
+        image_button = Gtk.RadioButton.new_with_label_from_widget(None, "Images")
+        image_button.connect("toggled", self.add_image_targets)
+        text_button = Gtk.RadioButton.new_with_label_from_widget(image_button, "Text")
+        text_button.connect("toggled", self.add_text_targets)
+        button_box = Gtk.Box(spacing=6)
+        button_box.pack_start(image_button, False, False, 0)
+        button_box.pack_start(text_button, False, False, 0)
+        return button_box
 
     def add_image_targets(self, button=None):
         targets = Gtk.TargetList.new([])
