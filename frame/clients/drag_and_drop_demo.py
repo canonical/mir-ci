@@ -80,7 +80,11 @@ class DragSourceIconView(Gtk.IconView):
             data.set_pixbuf(pixbuf)
 
     def add_item(self, text, icon_name):
-        pixbuf = Gtk.IconTheme.get_default().load_icon(icon_name, 16, 0)
+        try:
+            pixbuf = Gtk.IconTheme.get_default().load_icon(icon_name, 16, 0)
+        except:
+            pixbuf = Gtk.IconTheme.get_default().load_icon(icon_name + "-symbolic", 16, 0)
+
         self.get_model().append([text, pixbuf])
 
 
