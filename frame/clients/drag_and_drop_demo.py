@@ -14,12 +14,17 @@ class DragDropWindow(Gtk.Window):
         super().__init__(title="Drag and Drop Demo")
         self.fullscreen()
 
-        self.drop_area = DropArea()
-        self.iconview = DragSourceIconView()
+        drop_area = DropArea()
+        iconview = DragSourceIconView()
+
+        sourcebox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        sourcebox.pack_start(iconview.buttons(), False, False, 0)
+        sourcebox.pack_start(iconview, True, True, 0)
 
         dropbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         dropbox.pack_start(self.drop_buttons(), False, False, 0)
         dropbox.pack_start(self.drop_area, True, True, 0)
+        dropbox.pack_start(drop_area.feedback, False, True, 0)
 
         hbox = Gtk.Box(spacing=12)
         hbox.pack_start(self.iconview, False, True, 0)
@@ -91,22 +96,36 @@ class DragSourceIconView(Gtk.IconView):
 class DropArea(Gtk.Label):
     def __init__(self):
         Gtk.Label.__init__(self)
+        self.feedback = Gtk.Label.new()
+        self.feedback.set_label("(nothing)")
+
         self.set_label("Drop something on me!")
         self.drag_dest_set(Gtk.DestDefaults.ALL, [], DRAG_ACTION)
 
         self.connect("drag-data-received", self.on_drag_data_received)
+        self.connect("drag-motion", self.on_drag_motion)
+        self.connect("drag-leave", self.on_drag_leave)
+
+    def on_drag_motion(self, widget, drag_context, x, y, time):
+        actions = drag_context.get_actions().value_names
+        targets = [str(target) for target in drag_context.list_targets()]
+        self.feedback.set_label("Actions: %s, offers: %s" % (actions, targets))
+        return False
+
+    def on_drag_leave(self, widget, drag_context, time):
+        self.feedback.set_label("(leave)")
+        return False
 
     def on_drag_data_received(self, widget, drag_context, x, y, data, info, time):
         if info == TARGET_ENTRY_TEXT:
             text = data.get_text()
-            print("Received text: %s" % text)
+            self.feedback.set_label("Received text: %s" % text)
 
         elif info == TARGET_ENTRY_PIXBUF:
             pixbuf = data.get_pixbuf()
             width = pixbuf.get_width()
             height = pixbuf.get_height()
-
-            print("Received pixbuf with width %spx and height %spx" % (width, height))
+            self.feedback.set_label("Received pixbuf with width %spx and height %spx" % (width, height))
 
 
 win = DragDropWindow()
