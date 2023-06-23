@@ -22,41 +22,14 @@ class DragDropWindow(Gtk.Window):
         sourcebox.pack_start(iconview, True, True, 0)
 
         dropbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
-        dropbox.pack_start(self.drop_buttons(), False, False, 0)
-        dropbox.pack_start(self.drop_area, True, True, 0)
+        dropbox.pack_start(drop_area.buttons(), False, False, 0)
+        dropbox.pack_start(drop_area, True, True, 0)
         dropbox.pack_start(drop_area.feedback, False, True, 0)
 
         hbox = Gtk.Box(spacing=12)
-        hbox.pack_start(self.iconview, False, True, 0)
+        hbox.pack_start(sourcebox, False, True, 0)
         hbox.pack_start(dropbox, True, True, 0)
         self.add(hbox)
-
-        self.add_image_targets()
-
-    def drop_buttons(self):
-        image_button = Gtk.RadioButton.new_with_label_from_widget(None, "Images")
-        image_button.connect("toggled", self.add_image_targets)
-        text_button = Gtk.RadioButton.new_with_label_from_widget(image_button, "Text")
-        text_button.connect("toggled", self.add_text_targets)
-        button_box = Gtk.Box(spacing=6)
-        button_box.pack_start(image_button, False, False, 0)
-        button_box.pack_start(text_button, False, False, 0)
-        return button_box
-
-    def add_image_targets(self, button=None):
-        targets = Gtk.TargetList.new([])
-        targets.add_image_targets(TARGET_ENTRY_PIXBUF, True)
-
-        self.drop_area.drag_dest_set_target_list(targets)
-        self.iconview.drag_source_set_target_list(targets)
-
-    def add_text_targets(self, button=None):
-        self.drop_area.drag_dest_set_target_list(None)
-        self.iconview.drag_source_set_target_list(None)
-
-        self.drop_area.drag_dest_add_text_targets()
-        self.iconview.drag_source_add_text_targets()
-
 
 class DragSourceIconView(Gtk.IconView):
     def __init__(self):
@@ -72,6 +45,36 @@ class DragSourceIconView(Gtk.IconView):
 
         self.enable_model_drag_source(Gdk.ModifierType.BUTTON1_MASK, [], DRAG_ACTION)
         self.connect("drag-data-get", self.on_drag_data_get)
+
+    def buttons(self):
+        self.set_image_targets();
+        image_button = Gtk.RadioButton.new_with_label_from_widget(None, "Images")
+        image_button.connect("toggled", self.set_image_targets)
+        text_button = Gtk.RadioButton.new_with_label_from_widget(image_button, "Text")
+        text_button.connect("toggled", self.set_text_targets)
+        both_button = Gtk.RadioButton.new_with_label_from_widget(image_button, "Both")
+        text_button.connect("toggled", self.set_both_targets)
+        button_box = Gtk.Box(spacing=6)
+        button_box.pack_start(image_button, False, False, 0)
+        button_box.pack_start(text_button, False, False, 0)
+        button_box.pack_start(both_button, False, False, 0)
+        return button_box
+
+    def set_image_targets(self, button=None):
+        targets = Gtk.TargetList.new(None)
+        targets.add_image_targets(TARGET_ENTRY_PIXBUF, True)
+        self.drag_source_set_target_list(targets)
+
+    def set_text_targets(self, button=None):
+        targets = Gtk.TargetList.new(None)
+        targets.add_text_targets(TARGET_ENTRY_TEXT)
+        self.drag_source_set_target_list(targets)
+
+    def set_both_targets(self, button=None):
+        targets = Gtk.TargetList.new(None)
+        targets.add_image_targets(TARGET_ENTRY_PIXBUF, True)
+        targets.add_text_targets(TARGET_ENTRY_TEXT)
+        self.drag_source_set_target_list(targets)
 
     def on_drag_data_get(self, widget, drag_context, data, info, time):
         selected_path = self.get_selected_items()[0]
@@ -105,6 +108,27 @@ class DropArea(Gtk.Label):
         self.connect("drag-data-received", self.on_drag_data_received)
         self.connect("drag-motion", self.on_drag_motion)
         self.connect("drag-leave", self.on_drag_leave)
+
+    def buttons(self):
+        self.set_image_targets()
+        image_button = Gtk.RadioButton.new_with_label_from_widget(None, "Images")
+        image_button.connect("toggled", self.set_image_targets)
+        text_button = Gtk.RadioButton.new_with_label_from_widget(image_button, "Text")
+        text_button.connect("toggled", self.set_text_targets)
+        button_box = Gtk.Box(spacing=6)
+        button_box.pack_start(image_button, False, False, 0)
+        button_box.pack_start(text_button, False, False, 0)
+        return button_box
+
+    def set_image_targets(self, button=None):
+        targets = Gtk.TargetList.new(None)
+        targets.add_image_targets(TARGET_ENTRY_PIXBUF, True)
+        self.drag_dest_set_target_list(targets)
+
+    def set_text_targets(self, button=None):
+        targets = Gtk.TargetList.new(None)
+        targets.add_text_targets(TARGET_ENTRY_TEXT)
+        self.drag_dest_set_target_list(targets)
 
     def on_drag_motion(self, widget, drag_context, x, y, time):
         actions = drag_context.get_actions().value_names
