@@ -37,3 +37,11 @@ To record test properties:
 ## To run self-tests
 This type checks and tests for the test helpers.
 `pytest -m self`
+
+## The test clients
+
+These are based on PyGObject (GTK) and need the following installation:
+
+    sudo apt install libgirepository1.0-dev libcairo2-dev python3-dev
+    pip install pycairo PyGObject
+
