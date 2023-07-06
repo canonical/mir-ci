@@ -17,6 +17,7 @@ Args:
 
 Commands:
     move X Y        move the pointer, X and Y must be floats between 0 and 1
+    pos X Y         position the pointer, X and Y are absolute coordinates
     BUTTON STATE    click or unclick a button
     sleep SECONDS   sleep for the given number of seconds
 
@@ -39,6 +40,8 @@ async def main() -> None:
                 wait_time = float(args.pop(0))
             elif arg == 'move':
                 commands.append((pointer.move_to_proportional, (float(args.pop(0)), float(args.pop(0)))))
+            elif arg == 'pos':
+                commands.append((pointer.move_to_absolute, (int(args.pop(0)), int(args.pop(0)))))
             elif arg == 'left':
                 commands.append((pointer.button, (Button.LEFT, states[args.pop(0)])))
             elif arg == 'right':
