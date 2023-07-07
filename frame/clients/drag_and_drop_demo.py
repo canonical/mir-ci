@@ -1,8 +1,10 @@
 import gi
+import sys
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, Gdk, GdkPixbuf
 
+(EXCHANGE_TYPE_NONE, EXCHANGE_TYPE_TEXT, EXCHANGE_TYPE_PIXBUF) = range(3)
 (TARGET_ENTRY_TEXT, TARGET_ENTRY_PIXBUF) = range(2)
 (COLUMN_TEXT, COLUMN_PIXBUF) = range(2)
 
@@ -10,21 +12,24 @@ DRAG_ACTION = Gdk.DragAction.COPY
 
 
 class DragDropWindow(Gtk.Window):
-    def __init__(self):
+    def __init__(self, source_mode=None, target_mode=None, expect=None):
         super().__init__(title="Drag and Drop Demo")
         self.fullscreen()
 
-        drop_area = DropArea()
-        iconview = DragSourceIconView()
+        drop_area = DropArea(target_mode, expect)
+        iconview = DragSourceIconView(source_mode)
 
         sourcebox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
-        sourcebox.pack_start(iconview.buttons(), False, False, 0)
+        if source_mode == None:
+            sourcebox.pack_start(iconview.buttons(), False, False, 0)
         sourcebox.pack_start(iconview, True, True, 0)
 
         dropbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
-        dropbox.pack_start(drop_area.buttons(), False, False, 0)
+        if target_mode == None:
+            dropbox.pack_start(drop_area.buttons(), False, False, 0)
         dropbox.pack_start(drop_area, True, True, 0)
-        dropbox.pack_start(drop_area.feedback, False, True, 0)
+        if expect == None:
+            dropbox.pack_start(drop_area.feedback, False, True, 0)
 
         hbox = Gtk.Box(spacing=12)
         hbox.pack_start(sourcebox, False, True, 0)
@@ -32,7 +37,7 @@ class DragDropWindow(Gtk.Window):
         self.add(hbox)
 
 class DragSourceIconView(Gtk.IconView):
-    def __init__(self):
+    def __init__(self, source_mode):
         Gtk.IconView.__init__(self)
         self.set_text_column(COLUMN_TEXT)
         self.set_pixbuf_column(COLUMN_PIXBUF)
@@ -45,6 +50,11 @@ class DragSourceIconView(Gtk.IconView):
 
         self.enable_model_drag_source(Gdk.ModifierType.BUTTON1_MASK, [], DRAG_ACTION)
         self.connect("drag-data-get", self.on_drag_data_get)
+
+        if source_mode == EXCHANGE_TYPE_TEXT:
+            self.set_text_targets()
+        elif source_mode == EXCHANGE_TYPE_PIXBUF:
+            self.set_image_targets()
 
     def buttons(self):
         self.set_image_targets();
@@ -97,10 +107,17 @@ class DragSourceIconView(Gtk.IconView):
 
 
 class DropArea(Gtk.Label):
-    def __init__(self):
+    def __init__(self, target_mode, expect):
         Gtk.Label.__init__(self)
         self.feedback = Gtk.Label.new()
         self.feedback.set_label("(nothing)")
+        self.expect = expect
+
+        if target_mode:
+            if target_mode == EXCHANGE_TYPE_TEXT:
+                self.set_text_targets()
+            if target_mode == EXCHANGE_TYPE_PIXBUF:
+                self.set_image_targets()
 
         self.set_label("Drop something on me!")
         self.drag_dest_set(Gtk.DestDefaults.ALL, [], DRAG_ACTION)
@@ -150,9 +167,33 @@ class DropArea(Gtk.Label):
             width = pixbuf.get_width()
             height = pixbuf.get_height()
             self.feedback.set_label("Received pixbuf with width %spx and height %spx" % (width, height))
+def exchange_type(text):
+    match text:
+        case "text": return EXCHANGE_TYPE_TEXT
+        case "pixbuf": return EXCHANGE_TYPE_PIXBUF
+        case _: raise TypeError('Unknown exchange type: "%s"' % text)
 
-
-win = DragDropWindow()
-win.connect("destroy", Gtk.main_quit)
-win.show_all()
-Gtk.main()
+if __name__ == '__main__':
+    source_mode=None
+    target_mode=None
+    expect=None
+    try:
+        args = sys.argv[1:] or []
+        commands: list = []
+        while args:
+            arg = args.pop(0)
+            if arg == '--source':
+                source_mode = exchange_type(args.pop(0))
+            elif arg == '--target':
+                target_mode = exchange_type(args.pop(0))
+            elif arg == '--expect':
+                expect = exchange_type(args.pop(0))
+            else:
+                assert False, f'invalid argument: {arg}'
+    except Exception as e:
+        print('Argument error:', str(e))
+        exit(1)
+    win = DragDropWindow(source_mode=source_mode, target_mode=target_mode, expect=expect)
+    win.connect("destroy", Gtk.main_quit)
+    win.show_all()
+    Gtk.main()
