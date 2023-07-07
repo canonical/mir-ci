@@ -12,7 +12,7 @@ DRAG_ACTION = Gdk.DragAction.COPY
 
 
 class DragDropWindow(Gtk.Window):
-    def __init__(self, source_mode=None, target_mode=None, expect=None):
+    def __init__(self, source_mode, target_mode, expect):
         super().__init__(title="Drag and Drop Demo")
         self.fullscreen()
 
@@ -20,15 +20,15 @@ class DragDropWindow(Gtk.Window):
         iconview = DragSourceIconView(source_mode)
 
         sourcebox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
-        if source_mode == None:
+        if source_mode == EXCHANGE_TYPE_NONE:
             sourcebox.pack_start(iconview.buttons(), False, False, 0)
         sourcebox.pack_start(iconview, True, True, 0)
 
         dropbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
-        if target_mode == None:
+        if target_mode == EXCHANGE_TYPE_NONE:
             dropbox.pack_start(drop_area.buttons(), False, False, 0)
         dropbox.pack_start(drop_area, True, True, 0)
-        if expect == None:
+        if expect == EXCHANGE_TYPE_NONE:
             dropbox.pack_start(drop_area.feedback, False, True, 0)
 
         hbox = Gtk.Box(spacing=12)
@@ -113,18 +113,18 @@ class DropArea(Gtk.Label):
         self.feedback.set_label("(nothing)")
         self.expect = expect
 
-        if target_mode:
-            if target_mode == EXCHANGE_TYPE_TEXT:
-                self.set_text_targets()
-            if target_mode == EXCHANGE_TYPE_PIXBUF:
-                self.set_image_targets()
-
         self.set_label("Drop something on me!")
         self.drag_dest_set(Gtk.DestDefaults.ALL, [], DRAG_ACTION)
 
         self.connect("drag-data-received", self.on_drag_data_received)
         self.connect("drag-motion", self.on_drag_motion)
         self.connect("drag-leave", self.on_drag_leave)
+
+        if target_mode:
+            if target_mode == EXCHANGE_TYPE_TEXT:
+                self.set_text_targets()
+            if target_mode == EXCHANGE_TYPE_PIXBUF:
+                self.set_image_targets()
 
     def buttons(self):
         self.set_image_targets()
@@ -174,9 +174,9 @@ def exchange_type(text):
         case _: raise TypeError('Unknown exchange type: "%s"' % text)
 
 if __name__ == '__main__':
-    source_mode=None
-    target_mode=None
-    expect=None
+    source_mode=EXCHANGE_TYPE_NONE
+    target_mode=EXCHANGE_TYPE_NONE
+    expect=EXCHANGE_TYPE_NONE
     try:
         args = sys.argv[1:] or []
         commands: list = []
