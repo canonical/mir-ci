@@ -16,7 +16,7 @@ class DragDropWindow(Gtk.Window):
         super().__init__(title="Drag and Drop Demo")
         self.fullscreen()
 
-        drop_area = DropArea(target_mode, expect)
+        drop_area = DropArea(target_mode, self.result_callback)
         iconview = DragSourceIconView(source_mode)
 
         sourcebox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
@@ -28,13 +28,17 @@ class DragDropWindow(Gtk.Window):
         if target_mode == EXCHANGE_TYPE_NONE:
             dropbox.pack_start(drop_area.buttons(), False, False, 0)
         dropbox.pack_start(drop_area, True, True, 0)
-        if expect == EXCHANGE_TYPE_NONE:
-            dropbox.pack_start(drop_area.feedback, False, True, 0)
+        dropbox.pack_start(drop_area.feedback, False, True, 0)
+        if expect != EXCHANGE_TYPE_NONE:
+            self.result = EXCHANGE_TYPE_NONE;
 
         hbox = Gtk.Box(spacing=12)
         hbox.pack_start(sourcebox, False, True, 0)
         hbox.pack_start(dropbox, True, True, 0)
         self.add(hbox)
+
+    def result_callback(self, result):
+        self.result = result
 
 class DragSourceIconView(Gtk.IconView):
     def __init__(self, source_mode):
@@ -107,11 +111,11 @@ class DragSourceIconView(Gtk.IconView):
 
 
 class DropArea(Gtk.Label):
-    def __init__(self, target_mode, expect):
+    def __init__(self, target_mode, result_callback):
         Gtk.Label.__init__(self)
         self.feedback = Gtk.Label.new()
         self.feedback.set_label("(nothing)")
-        self.expect = expect
+        self.result_callback = result_callback
 
         self.set_label("Drop something on me!")
         self.drag_dest_set(Gtk.DestDefaults.ALL, [], DRAG_ACTION)
@@ -161,12 +165,14 @@ class DropArea(Gtk.Label):
         if info == TARGET_ENTRY_TEXT:
             text = data.get_text()
             self.feedback.set_label("Received text: %s" % text)
-
+            self.result_callback(EXCHANGE_TYPE_TEXT)
         elif info == TARGET_ENTRY_PIXBUF:
             pixbuf = data.get_pixbuf()
             width = pixbuf.get_width()
             height = pixbuf.get_height()
             self.feedback.set_label("Received pixbuf with width %spx and height %spx" % (width, height))
+            self.result_callback(EXCHANGE_TYPE_PIXBUF)
+
 def exchange_type(text):
     match text:
         case "text": return EXCHANGE_TYPE_TEXT
@@ -197,3 +203,5 @@ if __name__ == '__main__':
     win.connect("destroy", Gtk.main_quit)
     win.show_all()
     Gtk.main()
+    if expect != EXCHANGE_TYPE_NONE:
+        exit(win.result != expect)
