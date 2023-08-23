@@ -30,7 +30,11 @@ class DragDropWindow(Gtk.Window):
         dropbox.pack_start(drop_area, True, True, 0)
         dropbox.pack_start(drop_area.feedback, False, True, 0)
         if expect != EXCHANGE_TYPE_NONE:
-            self.result = EXCHANGE_TYPE_NONE;
+            self.expect = expect
+            self.result = EXCHANGE_TYPE_NONE
+        else:
+            self.expect = EXCHANGE_TYPE_NONE
+            self.result = EXCHANGE_TYPE_NONE
 
         hbox = Gtk.Box(spacing=12)
         hbox.pack_start(sourcebox, False, True, 0)
@@ -39,6 +43,9 @@ class DragDropWindow(Gtk.Window):
 
     def result_callback(self, result):
         self.result = result
+        if self.expect != EXCHANGE_TYPE_NONE:
+            print("expect=", self.expect, ", actual=", self.result)
+            exit(self.result != self.expect)
 
 class DragSourceIconView(Gtk.IconView):
     def __init__(self, source_mode):
@@ -163,15 +170,15 @@ class DropArea(Gtk.Label):
 
     def on_drag_data_received(self, widget, drag_context, x, y, data, info, time):
         if info == TARGET_ENTRY_TEXT:
+            self.result_callback(EXCHANGE_TYPE_TEXT)
             text = data.get_text()
             self.feedback.set_label("Received text: %s" % text)
-            self.result_callback(EXCHANGE_TYPE_TEXT)
         elif info == TARGET_ENTRY_PIXBUF:
+            self.result_callback(EXCHANGE_TYPE_PIXBUF)
             pixbuf = data.get_pixbuf()
             width = pixbuf.get_width()
             height = pixbuf.get_height()
             self.feedback.set_label("Received pixbuf with width %spx and height %spx" % (width, height))
-            self.result_callback(EXCHANGE_TYPE_PIXBUF)
 
 def exchange_type(text):
     match text:
