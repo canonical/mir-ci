@@ -20,11 +20,13 @@ APP_PATH = Path(__file__).parent / 'clients' / 'drag_and_drop_demo.py'
     apps.mir_test_tools(),
     apps.mir_demo_server(),
 ])
+@pytest.mark.deps('pywayland-scanner', pip_pkgs=('pywayland',))
 class TestDragAndDrop:
     @pytest.mark.parametrize('app', [
         ('python3', str(APP_PATH), '--source', 'pixbuf', '--target', 'pixbuf', '--expect', 'pixbuf'),
         ('python3', str(APP_PATH), '--source', 'text', '--target', 'text', '--expect', 'text'),
     ])
+    @pytest.mark.deps(debs=('libgtk-4-dev',), pip_pkgs=(('pygobject', 'gi'),))
     async def test_source_and_dest_match(self, modern_server, app) -> None:
         modern_server = DisplayServer(modern_server, add_extensions=VirtualPointer.required_extensions)
         pointer = VirtualPointer(modern_server.display_name)
