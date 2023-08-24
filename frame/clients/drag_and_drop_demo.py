@@ -181,10 +181,12 @@ class DropArea(Gtk.Label):
             self.feedback.set_label("Received pixbuf with width %spx and height %spx" % (width, height))
 
 def exchange_type(text):
-    match text:
-        case "text": return EXCHANGE_TYPE_TEXT
-        case "pixbuf": return EXCHANGE_TYPE_PIXBUF
-        case _: raise TypeError('Unknown exchange type: "%s"' % text)
+    if text == "text":
+        return EXCHANGE_TYPE_TEXT
+    elif text == "pixbuf":
+        return EXCHANGE_TYPE_PIXBUF
+    else:
+        raise TypeError('Unknown exchange type: "%s"' % text)
 
 if __name__ == '__main__':
     source_mode=EXCHANGE_TYPE_NONE
