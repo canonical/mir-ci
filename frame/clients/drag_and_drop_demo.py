@@ -5,6 +5,7 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, Gdk, GdkPixbuf
 
 (EXCHANGE_TYPE_NONE, EXCHANGE_TYPE_TEXT, EXCHANGE_TYPE_PIXBUF) = range(3)
+EXCHANGE_TYPES = { "text": EXCHANGE_TYPE_TEXT, "pixbuf": EXCHANGE_TYPE_PIXBUF }
 (TARGET_ENTRY_TEXT, TARGET_ENTRY_PIXBUF) = range(2)
 (COLUMN_TEXT, COLUMN_PIXBUF) = range(2)
 
@@ -12,8 +13,12 @@ DRAG_ACTION = Gdk.DragAction.COPY
 
 
 class DragDropWindow(Gtk.Window):
+    expect = EXCHANGE_TYPE_NONE
+    result = EXCHANGE_TYPE_NONE
+
     def __init__(self, source_mode, target_mode, expect):
         super().__init__(title="Drag and Drop Demo")
+        self.expect = expect
         self.fullscreen()
 
         drop_area = DropArea(target_mode, self.result_callback)
@@ -29,12 +34,6 @@ class DragDropWindow(Gtk.Window):
             dropbox.pack_start(drop_area.buttons(), False, False, 0)
         dropbox.pack_start(drop_area, True, True, 0)
         dropbox.pack_start(drop_area.feedback, False, True, 0)
-        if expect != EXCHANGE_TYPE_NONE:
-            self.expect = expect
-            self.result = EXCHANGE_TYPE_NONE
-        else:
-            self.expect = EXCHANGE_TYPE_NONE
-            self.result = EXCHANGE_TYPE_NONE
 
         hbox = Gtk.Box(spacing=12)
         hbox.pack_start(sourcebox, False, True, 0)
@@ -180,14 +179,6 @@ class DropArea(Gtk.Label):
             height = pixbuf.get_height()
             self.feedback.set_label("Received pixbuf with width %spx and height %spx" % (width, height))
 
-def exchange_type(text):
-    if text == "text":
-        return EXCHANGE_TYPE_TEXT
-    elif text == "pixbuf":
-        return EXCHANGE_TYPE_PIXBUF
-    else:
-        raise TypeError('Unknown exchange type: "%s"' % text)
-
 if __name__ == '__main__':
     source_mode=EXCHANGE_TYPE_NONE
     target_mode=EXCHANGE_TYPE_NONE
@@ -198,11 +189,11 @@ if __name__ == '__main__':
         while args:
             arg = args.pop(0)
             if arg == '--source':
-                source_mode = exchange_type(args.pop(0))
+                source_mode = EXCHANGE_TYPES[args.pop(0)]
             elif arg == '--target':
-                target_mode = exchange_type(args.pop(0))
+                target_mode = EXCHANGE_TYPES[args.pop(0)]
             elif arg == '--expect':
-                expect = exchange_type(args.pop(0))
+                expect = EXCHANGE_TYPES[args.pop(0)]
             else:
                 assert False, f'invalid argument: {arg}'
     except Exception as e:
