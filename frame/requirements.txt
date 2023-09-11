@@ -2,3 +2,5 @@ inotify
 pytest
 pytest-asyncio
 distro
+cgroupspy
+psutil
