@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 import pytest
 import time
 from contextlib import suppress
+import os
 
 
 class ProcessStats(TypedDict):
@@ -124,6 +125,7 @@ class Benchmarker:
 
 class PsutilBackend(BenchmarkBackend):
     def __init__(self):
+        super().__init__()
         self.monitored = []
     
     def add(self, pid: int, name: str):
@@ -152,6 +154,27 @@ class PsutilBackend(BenchmarkBackend):
                 "pid": pid
             }
             cb(packet)
+
+# List of subsystems
+CPUACCT = "cpuacct"
+
+class CgroupsBackend(BenchmarkBackend):
+    def __init__(self) -> None:
+        super().__init__()
+        self.paths = []
+
+    def add(self, pid: int, name: str) -> bool:
+        for cgroup in self.paths:
+            with open(os.path.join(cgroup, "tasks"), "w") as tasksFile:
+                tasksFile.write(str(pid))
+    
+    def remove(self, pid: int, name: str) -> bool:
+        return super().remove(pid, name)
+    
+    def poll(self, cb: Callable[[ProcessStatPacket], None]) -> None:
+        return super().poll(cb)
+    
+    
 
 
 @pytest.fixture
