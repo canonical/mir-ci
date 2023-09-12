@@ -1,0 +1,25 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "mir_ci"
+version = "0.0.1"
+readme = "readme.md"
+requires-python = ">=3.8"
+dependencies = [
+    "distro",
+    "inotify",
+    "pytest",
+    "pytest-asyncio",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/MirServer/mir-ci"
+"Bug Tracker" = "https://github.com/MirServer/mir-ci/issues"
+
+[tool.hatch.build]
+exclude = [
+    ".coveragerc",
+    ".gitignore",
+]

@@ -1,4 +1,0 @@
-inotify
-pytest
-pytest-asyncio
-distro

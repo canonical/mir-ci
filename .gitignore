@@ -1,3 +1,4 @@
 __pycache__
 *.pyc
-frame/junit.xml
+mir-ci/mir_ci/junit.xml
+.python-version
