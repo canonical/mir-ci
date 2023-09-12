@@ -1,8 +1,8 @@
-from display_server import DisplayServer
+from mir_ci.display_server import DisplayServer
 import pytest
 import time
 
-import apps
+from mir_ci import apps
 
 short_wait_time = 3
 

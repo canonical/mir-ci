@@ -1,13 +1,13 @@
-from display_server import DisplayServer
+from mir_ci.display_server import DisplayServer
 from pathlib import Path
 import pytest
 import os
 import re
 import asyncio
-import apps
+from mir_ci import apps
 
 try:
-    from virtual_pointer import VirtualPointer, Button
+    from mir_ci.virtual_pointer import VirtualPointer, Button
 except ModuleNotFoundError as e:
     pass
 

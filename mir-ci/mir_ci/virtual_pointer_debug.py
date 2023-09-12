@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from virtual_pointer import VirtualPointer, Button
+from mir_ci.virtual_pointer import VirtualPointer, Button
 import os
 import sys
 import asyncio

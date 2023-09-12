@@ -1,9 +1,9 @@
 # Ubuntu Frame Integration Tests
 
-**NB:** Your working directory needs to be `frame` for this to work.
+**NB:** Your working directory needs to be `mir-ci` for this to work.
 
-## To install suite dependencies
-`pip install -r requirements.txt`
+## To install the package and suite dependencies
+`pip install -e ..`
 
 ## To select a subset of tests
 This applies to any use of `pytest` below. To select a subset of tests,
