@@ -1,7 +1,4 @@
-import subprocess
 import os
-import time
-import psutil
 
 class Cgroup:
     def __init__(self, name: str) -> None:
@@ -19,6 +16,7 @@ class Cgroup:
 
         if os.path.isdir(self.path):
             os.rmdir(self.path)
+
         os.mkdir(self.path)
 
     def add_process(self, pid: int) -> bool:
@@ -61,21 +59,3 @@ class Cgroup:
             return int(lines[0])
         
         return 0
-    
-cgroup = Cgroup("test")
-def add_process():
-    cgroup.add_process(os.getpid())
-        
-process = subprocess.Popen(["/home/matthew/Github/fork_high_cpu/a.out"], preexec_fn=add_process)
-psutil_process = psutil.Process(process.pid)
-print(psutil_process.pid)
-start_time = psutil_process.create_time()
-
-for i in range(0, 100):
-    time.sleep(1)
-    up_time = time.time() - start_time;
-    print(f"cgroups:\n\tCPU Time: {cgroup.get_cpu_time_seconds()}\n\tMemory: {cgroup.get_current_memory()}\n\t")
-    print(f"psutil:\n\tCPU Time: {psutil_process.cpu_times()[0]}\n\tMemory:{psutil_process.memory_info()}\n\t")
-    print("\n")
-
-process.wait(1000)

@@ -1,25 +1,58 @@
 import asyncio
 import psutil
-from typing import Dict, TypedDict, Callable
+from typing import Dict, Callable
 from abc import ABC, abstractmethod
 import pytest
 from contextlib import suppress
-import os
 from cgroups import Cgroup
+import psutil
 
 
-class ProcessStats(TypedDict):
+class InternalProcessInfo:
+    pid: int
     name: str
+    start_time_seconds: float
     cpu_time_seconds_total: float
     mem_bytes_total: float
-    mem_max: float
+    mem_bytes_max: float
     num_data_points: int
 
+    def __init__(self, pid: int , name: str) -> None:
+        self.pid = pid
+        self.name = name
+        process = psutil.Process(self.pid)
+        self.start_time_seconds = process.create_time()
+        self.cpu_time_seconds_total = 0
+        self.mem_bytes_total = 0
+        self.mem_bytes_max = 0
+        self.num_data_points = 0
 
-class ProcessStatPacket(TypedDict):
+
+class ProcessInfo:
     pid: int
-    mem_bytes: float
+    name: str
+    avg_cpu_percent: float
+    max_mem_bytes: int
+    avg_mem_bytes: int
+
+    def __init__(self, info: InternalProcessInfo) -> None:
+        self.pid = info.pid
+        self.name = info.name
+        self.avg_cpu_percent = info.cpu_time_seconds_total / info.start_time_seconds
+        self.max_mem_bytes = info.mem_bytes_max
+        self.avg_mem_bytes = info.mem_bytes_total / info.num_data_points
+        
+class ProcessInfoFrame:
+    pid: int
+    current_memory_bytes: float
     cpu_time_seconds_total: float
+
+    def __init__(self, pid: int,
+                 current_memory_bytes: float,
+                 cpu_time_seconds_total: float) -> None:
+        self.pid = pid
+        self.current_memory_bytes = current_memory_bytes
+        self.cpu_time_seconds_total = cpu_time_seconds_total
 
 
 class BenchmarkBackend(ABC):
@@ -31,49 +64,48 @@ class BenchmarkBackend(ABC):
         pass
 
     @abstractmethod
-    def poll(self, cb: Callable[[ProcessStatPacket], None]) -> None:
+    def poll(self, cb: Callable[[ProcessInfoFrame], None]) -> None:
         pass
 
 
 class Benchmarker:
     def __init__(self):
-        self.data_records: Dict[int, ProcessStats] = {}
+        self.data_records: Dict[int, InternalProcessInfo] = {}
         self.running = False
         self.backend = PsutilBackend()
         self.task = None
         self.poll_time_seconds = 1
 
     def add(self, pid: int, name: str) -> bool:
-        self.data_records[pid] = {
-            "name": name,
-            "cpu_time_seconds_total": 0,
-            "mem_bytes_total": 0,
-            "mem_max": 0,
-            "mem_average": 0,
-            "num_data_points": 0
-        }
+        self.data_records[pid] = InternalProcessInfo(name)
         return self.backend.add(pid, name)
 
-    def _on_packet(self, packet: ProcessStatPacket) -> None:
-        pid = packet["pid"]
-        cpu_time_seconds_total = packet["cpu_time_seconds_total"]
-        mem_bytes = packet["mem_bytes"]
-        if pid is None or cpu_time_seconds_total is None or mem_bytes is None:
-            # TODO: Error
+    def _on_packet(self, packet: ProcessInfoFrame) -> None:
+        pid = packet.pid
+        cpu_time_seconds_total = packet.cpu_time_seconds_total
+        current_memory_bytes = packet.current_memory_bytes
+        if pid is None:
+            print("Frame is lacking pid")
+            return
+        
+        if cpu_time_seconds_total is None:
+            print("Frame is lacking cpu_time_seconds_total")
+            return
+        
+        if current_memory_bytes is None:
+            print("Frame is lacking current_memory_bytes")
             return
         
         if not pid in self.data_records:
-            # TODO: Error
+            print("PID provided by frame is invalid")
             return
         
-        self.data_records[pid]["cpu_time_seconds_total"] += cpu_time_seconds_total
-        self.data_records[pid]["mem_bytes_total"] += mem_bytes
+        self.data_records[pid].cpu_time_seconds_total += cpu_time_seconds_total
+        self.data_records[pid].mem_bytes_total += current_memory_bytes
 
-        if self.data_records[pid]["cpu_max"] < cpu_time_seconds_total:
-            self.data_records[pid]["cpu_max"] = cpu_time_seconds_total
-        if self.data_records[pid]["mem_max"] < mem_bytes:
-            self.data_records[pid]["mem_max"] = mem_bytes
-        self.data_records[pid]["num_data_points"] += 1
+        if self.data_records[pid].mem_bytes_max < current_memory_bytes:
+            self.data_records[pid].mem_bytes_max = current_memory_bytes
+        self.data_records[pid].num_data_points += 1
 
     async def run(self) -> None:
         self.running = True
@@ -99,11 +131,11 @@ class Benchmarker:
         with suppress(asyncio.CancelledError):
             await self.task
 
-    def get_data(self):
-        for pid, item in self.data_records.items():
-            item["cpu_average"] = item["cpu_total"] / item["num_data_points"]
-            item["mem_average"] = item["mem_bytes_total"] / item["num_data_points"]
-        return self.data_records
+    def get_data(self) -> list[ProcessInfo]:
+        process_info_list = []
+        for pid, info in self.data_records.items():
+            process_info_list.append(ProcessInfo(info))
+        return process_info_list
     
     async def __aenter__(self):
         await self.start()
@@ -121,13 +153,13 @@ class PsutilBackend(BenchmarkBackend):
         self.monitored.append(psutil.Process(pid))
         return True
 
-    def poll(self, cb: Callable[[ProcessStatPacket], None]):
+    def poll(self, cb: Callable[[ProcessInfoFrame], None]):
         for process in self.monitored:
-            cb({
-                "pid": process.pid,
-                "cpu_time_seconds_total": process.cpu_times()[0],
-                "mem_bytes": process.memory_info().rss
-            })
+            cb(ProcessInfoFrame(
+                process.pid,
+                process.memory_info().rss,
+                process.cpu_times()[0]
+            ))
 
 
 class CgroupsBackend(BenchmarkBackend):
@@ -140,13 +172,13 @@ class CgroupsBackend(BenchmarkBackend):
         self._cgroup_list[pid] = cgroup
         return True
     
-    def poll(self, cb: Callable[[ProcessStatPacket], None]) -> None:
+    def poll(self, cb: Callable[[ProcessInfoFrame], None]) -> None:
         for pid, cgroup in self._cgroup_list.items():
-            cb({
-                "pid": pid,
-                "cpu_time_seconds_total": cgroup.get_cpu_time_seconds(),
-                "mem_bytes": cgroup.get_current_memory()
-            })
+            cb(ProcessInfoFrame(
+                pid,
+                cgroup.get_current_memory(),
+                cgroup.get_cpu_time_seconds()
+            ))
     
 
 @pytest.fixture
