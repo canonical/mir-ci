@@ -1,68 +1,81 @@
 import subprocess
 import os
 import time
-
-CPUACCT="cpuacct"
+import psutil
 
 class Cgroup:
-    def __init__(self, type: str, name: str) -> None:
-        self.type = type
+    def __init__(self, name: str) -> None:
         self.name = name
-        self.path = None
-
-    def _get_type_path(self):
-        return f"/sys/fs/cgroup/{self.type}"
+        self.path = f"/sys/fs/cgroup/{name}"
+        self._mount_if_not_exist()
 
     def _mount_if_not_exist(self) -> None:
-        path = self._get_type_path()
-        if not os.path.isdir(path):
-            os.mkdir(path)
+        # On some distros, this might noe even be mounted (e.g. Debian AFAIK)
+        if not os.path.isdir("/sys/fs/cgroup"):
+            os.mkdir("/sys/fs/cgroup")
 
-        if not os.path.ismount(path):
-            os.system(f"mount -t cgroup -o{self.type} none /sys/fs/cgroup/{self.type}/")
+        if not os.path.ismount("/sys/fs/cgroup"):
+            os.system("mount -t cgroupv2 /sys/fs/cgroup")
 
-    def __enter__(self) -> "Cgroup":
-        self._mount_if_not_exist()
-        self.path = f"{self._get_type_path()}/{self.name}"
-        if not os.path.isdir(self.path):
-            os.mkdir(self.path)
-        return self
-    
-    def __exit__(self, *args) -> None:
-        if self.path is not None and os.path.isdir(self.path):
+        if os.path.isdir(self.path):
             os.rmdir(self.path)
+        os.mkdir(self.path)
 
     def add_process(self, pid: int) -> bool:
-        if not os.path.isdir(self.path):
-            return False
-        
-        task_file_path = f"{self.path}/tasks"
-        if not os.path.isfile(task_file_path):
-            return False
-        
-        with open(task_file_path, "a") as task_file:
-            task_file.write(f"{str(pid)}\n")
-        return True
-    
-    def remove_process(self, pid: int) -> bool:
-        if not os.path.isdir(self.path):
-            return False
-        
-        task_file_path = f"{self.path}/tasks"
-        if not os.path.isfile(task_file_path):
-            return False
-        
-        with open(task_file_path, "r+") as task_file:
-            lines = task_file.readlines()
-            task_file.seek(0)
-            for line in lines:
-                if line != str(pid):
-                    task_file.write(line)
-            task_file.truncate()
-    
+        proc_path = f"{self.path}/cgroup.procs"
+        with open(proc_path, "a") as proc_file:
+            proc_file.write(f"{pid}\n")
 
-process = subprocess.Popen(["/home/matthew/Github/fork_high_cpu/a.out"])
-process.pid
-with Cgroup(CPUACCT, "test") as cgroup:
-    cgroup.add_process(process.pid)
-    process.wait(1000)
+    def remove_process(self, pid: int) -> bool:
+        proc_path = f"{self.path}/cgroup.procs"
+        with open(proc_path, "a") as proc_file:
+            proc_file.write(f"{pid}\n")
+
+    def _read_file(self, file_name: str) -> list[str]:
+        file_path = f"{self.path}/{file_name}"
+
+        try:
+            with open(file_path, "r") as file:
+                return file.readlines()
+        except:
+            return []
+
+    def get_cpu_time_microseconds(self) -> int:
+        lines = self._read_file("cpu.stat")
+        for line in lines:
+            split_line = line.split(' ')
+            if len(split_line) < 2:
+                continue
+
+            if split_line[0] == "usage_usec":
+                return int(split_line[1])
+            
+        return 0
+    
+    def get_cpu_time_seconds(self) -> float:
+        return self.get_cpu_time_microseconds() / 1_000_000
+    
+    def get_current_memory(self) -> int:
+        lines = self._read_file("memory.current")
+        if len(lines) > 0:
+            return int(lines[0])
+        
+        return 0
+    
+cgroup = Cgroup("test")
+def add_process():
+    cgroup.add_process(os.getpid())
+        
+process = subprocess.Popen(["/home/matthew/Github/fork_high_cpu/a.out"], preexec_fn=add_process)
+psutil_process = psutil.Process(process.pid)
+print(psutil_process.pid)
+start_time = psutil_process.create_time()
+
+for i in range(0, 100):
+    time.sleep(1)
+    up_time = time.time() - start_time;
+    print(f"cgroups:\n\tCPU Time: {cgroup.get_cpu_time_seconds()}\n\tMemory: {cgroup.get_current_memory()}\n\t")
+    print(f"psutil:\n\tCPU Time: {psutil_process.cpu_times()[0]}\n\tMemory:{psutil_process.memory_info()}\n\t")
+    print("\n")
+
+process.wait(1000)

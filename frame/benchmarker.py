@@ -3,24 +3,23 @@ import psutil
 from typing import Dict, TypedDict, Callable
 from abc import ABC, abstractmethod
 import pytest
-import time
 from contextlib import suppress
 import os
+from cgroups import Cgroup
 
 
 class ProcessStats(TypedDict):
     name: str
-    cpu_total: float
-    cpu_max: float
-    mem_total: float
+    cpu_time_seconds_total: float
+    mem_bytes_total: float
     mem_max: float
     num_data_points: int
 
 
 class ProcessStatPacket(TypedDict):
     pid: int
-    mem: float
-    cpu: float
+    mem_bytes: float
+    cpu_time_seconds_total: float
 
 
 class BenchmarkBackend(ABC):
@@ -32,14 +31,8 @@ class BenchmarkBackend(ABC):
         pass
 
     @abstractmethod
-    def remove(self, pid: int, name: str) -> bool:
-        pass
-
-    @abstractmethod
     def poll(self, cb: Callable[[ProcessStatPacket], None]) -> None:
         pass
-
-
 
 
 class Benchmarker:
@@ -53,24 +46,19 @@ class Benchmarker:
     def add(self, pid: int, name: str) -> bool:
         self.data_records[pid] = {
             "name": name,
-            "cpu_total": 0,
-            "cpu_max": 0,
-            "cpu_average": 0,
-            "mem_total": 0,
+            "cpu_time_seconds_total": 0,
+            "mem_bytes_total": 0,
             "mem_max": 0,
             "mem_average": 0,
             "num_data_points": 0
         }
         return self.backend.add(pid, name)
 
-    def remove(self, pid: int, name: str) -> bool:
-        return self.backend.remove(pid, name)
-
     def _on_packet(self, packet: ProcessStatPacket) -> None:
         pid = packet["pid"]
-        cpu = packet["cpu"]
-        mem = packet["mem"]
-        if pid is None or cpu is None or mem is None:
+        cpu_time_seconds_total = packet["cpu_time_seconds_total"]
+        mem_bytes = packet["mem_bytes"]
+        if pid is None or cpu_time_seconds_total is None or mem_bytes is None:
             # TODO: Error
             return
         
@@ -78,12 +66,13 @@ class Benchmarker:
             # TODO: Error
             return
         
-        self.data_records[pid]["cpu_total"] += cpu
-        self.data_records[pid]["mem_total"] += mem
-        if self.data_records[pid]["cpu_max"] < cpu:
-            self.data_records[pid]["cpu_max"] = cpu
-        if self.data_records[pid]["mem_max"] < mem:
-            self.data_records[pid]["mem_max"] = mem
+        self.data_records[pid]["cpu_time_seconds_total"] += cpu_time_seconds_total
+        self.data_records[pid]["mem_bytes_total"] += mem_bytes
+
+        if self.data_records[pid]["cpu_max"] < cpu_time_seconds_total:
+            self.data_records[pid]["cpu_max"] = cpu_time_seconds_total
+        if self.data_records[pid]["mem_max"] < mem_bytes:
+            self.data_records[pid]["mem_max"] = mem_bytes
         self.data_records[pid]["num_data_points"] += 1
 
     async def run(self) -> None:
@@ -111,9 +100,9 @@ class Benchmarker:
             await self.task
 
     def get_data(self):
-        for key, item in self.data_records.items():
+        for pid, item in self.data_records.items():
             item["cpu_average"] = item["cpu_total"] / item["num_data_points"]
-            item["mem_average"] = item["mem_total"] / item["num_data_points"]
+            item["mem_average"] = item["mem_bytes_total"] / item["num_data_points"]
         return self.data_records
     
     async def __aenter__(self):
@@ -126,56 +115,39 @@ class Benchmarker:
 class PsutilBackend(BenchmarkBackend):
     def __init__(self):
         super().__init__()
-        self.monitored = []
+        self.monitored: list[psutil.Process] = []
     
     def add(self, pid: int, name: str):
-        x = psutil.Process(pid)
-        x.pid
-        
         self.monitored.append(psutil.Process(pid))
         return True
 
-    def remove(self,  pid: int, name: str):
-        for process in self.monitored:
-            if process.pid == pid:
-                self.monitored.remove(process)
-                return True;
-
-        return False
-
     def poll(self, cb: Callable[[ProcessStatPacket], None]):
         for process in self.monitored:
-            cpu = process.cpu_percent()
-            mem = process.memory_info().rss
-            pid = process.pid
-            packet: ProcessStatPacket = {
-                "cpu": cpu,
-                "mem": mem,
-                "pid": pid
-            }
-            cb(packet)
+            cb({
+                "pid": process.pid,
+                "cpu_time_seconds_total": process.cpu_times()[0],
+                "mem_bytes": process.memory_info().rss
+            })
 
-# List of subsystems
-CPUACCT = "cpuacct"
 
 class CgroupsBackend(BenchmarkBackend):
     def __init__(self) -> None:
-        super().__init__()
-        self.paths = []
+        self._cgroup_list: dict[int, Cgroup] = {}
 
     def add(self, pid: int, name: str) -> bool:
-        for cgroup in self.paths:
-            with open(os.path.join(cgroup, "tasks"), "w") as tasksFile:
-                tasksFile.write(str(pid))
-    
-    def remove(self, pid: int, name: str) -> bool:
-        return super().remove(pid, name)
+        cgroup = Cgroup(f"mir_ci_{name}")
+        cgroup.add_process(pid)
+        self._cgroup_list[pid] = cgroup
+        return True
     
     def poll(self, cb: Callable[[ProcessStatPacket], None]) -> None:
-        return super().poll(cb)
+        for pid, cgroup in self._cgroup_list.items():
+            cb({
+                "pid": pid,
+                "cpu_time_seconds_total": cgroup.get_cpu_time_seconds(),
+                "mem_bytes": cgroup.get_current_memory()
+            })
     
-    
-
 
 @pytest.fixture
 def benchmarker() -> Benchmarker:
