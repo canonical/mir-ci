@@ -12,6 +12,7 @@ dependencies = [
     "inotify",
     "pytest",
     "pytest-asyncio",
+    "pywayland",
 ]
 
 [project.urls]
@@ -22,4 +23,9 @@ dependencies = [
 exclude = [
     ".coveragerc",
     ".gitignore",
+]
+
+[tool.hatch.build.hooks.custom]
+dependencies = [
+    "pywayland",
 ]
