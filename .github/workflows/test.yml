@@ -48,14 +48,14 @@ jobs:
         echo args=${ARGS[@]} >> $GITHUB_OUTPUT
 
     - name: Set up dependencies
-      working-directory: mir_ci
+      working-directory: mir-ci/mir_ci
       run: |
-        pip install -r requirements.txt
+        pip install -e ..
         [ '${{ matrix.mark }}' == 'self' ] && pip install pytest-cov
         python -m pytest ${{ steps.pytest-args.outputs.args }} --deps
 
     - name: Run the tests
-      working-directory: mir_ci
+      working-directory: mir-ci/mir_ci
       run: |
         # set up coredumps
         ulimit -c unlimited
@@ -75,13 +75,13 @@ jobs:
       if: success() || failure()
       with:
         name: test-results
-        path: mir_ci/junit-*.xml
+        path: mir-ci/mir_ci/junit-*.xml
 
     - if: ${{ matrix.mark == 'self' }}
       name: Upload coverage data
       uses: codecov/codecov-action@v3
       with:
-        directory: mir_ci
+        directory: mir-ci/mir_ci
         fail_ci_if_error: true
         verbose: true
 
