@@ -1,6 +1,6 @@
 import asyncio
 import psutil
-from typing import Dict, Callable, Literal, Iterator, Tuple
+from typing import Dict, Callable, Literal, Iterator, Tuple, List
 from abc import ABC, abstractmethod
 from contextlib import suppress
 from mir_ci.cgroups import Cgroup
@@ -171,7 +171,7 @@ class Benchmarker:
         with suppress(asyncio.CancelledError):
             await self.task
 
-    def get_data(self) -> list[ProcessInfo]:
+    def get_data(self) -> List[ProcessInfo]:
         process_info_list = []
         for pid, info in self.data_records.items():
             process_info_list.append(ProcessInfo(info))
@@ -187,7 +187,7 @@ class Benchmarker:
 class PsutilBackend(BenchmarkBackend):
     def __init__(self):
         super().__init__()
-        self.monitored: list[psutil.Process] = []
+        self.monitored: List[psutil.Process] = []
     
     def add(self, pid: int, name: str):
         self.monitored.append(psutil.Process(pid))
@@ -203,7 +203,7 @@ class PsutilBackend(BenchmarkBackend):
 
 class CgroupsBackend(BenchmarkBackend):
     def __init__(self) -> None:
-        self._cgroup_list: dict[int, Cgroup] = {}
+        self._cgroup_list: Dict[int, Cgroup] = {}
 
     def add(self, pid: int, name: str) -> bool:
         cgroup = Cgroup(f"mir_ci_{name}")
