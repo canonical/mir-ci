@@ -4,9 +4,10 @@ import time
 import pytest
 import asyncio
 import subprocess
+import json
 
 from program import Program
-from benchmarker import benchmarker, Benchmarker
+from benchmarker import Benchmarker
 
 # class TestTest:
 #     @pytest.mark.self
@@ -64,16 +65,38 @@ class TestProgram:
 class TestBenchmarker:
     @staticmethod
     def add_to_benchmark():
-        # WARNING: This happens in a forked process. I do not have access to
-        # memory from the parent process here!
-        Benchmarker.add(os.getpid(), "sleepy")
+        # WARNING: This happens in a forked process. We do not
+        # have access to memory from the parent process here.
+        Benchmarker.add(os.getpid(), "sleepy", True)
 
-    async def test_benchmarker_psutil(self) -> None:
+    async def test_benchmarker_with_popen(self) -> None:
         benchmarker = Benchmarker(poll_time_seconds=0.1, backend="psutil")
-
         p = subprocess.Popen(['sh', '-c', 'sleep 1;'], preexec_fn=TestBenchmarker.add_to_benchmark)
         async with benchmarker:
             await asyncio.sleep(1)
 
         assert len(benchmarker.get_data()) > 0
         assert benchmarker.get_data()[0].pid == p.pid
+
+    async def test_benchmarker_with_program(self) -> None:
+        benchmarker = Benchmarker(poll_time_seconds=0.1, backend="psutil")
+        p = Program(['sh', '-c', 'sleep 1;'], preexec_fn=TestBenchmarker.add_to_benchmark)
+        async with p:
+            async with benchmarker:
+                await asyncio.sleep(1)
+                await p.kill(2)
+
+        assert len(benchmarker.get_data()) > 0
+        assert benchmarker.get_data()[0].pid == p.process.pid
+
+    async def test_benchmarker_cpu_has_value(self) -> None:
+        benchmarker = Benchmarker(poll_time_seconds=0.1, backend="psutil")
+        p = Program(['awk', 'BEGIN{for(i=0;i<100000000;i++){}}'], preexec_fn=TestBenchmarker.add_to_benchmark)
+        async with p:
+            async with benchmarker:
+                await asyncio.sleep(3)
+                await p.kill(2)
+
+        assert len(benchmarker.get_data()) > 0
+        assert benchmarker.get_data()[0].max_mem_bytes > 0
+        assert benchmarker.get_data()[0].avg_cpu_percent > 0
