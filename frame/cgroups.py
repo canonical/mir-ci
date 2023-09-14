@@ -1,4 +1,5 @@
 import os
+from typing import Iterator
 
 class Cgroup:
     def __init__(self, name: str) -> None:
@@ -29,18 +30,17 @@ class Cgroup:
         with open(proc_path, "a") as proc_file:
             proc_file.write(f"{pid}\n")
 
-    def _read_file(self, file_name: str) -> list[str]:
+    def _read_file(self, file_name: str) -> Iterator[str]:
         file_path = f"{self.path}/{file_name}"
 
         try:
             with open(file_path, "r") as file:
-                return file.readlines()
+                yield file.readlines()
         except:
-            return []
+            return
 
     def get_cpu_time_microseconds(self) -> int:
-        lines = self._read_file("cpu.stat")
-        for line in lines:
+        for line in self._read_file("cpu.stat"):
             split_line = line.split(' ')
             if len(split_line) < 2:
                 continue
@@ -54,8 +54,15 @@ class Cgroup:
         return self.get_cpu_time_microseconds() / 1_000_000
     
     def get_current_memory(self) -> int:
-        lines = self._read_file("memory.current")
+        lines = list(self._read_file("memory.current"))
         if len(lines) > 0:
             return int(lines[0])
         
         return 0
+    
+    def get_proc_id_list(self) -> list[int]:
+        proc_id_list = []
+        for pid in self._read_file("cgroup.procs"):
+            proc_id_list.append(int(pid))
+        
+        return proc_id_list

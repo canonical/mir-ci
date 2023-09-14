@@ -1,14 +1,16 @@
 import asyncio
 import psutil
-from typing import Dict, Callable
+from typing import Dict, Callable, Literal, Iterator, Tuple
 from abc import ABC, abstractmethod
 import pytest
 from contextlib import suppress
 from cgroups import Cgroup
 import psutil
+import tempfile
+import os
 
 
-class InternalProcessInfo:
+class RawInternalProcessInfo:
     pid: int
     name: str
     start_time_seconds: float
@@ -35,13 +37,13 @@ class ProcessInfo:
     max_mem_bytes: int
     avg_mem_bytes: int
 
-    def __init__(self, info: InternalProcessInfo) -> None:
+    def __init__(self, info: RawInternalProcessInfo) -> None:
         self.pid = info.pid
         self.name = info.name
-        self.avg_cpu_percent = info.cpu_time_seconds_total / info.start_time_seconds
+        self.avg_cpu_percent = 0 if info.start_time_seconds == 0 else info.cpu_time_seconds_total / info.start_time_seconds
         self.max_mem_bytes = info.mem_bytes_max
-        self.avg_mem_bytes = info.mem_bytes_total / info.num_data_points
-        
+        self.avg_mem_bytes = 0 if info.num_data_points == 0 else info.mem_bytes_total / info.num_data_points
+
 class ProcessInfoFrame:
     pid: int
     current_memory_bytes: float
@@ -59,9 +61,21 @@ class BenchmarkBackend(ABC):
     """
     Abstract class that aggregates programs together and emits process stats as it is requested
     """
+    @staticmethod
     @abstractmethod
-    def add(self, pid: int, name: str) -> bool:
+    def add(pid: int, name: str) -> bool:
+        """
+        Add a process to be benchmarked.
+
+        WARNING: This function is marked static because it is allowed to run from a forked process.
+        It is the job of "aggregate_processes" to add the processes into memory before benchmarking
+        starts.
+        """
         pass
+
+    @abstractmethod
+    def aggregate_processes(self) -> Iterator[Tuple[int, str]]:
+        return
 
     @abstractmethod
     def poll(self, cb: Callable[[ProcessInfoFrame], None]) -> None:
@@ -69,16 +83,22 @@ class BenchmarkBackend(ABC):
 
 
 class Benchmarker:
-    def __init__(self):
-        self.data_records: Dict[int, InternalProcessInfo] = {}
+    def __init__(self, poll_time_seconds: float = 1, backend: Literal["cgroups", "psutil"] = "cgroups"):
+        self.data_records: Dict[int, RawInternalProcessInfo] = {}
         self.running = False
-        self.backend = PsutilBackend()
+        self.backend: BenchmarkBackend = PsutilBackend() if backend == "psutil" else CgroupsBackend()
         self.task = None
-        self.poll_time_seconds = 1
+        self.poll_time_seconds = poll_time_seconds
 
-    def add(self, pid: int, name: str) -> bool:
-        self.data_records[pid] = InternalProcessInfo(name)
-        return self.backend.add(pid, name)
+    @staticmethod
+    def add(pid: int, name: str, backend: Literal["cgroups", "psutil"] = "cgroups") -> bool:
+        """
+        Add a process to be benchmarked.
+
+        WARNING: This function is marked static because it is allowed to run from a forked process. 
+        """
+        backend: BenchmarkBackend.__class__ = PsutilBackend if backend == "psutil" else CgroupsBackend
+        return backend.add(pid, name)
 
     def _on_packet(self, packet: ProcessInfoFrame) -> None:
         pid = packet.pid
@@ -109,6 +129,8 @@ class Benchmarker:
 
     async def run(self) -> None:
         self.running = True
+        for pid, name in self.backend.aggregate_processes():
+            self.data_records[pid] = RawInternalProcessInfo(pid, name)
         while self.running:
             try:
                 self.backend.poll(self._on_packet)
@@ -144,14 +166,19 @@ class Benchmarker:
         await self.stop()
 
 
+PSUTIL_BACKEND_TMP_FILE_LOCATION = "/tmp/mir_ci_psutil_bakend.dat"
+
 class PsutilBackend(BenchmarkBackend):
     def __init__(self):
         super().__init__()
         self.monitored: list[psutil.Process] = []
+        with open(PSUTIL_BACKEND_TMP_FILE_LOCATION, "w"):
+            pass
     
-    def add(self, pid: int, name: str):
-        self.monitored.append(psutil.Process(pid))
-        return True
+    @staticmethod
+    def add(pid: int, name: str):
+        with open(PSUTIL_BACKEND_TMP_FILE_LOCATION, "a") as file:
+            file.write(f"{pid}:{name}\n")
 
     def poll(self, cb: Callable[[ProcessInfoFrame], None]):
         for process in self.monitored:
@@ -160,6 +187,22 @@ class PsutilBackend(BenchmarkBackend):
                 process.memory_info().rss,
                 process.cpu_times()[0]
             ))
+
+    def aggregate_processes(self)-> Iterator[Tuple[int, str]]:
+        with open(PSUTIL_BACKEND_TMP_FILE_LOCATION, "r") as file:
+            while True:
+                line = file.readline()
+                if not line:
+                    break
+
+                split_line = line.split(':')
+                if len(split_line) != 2:
+                    continue
+
+                pid = int(split_line[0])
+                name = split_line[1]
+                self.monitored.append(psutil.Process(pid))
+                yield (pid, name)
 
 
 class CgroupsBackend(BenchmarkBackend):
@@ -179,6 +222,9 @@ class CgroupsBackend(BenchmarkBackend):
                 cgroup.get_current_memory(),
                 cgroup.get_cpu_time_seconds()
             ))
+
+    def aggregate_processes(self) -> None:
+        return super().aggregate_processes()
     
 
 @pytest.fixture

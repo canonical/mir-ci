@@ -1,6 +1,6 @@
 import os
 import signal
-from typing import Dict, List, Tuple, Union, Optional, Awaitable
+from typing import Dict, List, Tuple, Union, Optional, Awaitable, Callable
 import asyncio
 
 default_wait_timeout = default_term_timeout = 10
@@ -28,7 +28,7 @@ class ProgramError(RuntimeError):
     pass
 
 class Program:
-    def __init__(self, command: Command, env: Dict[str, str] = {}):
+    def __init__(self, command: Command, env: Dict[str, str] = {}, preexec_fn: Optional[Callable[[], None]] = None):
         if isinstance(command, str):
             self.command: tuple[str, ...] = (command,)
         else:
@@ -40,6 +40,7 @@ class Program:
         self.send_signals_task: Optional[asyncio.Task[None]] = None
         self.output = ''
         self.sigkill_sent = False
+        self.preexec_fn = preexec_fn
 
     def is_running(self) -> bool:
         return self.process is not None and self.process.returncode is None
@@ -82,13 +83,18 @@ class Program:
             pass
 
     async def __aenter__(self) -> 'Program':
+        def preexec_fn():
+            if self.preexec_fn:
+                self.preexec_fn()
+            os.setsid()
+
         process = await asyncio.create_subprocess_exec(
             *self.command,
             env=dict(os.environ, **self.env),
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.STDOUT,
             close_fds=True,
-            preexec_fn=os.setsid)
+            preexec_fn=preexec_fn)
         # Without setsid killing the subprocess doesn't kill the whole process tree,
         # see https://pymotw.com/2/subprocess/#process-groups-sessions
         # Without setsid killing the subprocess doesn't kill the whole process tree,

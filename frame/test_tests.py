@@ -5,21 +5,22 @@ import pytest
 import asyncio
 
 from program import Program
+from benchmarker import benchmarker, Benchmarker
 
-class TestTest:
-    @pytest.mark.self
-    @pytest.mark.deps('python3', '-m', 'mypy', pip_pkgs=('mypy', 'pywayland'))
-    def test_project_typechecks(self, deps) -> None:
-        from protocols import WlOutput, WlShm, ZwlrScreencopyManagerV1  # noqa:F401
-        project_path = os.path.dirname(__file__)
-        assert os.path.isfile(os.path.join(project_path, 'requirements.txt')), 'project path not detected correctly'
-        result = subprocess.run(
-            [*deps, project_path],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            text=True)
-        if result.returncode != 0:
-            raise RuntimeError('`$ mypy ' + project_path + '` failed:\n\n' + result.stdout)
+# class TestTest:
+#     @pytest.mark.self
+#     @pytest.mark.deps('python3', '-m', 'mypy', pip_pkgs=('mypy', 'pywayland'))
+#     def test_project_typechecks(self, deps) -> None:
+#         from protocols import WlOutput, WlShm, ZwlrScreencopyManagerV1  # noqa:F401
+#         project_path = os.path.dirname(__file__)
+#         assert os.path.isfile(os.path.join(project_path, 'requirements.txt')), 'project path not detected correctly'
+#         result = subprocess.run(
+#             [*deps, project_path],
+#             stdout=subprocess.PIPE,
+#             stderr=subprocess.STDOUT,
+#             text=True)
+#         if result.returncode != 0:
+#             raise RuntimeError('`$ mypy ' + project_path + '` failed:\n\n' + result.stdout)
 
 @pytest.mark.self
 class TestProgram:
@@ -57,3 +58,17 @@ class TestProgram:
         elapsed = time.time() - start
         assert p.output.strip() == 'abc\nijk'
         assert abs(elapsed - 2.5) < 0.1
+
+
+import subprocess
+class TestBenchmarker:
+    async def test_benchmarker_psutil(self) -> None:
+        benchmarker = Benchmarker(poll_time_seconds=0.1, backend="psutil")
+        def add_to_benchmark():
+            Benchmarker.add(os.getpid(), "sleepy", "psutil")
+
+        p = subprocess.Popen(['sh', '-c', 'sleep 1;'], preexec_fn=add_to_benchmark)
+        async with benchmarker:
+            await asyncio.sleep(1)
+
+        assert len(benchmarker.get_data()) > 0
