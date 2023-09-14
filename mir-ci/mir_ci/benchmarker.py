@@ -42,15 +42,7 @@ class ProcessInfo:
         self.avg_cpu_percent = 0 if info.start_time_seconds == 0 else info.cpu_time_seconds_total / total_time_seconds
         self.max_mem_bytes = info.mem_bytes_max
         self.avg_mem_bytes = 0 if info.num_data_points == 0 else info.mem_bytes_total / info.num_data_points
-
-    def to_json(self):
-        return {
-            "pid": self.pid,
-            "name": self.name,
-            "avg_cpu_percent": self.avg_cpu_percent,
-            "max_mem_btyes": self.max_mem_bytes,
-            "avg_mem_bytes": self.avg_mem_bytes
-        }
+        
 
 class ProcessInfoFrame:
     pid: int

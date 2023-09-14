@@ -56,7 +56,7 @@ class DisplayServer:
                 'WAYLAND_DISPLAY': self.display_name
             },
             **env),
-            preexec_fn=lambda: self._preexec_func("Application")
+            preexec_fn=lambda: self._preexec_func("application")
         )
 
     async def __aenter__(self) -> 'DisplayServer':
@@ -68,7 +68,7 @@ class DisplayServer:
                 'WAYLAND_DISPLAY': self.display_name,
                 'MIR_SERVER_ADD_WAYLAND_EXTENSIONS': ':'.join(self.add_extensions),
             },
-            preexec_fn=lambda: self._preexec_func("Compositor")
+            preexec_fn=lambda: self._preexec_func("compositor")
         ).__aenter__()
         try:
             wait_for_wayland_display(runtime_dir, self.display_name)
@@ -97,5 +97,8 @@ class DisplayServer:
             idx = 0
             for item in self.benchmarker.get_data():
                 # TODO: I should probably output multiple values here instead dof one big JSON blob
-                record_property(f"process_{idx}", item.to_json())
+                record_property(f"{item.name}_pid", item.pid)
+                record_property(f"{item.name}_avg_cpu_percent", item.avg_cpu_percent)
+                record_property(f"{item.name}_max_mem_bytes", item.max_mem_bytes)
+                record_property(f"{item.name}_avg_mem_bytes", item.avg_mem_bytes)
                 idx = idx + 1
