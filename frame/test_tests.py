@@ -3,6 +3,7 @@ import subprocess
 import time
 import pytest
 import asyncio
+import subprocess
 
 from program import Program
 from benchmarker import benchmarker, Benchmarker
@@ -60,15 +61,19 @@ class TestProgram:
         assert abs(elapsed - 2.5) < 0.1
 
 
-import subprocess
 class TestBenchmarker:
+    @staticmethod
+    def add_to_benchmark():
+        # WARNING: This happens in a forked process. I do not have access to
+        # memory from the parent process here!
+        Benchmarker.add(os.getpid(), "sleepy")
+
     async def test_benchmarker_psutil(self) -> None:
         benchmarker = Benchmarker(poll_time_seconds=0.1, backend="psutil")
-        def add_to_benchmark():
-            Benchmarker.add(os.getpid(), "sleepy", "psutil")
 
-        p = subprocess.Popen(['sh', '-c', 'sleep 1;'], preexec_fn=add_to_benchmark)
+        p = subprocess.Popen(['sh', '-c', 'sleep 1;'], preexec_fn=TestBenchmarker.add_to_benchmark)
         async with benchmarker:
             await asyncio.sleep(1)
 
         assert len(benchmarker.get_data()) > 0
+        assert benchmarker.get_data()[0].pid == p.pid
