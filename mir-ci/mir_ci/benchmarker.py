@@ -146,10 +146,7 @@ class Benchmarker:
             self.backend.add(pid, name)
 
         while self.running:
-            try:
-                self.backend.poll(self._on_packet)
-            except:
-                pass
+            self.backend.poll(self._on_packet)
             await asyncio.sleep(self.poll_time_seconds)
 
     def _aggregate_processes(self)-> Iterator[Tuple[int, str]]:
@@ -189,10 +186,10 @@ class Benchmarker:
         return process_info_list
     
     async def __aenter__(self):
-        await self._start()
+        await self.start()
 
     async def __aexit__(self, *args):
-        await self._stop()
+        await self.stop()
 
 
 class PsutilBackend(BenchmarkBackend):

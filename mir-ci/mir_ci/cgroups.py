@@ -35,7 +35,7 @@ class Cgroup:
 
         try:
             with open(file_path, "r") as file:
-                yield file.readlines()
+                yield file.readline()
         except:
             return
 
@@ -54,9 +54,8 @@ class Cgroup:
         return self.get_cpu_time_microseconds() / 1_000_000
     
     def get_current_memory(self) -> int:
-        lines = list(self._read_file("memory.current"))
-        if len(lines) > 0:
-            return int(lines[0])
+        for line in self._read_file("memory.current"):
+            return int(line)
         
         return 0
     
