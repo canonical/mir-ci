@@ -16,7 +16,7 @@ class TestAppsCanRun:
         apps.pluma(),
         apps.qterminal(),
     ])
-    async def test_app_can_run(self, server, app, record_property: pytest.FixtureRequest) -> None:
+    async def test_app_can_run(self, server, app, record_property) -> None:
         async with DisplayServer(server, benchmark=True) as server:
             async with server.program(app):
                 time.sleep(short_wait_time)

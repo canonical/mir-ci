@@ -1,6 +1,6 @@
 import asyncio
 import psutil
-from typing import Dict, Callable, Literal, Iterator, Tuple, List
+from typing import Dict, Callable, Literal, Iterator, Tuple, List, Optional
 from abc import ABC, abstractmethod
 from contextlib import suppress
 from mir_ci.cgroups import Cgroup
@@ -13,8 +13,8 @@ class RawInternalProcessInfo:
     name: str
     start_time_seconds: float
     cpu_time_seconds_total: float
-    mem_bytes_total: float
-    mem_bytes_max: float
+    mem_bytes_total: int
+    mem_bytes_max: int
     num_data_points: int
 
     def __init__(self, pid: int , name: str) -> None:
@@ -33,7 +33,7 @@ class ProcessInfo:
     name: str
     avg_cpu_percent: float
     max_mem_bytes: int
-    avg_mem_bytes: int
+    avg_mem_bytes: float
 
     def __init__(self, info: RawInternalProcessInfo) -> None:
         self.pid = info.pid
@@ -46,11 +46,11 @@ class ProcessInfo:
 
 class ProcessInfoFrame:
     pid: int
-    current_memory_bytes: float
+    current_memory_bytes: int
     cpu_time_seconds_total: float
 
     def __init__(self, pid: int,
-                 current_memory_bytes: float,
+                 current_memory_bytes: int,
                  cpu_time_seconds_total: float) -> None:
         self.pid = pid
         self.current_memory_bytes = current_memory_bytes
@@ -62,7 +62,7 @@ class BenchmarkBackend(ABC):
     Abstract class that aggregates programs together and emits process stats as it is requested
     """
     @abstractmethod
-    def add(self, pid: int, name: str) -> bool:
+    def add(self, pid: int, name: str) -> None:
         """
         Add a process to be benchmarked.
         """
@@ -80,7 +80,7 @@ class Benchmarker:
         self.data_records: Dict[int, RawInternalProcessInfo] = {}
         self.running = False
         self.backend: BenchmarkBackend = PsutilBackend() if backend == "psutil" else CgroupsBackend()
-        self.task = None
+        self.task: Optional[asyncio.Task[None]] = None
         self.poll_time_seconds = poll_time_seconds
 
         if not os.path.isdir(Benchmarker.TMP_FILE_DIRECTORY):
@@ -95,7 +95,7 @@ class Benchmarker:
         return f"{Benchmarker.TMP_FILE_DIRECTORY}/{pid}"
 
     @staticmethod
-    def add(pid: int, name: str, in_new_process: bool) -> bool:
+    def add(pid: int, name: str, in_new_process: bool) -> None:
         """
         Add a process to be benchmarked.
 
@@ -156,7 +156,7 @@ class Benchmarker:
                 name = split_line[1].strip()
                 yield (pid, name)
 
-    async def start(self) -> None:
+    def start(self) -> None:
         if self.running:
             return
           
@@ -167,9 +167,10 @@ class Benchmarker:
             return
         
         self.running = False
-        self.task.cancel()
-        with suppress(asyncio.CancelledError):
-            await self.task
+        if self.task:
+            self.task.cancel()
+            with suppress(asyncio.CancelledError):
+                await self.task
 
     def get_data(self) -> List[ProcessInfo]:
         process_info_list = []
@@ -178,7 +179,7 @@ class Benchmarker:
         return process_info_list
     
     async def __aenter__(self):
-        await self.start()
+        self.start()
 
     async def __aexit__(self, *args):
         await self.stop()
@@ -186,10 +187,9 @@ class Benchmarker:
 
 class PsutilBackend(BenchmarkBackend):
     def __init__(self):
-        super().__init__()
         self.monitored: List[psutil.Process] = []
     
-    def add(self, pid: int, name: str):
+    def add(self, pid: int, name: str) -> None:
         self.monitored.append(psutil.Process(pid))
 
     def poll(self, cb: Callable[[ProcessInfoFrame], None]):
@@ -205,11 +205,10 @@ class CgroupsBackend(BenchmarkBackend):
     def __init__(self) -> None:
         self._cgroup_list: Dict[int, Cgroup] = {}
 
-    def add(self, pid: int, name: str) -> bool:
+    def add(self, pid: int, name: str) -> None:
         cgroup = Cgroup(f"mir_ci_{name}")
         cgroup.add_process(pid)
         self._cgroup_list[pid] = cgroup
-        return True
     
     def poll(self, cb: Callable[[ProcessInfoFrame], None]) -> None:
         for pid, cgroup in self._cgroup_list.items():

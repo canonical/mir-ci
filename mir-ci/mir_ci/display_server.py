@@ -3,8 +3,7 @@ import os
 import time
 import asyncio
 
-from typing import Dict, Tuple
-from pytest import FixtureRequest
+from typing import Dict, Tuple, Callable
 
 from mir_ci.program import Program, Command
 from mir_ci.benchmarker import Benchmarker, benchmarker_preexec_fn
@@ -73,7 +72,7 @@ class DisplayServer:
         try:
             wait_for_wayland_display(runtime_dir, self.display_name)
             if self.benchmarker:
-                await self.benchmarker.start()
+                self.benchmarker.start()
         except:
             await self.server.kill()
             if self.benchmarker:
@@ -92,7 +91,7 @@ class DisplayServer:
         if self.benchmarker:
             await self.benchmarker.stop()
 
-    def generate_report(self, record_property: FixtureRequest) -> None:
+    def generate_report(self, record_property: Callable[[str, object], None]) -> None:
         if self.benchmarker:
             idx = 0
             for item in self.benchmarker.get_data():

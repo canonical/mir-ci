@@ -86,15 +86,16 @@ class TestBenchmarker:
                 await p.kill(2)
 
         assert len(benchmarker.get_data()) > 0
-        assert benchmarker.get_data()[0].pid == p.process.pid
+        assert p.process is not None
+        if p.process is not None:
+            assert benchmarker.get_data()[0].pid == p.process.pid
 
     async def test_benchmarker_cpu_has_value(self) -> None:
         benchmarker = Benchmarker(poll_time_seconds=0.1, backend="psutil")
         p = Program(['awk', 'BEGIN{for(i=0;i<100000000;i++){}}'], preexec_fn=TestBenchmarker.add_to_benchmark)
         async with p:
             async with benchmarker:
-                await asyncio.sleep(3)
-                await p.kill(2)
+                await asyncio.sleep(1)
 
         assert len(benchmarker.get_data()) > 0
         assert benchmarker.get_data()[0].max_mem_bytes > 0

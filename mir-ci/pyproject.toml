@@ -13,7 +13,8 @@ dependencies = [
     "pytest",
     "pytest-asyncio",
     "pywayland",
-    "psutil"
+    "psutil",
+    "types-psutil"
 ]
 
 [project.urls]

@@ -21,12 +21,12 @@ class Cgroup:
 
         os.mkdir(self.path)
 
-    def add_process(self, pid: int) -> bool:
+    def add_process(self, pid: int) -> None:
         proc_path = f"{self.path}/cgroup.procs"
         with open(proc_path, "a") as proc_file:
             proc_file.write(f"{pid}\n")
 
-    def remove_process(self, pid: int) -> bool:
+    def remove_process(self, pid: int) -> None:
         proc_path = f"{self.path}/cgroup.procs"
         with open(proc_path, "a") as proc_file:
             proc_file.write(f"{pid}\n")
