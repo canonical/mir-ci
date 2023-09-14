@@ -63,6 +63,7 @@ jobs:
 
         sudo adduser $USER video
         sudo adduser $USER input
+        sudo chmod 777 /sys/fs/cgroup
 
         sg video "
           sg input '
