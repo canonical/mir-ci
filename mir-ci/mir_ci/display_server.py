@@ -42,7 +42,7 @@ class DisplayServer:
         # easily identify displays created by this test suit and remove them in bulk if a bunch
         # don't get cleaned up properly.
         self.display_name = 'wayland-00' + str(os.getpid())
-        self.benchmarker = Benchmarker() if benchmark is True else None
+        self.benchmarker = Benchmarker(backend="psutil") if benchmark is True else None
 
     def _preexec_func(self, process_name: str):
         if self.benchmarker:
@@ -74,9 +74,9 @@ class DisplayServer:
             if self.benchmarker:
                 self.benchmarker.start()
         except:
-            await self.server.kill()
             if self.benchmarker:
                 await self.benchmarker.stop()
+            await self.server.kill()
             raise
         self.start_time = time.time()
         return self

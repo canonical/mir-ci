@@ -20,8 +20,7 @@ class RawInternalProcessInfo:
     def __init__(self, pid: int , name: str) -> None:
         self.pid = pid
         self.name = name
-        process = psutil.Process(self.pid)
-        self.start_time_seconds = process.create_time()
+        self.start_time_seconds = time.time()
         self.cpu_time_seconds_total = 0
         self.mem_bytes_total = 0
         self.mem_bytes_max = 0
@@ -138,7 +137,10 @@ class Benchmarker:
             self.backend.add(pid, name)
 
         while self.running:
-            self.backend.poll(self._on_packet)
+            try:
+                self.backend.poll(self._on_packet)
+            except:
+                pass
             await asyncio.sleep(self.poll_time_seconds)
 
     def _aggregate_processes(self)-> Iterator[Tuple[int, str]]:

@@ -1,6 +1,5 @@
 import os
 from typing import Iterator
-from typing import List
 
 class Cgroup:
     def __init__(self, name: str) -> None:
@@ -59,10 +58,3 @@ class Cgroup:
             return int(line)
         
         return 0
-    
-    def get_proc_id_list(self) -> List[int]:
-        proc_id_list = []
-        for pid in self._read_file("cgroup.procs"):
-            proc_id_list.append(int(pid))
-        
-        return proc_id_list
