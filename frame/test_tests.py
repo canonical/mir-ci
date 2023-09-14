@@ -7,7 +7,7 @@ import subprocess
 import json
 
 from program import Program
-from benchmarker import Benchmarker
+from benchmarker import Benchmarker, benchmarker_preexec_fn
 
 # class TestTest:
 #     @pytest.mark.self
@@ -67,7 +67,7 @@ class TestBenchmarker:
     def add_to_benchmark():
         # WARNING: This happens in a forked process. We do not
         # have access to memory from the parent process here.
-        Benchmarker.add(os.getpid(), "sleepy", True)
+        benchmarker_preexec_fn("sleepy")
 
     async def test_benchmarker_with_popen(self) -> None:
         benchmarker = Benchmarker(poll_time_seconds=0.1, backend="psutil")

@@ -230,8 +230,9 @@ class CgroupsBackend(BenchmarkBackend):
                 cgroup.get_current_memory(),
                 cgroup.get_cpu_time_seconds()
             ))
-    
 
-@pytest.fixture
-def benchmarker() -> Benchmarker:
-    return Benchmarker()
+def benchmarker_preexec_fn(name: str) -> None:
+    """
+    Add the current process to the benchmark with the provided name
+    """
+    Benchmarker.add(os.getpid(), name, True)
