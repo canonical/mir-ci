@@ -1,6 +1,6 @@
 import pywayland
 import pywayland.client
-from protocols.wayland.wl_registry import WlRegistryProxy
+from mir_ci.protocols.wayland.wl_registry import WlRegistryProxy
 from typing import Optional
 from abc import abstractmethod
 import time

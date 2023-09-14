@@ -1,10 +1,10 @@
-from protocols import WlOutput, WlShm, ZwlrScreencopyManagerV1
-from protocols.wlr_screencopy_unstable_v1.zwlr_screencopy_manager_v1 import ZwlrScreencopyManagerV1Proxy
-from protocols.wlr_screencopy_unstable_v1.zwlr_screencopy_frame_v1 import ZwlrScreencopyFrameV1Proxy
-from protocols.wayland.wl_output import WlOutputProxy
-from protocols.wayland.wl_buffer import WlBufferProxy
-from protocols.wayland.wl_shm import WlShmProxy
-from wayland_client import WaylandClient
+from mir_ci.protocols import WlOutput, WlShm, ZwlrScreencopyManagerV1
+from mir_ci.protocols.wlr_screencopy_unstable_v1.zwlr_screencopy_manager_v1 import ZwlrScreencopyManagerV1Proxy
+from mir_ci.protocols.wlr_screencopy_unstable_v1.zwlr_screencopy_frame_v1 import ZwlrScreencopyFrameV1Proxy
+from mir_ci.protocols.wayland.wl_output import WlOutputProxy
+from mir_ci.protocols.wayland.wl_buffer import WlBufferProxy
+from mir_ci.protocols.wayland.wl_shm import WlShmProxy
+from mir_ci.wayland_client import WaylandClient
 from typing import Dict, Optional, Any
 import os
 import stat

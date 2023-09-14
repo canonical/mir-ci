@@ -1,6 +1,6 @@
 import pytest
 
-from display_server import DisplayServer
+from mir_ci.display_server import DisplayServer
 
 class TestServerCanRun:
     @pytest.mark.smoke

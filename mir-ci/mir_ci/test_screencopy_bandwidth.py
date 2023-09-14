@@ -1,16 +1,13 @@
-from display_server import DisplayServer
+from mir_ci.display_server import DisplayServer
 from pathlib import Path
 import pytest
 import os
 import re
 import asyncio
-import apps
+from mir_ci import apps
 
-try:
-    from screencopy_tracker import ScreencopyTracker
-    from virtual_pointer import VirtualPointer, Button
-except ModuleNotFoundError as e:
-    pass
+from mir_ci.screencopy_tracker import ScreencopyTracker
+from mir_ci.virtual_pointer import VirtualPointer, Button
 
 long_wait_time = 10
 
@@ -29,7 +26,6 @@ def _record_properties(fixture, server, tracker, min_frames):
     )
 
 @pytest.mark.performance
-@pytest.mark.deps('pywayland-scanner', pip_pkgs=('pywayland',))
 class TestScreencopyBandwidth:
     @pytest.mark.parametrize('app', [
         apps.qterminal('--execute', f'python3 -m asciinema play {ASCIINEMA_CAST}', pip_pkgs=('asciinema',), id='asciinema', extra=15),

@@ -8,7 +8,7 @@ from typing import Any, Generator, List, Mapping, Optional, Union
 import distro
 import pytest
 
-import apps
+from mir_ci import apps
 
 RELEASE_PPA = 'mir-team/release'
 RELEASE_PPA_ENTRY = f'https://ppa.launchpadcontent.net/{RELEASE_PPA}/ubuntu {distro.codename()}/main'
