@@ -5,7 +5,7 @@ import asyncio
 
 from typing import Dict, Tuple
 
-from program import Program, Command
+from mir_ci.program import Program, Command
 
 display_appear_timeout = 10
 min_mir_run_time = 0.1
