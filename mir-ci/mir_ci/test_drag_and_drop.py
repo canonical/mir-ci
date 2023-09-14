@@ -1,15 +1,12 @@
-from display_server import DisplayServer
+from mir_ci.display_server import DisplayServer
 from pathlib import Path
 import pytest
 import os
 import re
 import asyncio
-import apps
+from mir_ci import apps
 
-try:
-    from virtual_pointer import VirtualPointer, Button
-except ModuleNotFoundError as e:
-    pass
+from mir_ci.virtual_pointer import VirtualPointer, Button
 
 APP_PATH = Path(__file__).parent / 'clients' / 'drag_and_drop_demo.py'
 STARTUP_TIME=1.5
@@ -22,7 +19,6 @@ A_SHORT_TIME=0.3
     apps.mir_test_tools(),
     apps.mir_demo_server(),
 ])
-@pytest.mark.deps('pywayland-scanner', pip_pkgs=('pywayland',))
 class TestDragAndDrop:
     @pytest.mark.parametrize('app', [
         ('python3', str(APP_PATH), '--source', 'pixbuf', '--target', 'pixbuf', '--expect', 'pixbuf'),
