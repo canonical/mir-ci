@@ -2,9 +2,8 @@ import asyncio
 import psutil
 from typing import Dict, Callable, Literal, Iterator, Tuple
 from abc import ABC, abstractmethod
-import pytest
 from contextlib import suppress
-from cgroups import Cgroup
+from mir_ci.cgroups import Cgroup
 import psutil
 import os
 import time
@@ -168,13 +167,13 @@ class Benchmarker:
                 name = split_line[1].strip()
                 yield (pid, name)
 
-    async def _start(self) -> None:
+    async def start(self) -> None:
         if self.running:
             return
           
         self.task = asyncio.ensure_future(self._run())
 
-    async def _stop(self) -> None:
+    async def stop(self) -> None:
         if self.running is False:
             return
         

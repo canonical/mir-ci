@@ -4,8 +4,10 @@ import time
 import asyncio
 
 from typing import Dict, Tuple
+from pytest import FixtureRequest
 
 from mir_ci.program import Program, Command
+from mir_ci.benchmarker import Benchmarker, benchmarker_preexec_fn
 
 display_appear_timeout = 10
 min_mir_run_time = 0.1
@@ -34,13 +36,18 @@ def wait_for_wayland_display(runtime_dir: str, name: str) -> None:
     raise RuntimeError('Wayland display ' + name + ' did not appear')
 
 class DisplayServer:
-    def __init__(self, command: Command, add_extensions: Tuple[str, ...] = ()) -> None:
+    def __init__(self, command: Command, add_extensions: Tuple[str, ...] = (), benchmark: bool = False) -> None:
         self.command = command
         self.add_extensions = add_extensions
         # Snaps require the display to be in the form "waland-<number>". The 00 prefix lets us
         # easily identify displays created by this test suit and remove them in bulk if a bunch
         # don't get cleaned up properly.
         self.display_name = 'wayland-00' + str(os.getpid())
+        self.benchmarker = Benchmarker(backend="psutil") if benchmark is True else None
+
+    def _preexec_func(self, process_name: str):
+        if self.benchmarker:
+            benchmarker_preexec_fn(process_name)
 
     def program(self, command: Command, env: Dict[str, str] = {}) -> Program:
         return Program(command, env=dict({
@@ -48,20 +55,29 @@ class DisplayServer:
                 'QT_QPA_PLATFORM': 'wayland',
                 'WAYLAND_DISPLAY': self.display_name
             },
-            **env)
+            **env),
+            preexec_fn=lambda: self._preexec_func("Application")
         )
 
     async def __aenter__(self) -> 'DisplayServer':
         runtime_dir = os.environ['XDG_RUNTIME_DIR']
         clear_wayland_display(runtime_dir, self.display_name)
-        self.server = await Program(self.command, env={
-            'WAYLAND_DISPLAY': self.display_name,
-            'MIR_SERVER_ADD_WAYLAND_EXTENSIONS': ':'.join(self.add_extensions),
-        }).__aenter__()
+        self.server = await Program(
+            self.command, 
+            env={
+                'WAYLAND_DISPLAY': self.display_name,
+                'MIR_SERVER_ADD_WAYLAND_EXTENSIONS': ':'.join(self.add_extensions),
+            },
+            preexec_fn=lambda: self._preexec_func("Compositor")
+        ).__aenter__()
         try:
             wait_for_wayland_display(runtime_dir, self.display_name)
+            if self.benchmarker:
+                await self.benchmarker.start()
         except:
             await self.server.kill()
+            if self.benchmarker:
+                await self.benchmarker.stop()
             raise
         self.start_time = time.time()
         return self
@@ -73,3 +89,12 @@ class DisplayServer:
         if sleep_time > 0:
             await asyncio.sleep(sleep_time)
         await self.server.kill()
+        if self.benchmarker:
+            await self.benchmarker.stop()
+
+    def generate_report(self, record_property: FixtureRequest) -> None:
+        if self.benchmarker:
+            idx = 0
+            for item in self.benchmarker.get_data():
+                record_property(f"process_{idx}", item.to_json())
+                idx = idx + 1
