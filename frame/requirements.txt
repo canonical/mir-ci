@@ -1,5 +1,0 @@
-inotify
-pytest
-pytest-asyncio
-distro
-psutil
