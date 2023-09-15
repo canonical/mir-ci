@@ -12,12 +12,15 @@ dependencies = [
     "inotify",
     "pytest",
     "pytest-asyncio",
-    "pywayland",
+    "pywayland @ git+https://github.com/Saviq/pywayland.git@patch-1",
 ]
 
 [project.urls]
 "Homepage" = "https://github.com/MirServer/mir-ci"
 "Bug Tracker" = "https://github.com/MirServer/mir-ci/issues"
+
+[tool.hatch.metadata]
+allow-direct-references = true
 
 [tool.hatch.build]
 exclude = [
@@ -27,5 +30,5 @@ exclude = [
 
 [tool.hatch.build.hooks.custom]
 dependencies = [
-    "pywayland",
+    "pywayland @ git+https://github.com/Saviq/pywayland.git@patch-1",
 ]
