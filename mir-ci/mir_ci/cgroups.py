@@ -58,3 +58,9 @@ class Cgroup:
             return int(line)
         
         return 0
+    
+    def get_peak_memory(self) -> int:
+        for line in self._read_file("memory.peak"):
+            return int(line)
+        
+        return 0

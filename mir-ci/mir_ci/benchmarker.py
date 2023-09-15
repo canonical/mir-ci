@@ -48,12 +48,23 @@ class ProcessInfoFrame:
     current_memory_bytes: int
     cpu_time_seconds_total: float
 
-    def __init__(self, pid: int,
-                 current_memory_bytes: int,
-                 cpu_time_seconds_total: float) -> None:
+    peak_memory_bytes: Optional[int]
+    """
+    A frame may contain the peak memory in bytes if it is available.
+    This may be more reliable than finding the largest in a sample of
+    current memory bytes data points
+    """
+
+    def __init__(
+            self,
+            pid: int,
+            current_memory_bytes: int,
+            cpu_time_seconds_total: float,
+            peak_memory_bytes: Optional[int] = None) -> None:
         self.pid = pid
         self.current_memory_bytes = current_memory_bytes
         self.cpu_time_seconds_total = cpu_time_seconds_total
+        self.peak_memory_bytes = peak_memory_bytes
 
 
 class BenchmarkBackend(ABC):
@@ -126,8 +137,11 @@ class Benchmarker:
         self.data_records[pid].cpu_time_seconds_total = cpu_time_seconds_total
         self.data_records[pid].mem_bytes_total += current_memory_bytes
 
-        if self.data_records[pid].mem_bytes_max < current_memory_bytes:
+        if packet.peak_memory_bytes is not None:
+            self.data_records[pid].mem_bytes_max = packet.peak_memory_bytes
+        elif self.data_records[pid].mem_bytes_max < current_memory_bytes:
             self.data_records[pid].mem_bytes_max = current_memory_bytes
+        
         self.data_records[pid].num_data_points += 1
 
     async def _run(self) -> None:
@@ -208,7 +222,7 @@ class CgroupsBackend(BenchmarkBackend):
         self._cgroup_list: Dict[int, Cgroup] = {}
 
     def add(self, pid: int, name: str) -> None:
-        cgroup = Cgroup(f"mir_ci_{name}")
+        cgroup = Cgroup(f"mir_ci_{name}_{int(time.time() * 1_000_000)}")
         cgroup.add_process(pid)
         self._cgroup_list[pid] = cgroup
     
@@ -217,7 +231,8 @@ class CgroupsBackend(BenchmarkBackend):
             cb(ProcessInfoFrame(
                 pid,
                 cgroup.get_current_memory(),
-                cgroup.get_cpu_time_seconds()
+                cgroup.get_cpu_time_seconds(),
+                cgroup.get_peak_memory()
             ))
 
 def benchmarker_preexec_fn(name: str) -> None:
