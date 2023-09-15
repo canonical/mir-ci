@@ -1,6 +1,7 @@
 import pathlib
 import shutil
 import subprocess
+import warnings
 
 from collections.abc import Iterator
 from typing import Any, Generator, List, Mapping, Optional, Union
@@ -71,16 +72,21 @@ def _deps_install(request: pytest.FixtureRequest, spec: Union[str, Mapping[str, 
 
     if request.config.getoption("--deps", False):
         if debs:
-            checked_debs = request.session.keywords.setdefault('debs', set())
-            unchecked_debs = set(debs).difference(checked_debs)
-            if unchecked_debs:
-                try:
-                    subprocess.check_call(('dpkg', '--status', *unchecked_debs),
-                                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                except subprocess.CalledProcessError:
-                    request.getfixturevalue('ppa')
-                    subprocess.check_call((*APT_INSTALL, *unchecked_debs))
-                checked_debs.update(unchecked_debs)
+            # Skip if deb management utils are unavailable.
+            # This covers the bundled checkbox-mir case.
+            if all(shutil.which(cmd) for cmd in ('dpkg', 'apt-get')):
+                checked_debs = request.session.keywords.setdefault('debs', set())
+                unchecked_debs = set(debs).difference(checked_debs)
+                if unchecked_debs:
+                    try:
+                        subprocess.check_call(('dpkg', '--status', *unchecked_debs),
+                                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                    except subprocess.CalledProcessError:
+                        request.getfixturevalue('ppa')
+                        subprocess.check_call((*APT_INSTALL, *unchecked_debs))
+                    checked_debs.update(unchecked_debs)
+            else:
+                warnings.warn("Skipping deb installation due to missing tools.")
         if snap:
             checked_snaps = request.session.keywords.setdefault('snaps', set())
             if snap not in checked_snaps:
@@ -108,9 +114,13 @@ def ppa() -> None:
     '''
     Ensures the mir-test/release PPA is enabled.
     '''
-    if RELEASE_PPA_ENTRY not in subprocess.check_output(('apt-cache', 'policy')).decode():
-        subprocess.check_call((*APT_INSTALL, 'software-properties-common'))
-        subprocess.check_call(('sudo', 'add-apt-repository', '--yes', f'ppa:{RELEASE_PPA}'))
+    # Skip if repo management utils are unavailable.
+    if all(shutil.which(cmd) for cmd in ('apt-cache', 'apt-get')):
+        if RELEASE_PPA_ENTRY not in subprocess.check_output(('apt-cache', 'policy')).decode():
+            subprocess.check_call((*APT_INSTALL, 'software-properties-common'))
+            subprocess.check_call(('sudo', 'add-apt-repository', '--yes', f'ppa:{RELEASE_PPA}'))
+    else:
+        warnings.warn("Skipping PPA setup due to missing tools.")
 
 @pytest.fixture(scope='function', params=(
     apps.ubuntu_frame,
