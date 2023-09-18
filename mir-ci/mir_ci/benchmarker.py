@@ -173,7 +173,6 @@ class Benchmarker:
     def generate_report(self, record_property: Callable[[str, object], None]):
         idx = 0
         for item in self.get_data():
-            # TODO: I should probably output multiple values here instead dof one big JSON blob
             record_property(f"{item.name}_avg_cpu_percent", item.avg_cpu_percent)
             record_property(f"{item.name}_max_mem_bytes", item.max_mem_bytes)
             record_property(f"{item.name}_avg_mem_bytes", item.avg_mem_bytes)
