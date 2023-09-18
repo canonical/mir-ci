@@ -31,7 +31,7 @@ class TestScreencopyBandwidth:
         apps.qterminal('--execute', f'python3 -m asciinema play {ASCIINEMA_CAST}', pip_pkgs=('asciinema',), id='asciinema', extra=15),
         apps.snap('mir-kiosk-neverputt', extra=False)
     ])
-    async def test_active_app(self, record_property, server, app: apps.Dependency) -> None:
+    async def test_active_app(self, record_property, server, app) -> None:
         server = DisplayServer(server, add_extensions=ScreencopyTracker.required_extensions)
         tracker = ScreencopyTracker(server.display_name)
         async with server as s, tracker, s.program(app.command[0]) as p:
@@ -53,7 +53,7 @@ class TestScreencopyBandwidth:
         apps.pluma(),
         apps.snap('mir-kiosk-kodi'),
     ])
-    async def test_inactive_app(self, record_property, server, app: apps.Dependency) -> None:
+    async def test_inactive_app(self, record_property, server, app) -> None:
         server = DisplayServer(server[0], add_extensions=ScreencopyTracker.required_extensions)
         tracker = ScreencopyTracker(server.display_name)
         async with server as s, tracker, s.program(app.command, app_type=app.app_type):
@@ -66,7 +66,7 @@ class TestScreencopyBandwidth:
         apps.mir_test_tools(),
         apps.mir_demo_server(),
     ])
-    async def test_app_dragged_around(self, record_property, local_server: apps.Dependency) -> None:
+    async def test_app_dragged_around(self, record_property, local_server) -> None:
         async def pause():
             await asyncio.sleep(0.2)
         extensions = ScreencopyTracker.required_extensions + VirtualPointer.required_extensions
