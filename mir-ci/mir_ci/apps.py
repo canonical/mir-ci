@@ -3,7 +3,14 @@ import pytest
 from typing import Any, Optional, Union, Collection, Tuple, Literal
 
 DependencyType = Literal["snap", "deb", "pip"]
-Dependency = Tuple[Collection[str], DependencyType]
+
+class Dependency:
+    command: Collection[str]
+    app_type: DependencyType
+
+    def __init__(self, command: Collection[str], app_type: DependencyType) -> None:
+        self.command = command
+        self.app_type = app_type
 
 def _dependency(
         cmd: Collection[str],
@@ -19,12 +26,12 @@ def _dependency(
     if isinstance(marks, pytest.Mark):
         marks = (marks,)
 
-    ret: Dependency = (cmd, dependency_type)
+    ret = cmd
     if extra is not None:
-        ret = ((ret, extra), dependency_type)
+        ret = (ret, extra)
 
     return pytest.param(
-        ret,
+        Dependency(ret, dependency_type),
         marks=(                             # type: ignore
             pytest.mark.deps(
                 cmd=cmd,

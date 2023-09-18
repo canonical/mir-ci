@@ -25,8 +25,8 @@ class TestDragAndDrop:
         ('python3', str(APP_PATH), '--source', 'text', '--target', 'text', '--expect', 'text'),
     ])
     @pytest.mark.deps(debs=('libgtk-4-dev',), pip_pkgs=(('pygobject', 'gi'),))
-    async def test_source_and_dest_match(self, modern_server, app) -> None:
-        modern_server = DisplayServer(modern_server[0], add_extensions=VirtualPointer.required_extensions)
+    async def test_source_and_dest_match(self, modern_server: apps.Dependency, app) -> None:
+        modern_server = DisplayServer(modern_server.command, add_extensions=VirtualPointer.required_extensions)
         pointer = VirtualPointer(modern_server.display_name)
         program = modern_server.program(app)
 

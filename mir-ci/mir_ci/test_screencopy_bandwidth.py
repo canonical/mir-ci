@@ -31,13 +31,12 @@ class TestScreencopyBandwidth:
         apps.qterminal('--execute', f'python3 -m asciinema play {ASCIINEMA_CAST}', pip_pkgs=('asciinema',), id='asciinema', extra=15),
         apps.snap('mir-kiosk-neverputt', extra=False)
     ])
-    async def test_active_app(self, record_property, server, app) -> None:
-        server = DisplayServer(server[0], add_extensions=ScreencopyTracker.required_extensions)
+    async def test_active_app(self, record_property, server, app: apps.Dependency) -> None:
+        server = DisplayServer(server, add_extensions=ScreencopyTracker.required_extensions)
         tracker = ScreencopyTracker(server.display_name)
-        command = app[0]
-        async with server as s, tracker, s.program(command[0]) as p:
-            if command[1]:
-                await asyncio.wait_for(p.wait(), timeout=command[1])
+        async with server as s, tracker, s.program(app.command[0]) as p:
+            if app.command[1]:
+                await asyncio.wait_for(p.wait(), timeout=app.command[1])
             else:
                 await asyncio.sleep(long_wait_time)
         _record_properties(record_property, server, tracker, 10)
@@ -54,10 +53,10 @@ class TestScreencopyBandwidth:
         apps.pluma(),
         apps.snap('mir-kiosk-kodi'),
     ])
-    async def test_inactive_app(self, record_property, server, app) -> None:
+    async def test_inactive_app(self, record_property, server, app: apps.Dependency) -> None:
         server = DisplayServer(server[0], add_extensions=ScreencopyTracker.required_extensions)
         tracker = ScreencopyTracker(server.display_name)
-        async with server as s, tracker, s.program(app[0], app_type=app[1]):
+        async with server as s, tracker, s.program(app.command, app_type=app.app_type):
             await asyncio.sleep(long_wait_time)
         _record_properties(record_property, server, tracker, 2)
 
@@ -67,12 +66,13 @@ class TestScreencopyBandwidth:
         apps.mir_test_tools(),
         apps.mir_demo_server(),
     ])
-    async def test_app_dragged_around(self, record_property, local_server) -> None:
+    async def test_app_dragged_around(self, record_property, local_server: apps.Dependency) -> None:
         async def pause():
             await asyncio.sleep(0.2)
         extensions = ScreencopyTracker.required_extensions + VirtualPointer.required_extensions
         app_path = Path(__file__).parent / 'clients' / 'maximizing_gtk_app.py'
-        server = DisplayServer(local_server[0], add_extensions=extensions)
+        server = DisplayServer(local_server.command, add_extensions=extensions)
+        app = server.program(('python3', str(app_path)))
         tracker = ScreencopyTracker(server.display_name)
         pointer = VirtualPointer(server.display_name)
         async with server, tracker, app, pointer:
