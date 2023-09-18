@@ -74,7 +74,7 @@ class TestProgram:
                 cgroup_dir = Cgroup.get_cgroup_dir(p.process.pid)
                 assert cgroup_dir is not None
                 assert str(cgroup_dir).find("test-slice")
-                p.kill(2)
+                await p.kill(2)
 
 
 class TestBenchmarker:
@@ -131,7 +131,7 @@ class TestBenchmarker:
                 benchmarker.add(p.process.pid, "frame")
                 async with benchmarker:
                     await asyncio.sleep(3)
-                    p.kill(2)
+                    await p.kill(2)
                     
         assert len(benchmarker.get_data()) > 0
         assert benchmarker.get_data()[0].max_mem_bytes > 0
