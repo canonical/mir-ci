@@ -51,18 +51,22 @@ class DisplayServer:
         if self.on_program_started is not None:
             self.on_program_started(pid, name)
 
-    def program(self, command: Tuple[Command, Literal["snap", "deb", "pip"]], env: Dict[str, str] = {}) -> Program:
+    def program(
+            self, 
+            command: Command,
+            env: Dict[str, str] = {},
+            app_type: Optional[Literal["snap", "deb", "pip"]] = None) -> Program:
         def on_started(pid: int):
             self._on_program_started(pid, "application")
 
-        return Program(command[0], env=dict({
+        return Program(command, env=dict({
                 'DISPLAY': 'no',
                 'QT_QPA_PLATFORM': 'wayland',
                 'WAYLAND_DISPLAY': self.display_name
             },
             **env),
             on_started=on_started,
-            systemd_slice=f"mirci-{time.time()}" if command[1] != "snap" else None)
+            systemd_slice=f"mirci-{time.time()}" if app_type != "snap" else None)
 
     async def __aenter__(self) -> 'DisplayServer':
         def on_started(pid: int):

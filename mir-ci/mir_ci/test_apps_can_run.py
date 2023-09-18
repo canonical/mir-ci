@@ -23,7 +23,7 @@ class TestAppsCanRun:
             benchmarker.add(pid, name)
             
         async with DisplayServer(server, on_program_started=on_program_started) as server:
-            async with server.program(app) as p:
+            async with server.program(app[0], app_type=app[1]) as p:
                 async with benchmarker:
                     time.sleep(short_wait_time)
                     await p.kill(2)

@@ -38,6 +38,7 @@ class Program:
             self.command: tuple[str, ...] = (command,)
         else:
             self.command = tuple(command)
+
         self.name = self.command[0]
         self.env = env
         self.process: Optional[asyncio.subprocess.Process] = None

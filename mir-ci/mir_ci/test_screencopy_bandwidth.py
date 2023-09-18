@@ -8,7 +8,6 @@ from mir_ci import apps
 
 from mir_ci.screencopy_tracker import ScreencopyTracker
 from mir_ci.virtual_pointer import VirtualPointer, Button
-from mir_ci.apps import DependencyType
 
 long_wait_time = 10
 
@@ -33,7 +32,7 @@ class TestScreencopyBandwidth:
         apps.snap('mir-kiosk-neverputt', extra=False)
     ])
     async def test_active_app(self, record_property, server, app) -> None:
-        server = DisplayServer(server, add_extensions=ScreencopyTracker.required_extensions)
+        server = DisplayServer(server[0], add_extensions=ScreencopyTracker.required_extensions)
         tracker = ScreencopyTracker(server.display_name)
         command = app[0]
         async with server as s, tracker, s.program(command[0]) as p:
@@ -44,7 +43,7 @@ class TestScreencopyBandwidth:
         _record_properties(record_property, server, tracker, 10)
 
     async def test_compositor_alone(self, record_property, server) -> None:
-        server = DisplayServer(server, add_extensions=ScreencopyTracker.required_extensions)
+        server = DisplayServer(server[0], add_extensions=ScreencopyTracker.required_extensions)
         tracker = ScreencopyTracker(server.display_name)
         async with server, tracker:
             await asyncio.sleep(long_wait_time)
@@ -56,9 +55,9 @@ class TestScreencopyBandwidth:
         apps.snap('mir-kiosk-kodi'),
     ])
     async def test_inactive_app(self, record_property, server, app) -> None:
-        server = DisplayServer(server, add_extensions=ScreencopyTracker.required_extensions)
+        server = DisplayServer(server[0], add_extensions=ScreencopyTracker.required_extensions)
         tracker = ScreencopyTracker(server.display_name)
-        async with server as s, tracker, s.program(app):
+        async with server as s, tracker, s.program(app[0], app_type=app[1]):
             await asyncio.sleep(long_wait_time)
         _record_properties(record_property, server, tracker, 2)
 
@@ -73,10 +72,7 @@ class TestScreencopyBandwidth:
             await asyncio.sleep(0.2)
         extensions = ScreencopyTracker.required_extensions + VirtualPointer.required_extensions
         app_path = Path(__file__).parent / 'clients' / 'maximizing_gtk_app.py'
-        server = DisplayServer(local_server, add_extensions=extensions)
-        deb_type: DependencyType = "deb"
-        cmd = (("python3", str(app_path)), deb_type)
-        app = server.program(cmd)
+        server = DisplayServer(local_server[0], add_extensions=extensions)
         tracker = ScreencopyTracker(server.display_name)
         pointer = VirtualPointer(server.display_name)
         async with server, tracker, app, pointer:
