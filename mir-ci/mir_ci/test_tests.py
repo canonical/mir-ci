@@ -60,6 +60,10 @@ class TestProgram:
         assert p.output.strip() == 'abc\nijk'
         assert abs(elapsed - 2.5) < 0.1
 
+    def test_program_command_has_prefix_when_systemd_slice_is_set(self) -> None:
+        p = Program(['sh', '-c', 'sleep 1; echo abc'], systemd_slice="test-slice")
+        assert p.command == ("systemd-run", "--user", "--scope", f"--slice=test-slice", "sh", "-c", "sleep 1; echo abc")
+
 
 class TestBenchmarker:
     @staticmethod

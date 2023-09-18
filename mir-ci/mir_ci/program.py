@@ -28,7 +28,12 @@ class ProgramError(RuntimeError):
     pass
 
 class Program:
-    def __init__(self, command: Command, env: Dict[str, str] = {}, preexec_fn: Optional[Callable[[], None]] = None):
+    def __init__(
+            self,
+            command: Command,
+            env: Dict[str, str] = {},
+            preexec_fn: Optional[Callable[[], None]] = None,
+            systemd_slice: Optional[str] = None):
         if isinstance(command, str):
             self.command: tuple[str, ...] = (command,)
         else:
@@ -41,6 +46,10 @@ class Program:
         self.output = ''
         self.sigkill_sent = False
         self.preexec_fn = preexec_fn
+
+        if systemd_slice is not None:
+            prefix = ("systemd-run", "--user", "--scope", f"--slice={systemd_slice}")
+            self.command = (*prefix, *self.command)
 
     def is_running(self) -> bool:
         return self.process is not None and self.process.returncode is None
