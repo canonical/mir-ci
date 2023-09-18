@@ -25,7 +25,7 @@ class Cgroup:
             lines = group_file.readlines()
             if len(lines) == 0:
                 print(f"Error: process with pid={pid} lacks a cgroup folder")
-                return
+                return None
             
             for line in lines:
                 if not line.startswith("0::"):

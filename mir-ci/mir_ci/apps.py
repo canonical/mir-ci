@@ -2,7 +2,8 @@ import pytest
 
 from typing import Any, Optional, Union, Collection, Tuple, Literal
 
-Dependency = Tuple[Collection[str], Literal["snap", "deb", "pip"]]
+DependencyType = Literal["snap", "deb", "pip"]
+Dependency = Tuple[Collection[str], DependencyType]
 
 def _dependency(
         cmd: Collection[str],
@@ -20,7 +21,7 @@ def _dependency(
 
     ret: Dependency = (cmd, dependency_type)
     if extra is not None:
-        ret = (ret, extra)
+        ret = ((ret, extra), dependency_type)
 
     return pytest.param(
         ret,
@@ -39,7 +40,7 @@ def snap(
         *args: str,
         cmd: Collection[str] = (),
         id=None,
-        **kwargs) -> Dependency:
+        **kwargs):
     return _dependency(
         cmd=cmd or (snap, *args),
         dependency_type="snap",
@@ -54,7 +55,7 @@ def deb(
         cmd: Collection[str] = (),
         debs: Collection[str] = (),
         id: Optional[str] = None,
-        **kwargs) -> Dependency:
+        **kwargs):
     return _dependency(
         cmd=cmd or (deb, *args),
         dependency_type="deb",

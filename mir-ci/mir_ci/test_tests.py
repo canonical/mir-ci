@@ -70,9 +70,10 @@ class TestProgram:
         p = Program(['sh', '-c', 'sleep 100; echo abc'], systemd_slice="test-slice")
         async with p:
             await asyncio.sleep(1)
-            cgroup_dir = Cgroup.get_cgroup_dir(p.process.pid)
-            assert cgroup_dir is not None
-            assert str(cgroup_dir).find("test-slice")
+            if p.process:
+                cgroup_dir = Cgroup.get_cgroup_dir(p.process.pid)
+                assert cgroup_dir is not None
+                assert str(cgroup_dir).find("test-slice")
 
 
 class TestBenchmarker:
@@ -112,6 +113,24 @@ class TestBenchmarker:
             async with benchmarker:
                 await asyncio.sleep(1)
 
+        assert len(benchmarker.get_data()) > 0
+        assert benchmarker.get_data()[0].max_mem_bytes > 0
+        assert benchmarker.get_data()[0].avg_cpu_percent > 0
+
+    async def test_benchmarker_can_measure_snaps(self) -> None:
+        benchmarker = Benchmarker(poll_time_seconds=0.1)
+        p = Program(
+            "ubuntu-frame",
+            env={
+                'WAYLAND_DISPLAY': "wayland-99"
+            })
+
+        async with p:
+            if p.process is not None:
+                benchmarker.add(p.process.pid, "frame")
+                async with benchmarker:
+                    await asyncio.sleep(100)
+                    
         assert len(benchmarker.get_data()) > 0
         assert benchmarker.get_data()[0].max_mem_bytes > 0
         assert benchmarker.get_data()[0].avg_cpu_percent > 0

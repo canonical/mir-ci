@@ -8,6 +8,7 @@ from mir_ci import apps
 
 from mir_ci.screencopy_tracker import ScreencopyTracker
 from mir_ci.virtual_pointer import VirtualPointer, Button
+from mir_ci.apps import DependencyType
 
 long_wait_time = 10
 
@@ -72,7 +73,9 @@ class TestScreencopyBandwidth:
         extensions = ScreencopyTracker.required_extensions + VirtualPointer.required_extensions
         app_path = Path(__file__).parent / 'clients' / 'maximizing_gtk_app.py'
         server = DisplayServer(local_server, add_extensions=extensions)
-        app = server.program(('python3', str(app_path)))
+        deb_type: DependencyType = "deb"
+        cmd = (("python3", str(app_path)), deb_type)
+        app = server.program(cmd)
         tracker = ScreencopyTracker(server.display_name)
         pointer = VirtualPointer(server.display_name)
         async with server, tracker, app, pointer:
