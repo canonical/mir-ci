@@ -35,9 +35,10 @@ class TestScreencopyBandwidth:
     async def test_active_app(self, record_property, server, app) -> None:
         server = DisplayServer(server, add_extensions=ScreencopyTracker.required_extensions)
         tracker = ScreencopyTracker(server.display_name)
-        async with server as s, tracker, s.program(app[0]) as p:
-            if app[1]:
-                await asyncio.wait_for(p.wait(), timeout=app[1])
+        command = app[0]
+        async with server as s, tracker, s.program(command[0]) as p:
+            if command[1]:
+                await asyncio.wait_for(p.wait(), timeout=command[1])
             else:
                 await asyncio.sleep(long_wait_time)
         _record_properties(record_property, server, tracker, 10)
