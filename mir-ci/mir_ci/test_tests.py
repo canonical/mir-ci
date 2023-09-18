@@ -67,13 +67,14 @@ class TestProgram:
         assert p.command == ("systemd-run", "--user", "--scope", "--slice=test-slice", "sh", "-c", "sleep 1; echo abc")
 
     async def test_program_has_cgroup_file_when_run_with_slice(self) -> None:
-        p = Program(['sh', '-c', 'sleep 100; echo abc'], systemd_slice="test-slice")
+        p = Program(['sh', '-c', 'sleep 1; echo abc'], systemd_slice="test-slice")
         async with p:
             await asyncio.sleep(1)
             if p.process:
                 cgroup_dir = Cgroup.get_cgroup_dir(p.process.pid)
                 assert cgroup_dir is not None
                 assert str(cgroup_dir).find("test-slice")
+                p.kill(2)
 
 
 class TestBenchmarker:
@@ -129,7 +130,8 @@ class TestBenchmarker:
             if p.process is not None:
                 benchmarker.add(p.process.pid, "frame")
                 async with benchmarker:
-                    await asyncio.sleep(100)
+                    await asyncio.sleep(3)
+                    p.kill(2)
                     
         assert len(benchmarker.get_data()) > 0
         assert benchmarker.get_data()[0].max_mem_bytes > 0
