@@ -6,7 +6,7 @@ class Cgroup:
     def __init__(self, pid: int, name: str) -> None:
         self.name = name
         self.pid = pid
-        self.path = Cgroup.get_cgroup_dir(pid)
+        self.path = Cgroup.get_cgroup_dir(self.pid)
 
     @staticmethod
     def get_cgroup_dir(pid: int) -> Optional[pathlib.Path]:

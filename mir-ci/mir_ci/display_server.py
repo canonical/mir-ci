@@ -3,10 +3,9 @@ import os
 import time
 import asyncio
 
-from typing import Dict, Tuple, Callable, Literal
+from typing import Dict, Tuple, Callable, Literal, Optional
 
 from mir_ci.program import Program, Command
-from mir_ci.benchmarker import Benchmarker
 
 display_appear_timeout = 10
 min_mir_run_time = 0.1
@@ -35,22 +34,26 @@ def wait_for_wayland_display(runtime_dir: str, name: str) -> None:
     raise RuntimeError('Wayland display ' + name + ' did not appear')
 
 class DisplayServer:
-    def __init__(self, command: Command, add_extensions: Tuple[str, ...] = (), benchmark: bool = False) -> None:
+    def __init__(
+            self,
+            command: Command,
+            add_extensions: Tuple[str, ...] = (),
+            on_program_started: Optional[Callable[[int, str], None]] = None) -> None:
         self.command = command
         self.add_extensions = add_extensions
         # Snaps require the display to be in the form "waland-<number>". The 00 prefix lets us
         # easily identify displays created by this test suit and remove them in bulk if a bunch
         # don't get cleaned up properly.
         self.display_name = 'wayland-00' + str(os.getpid())
-        self.benchmarker = Benchmarker(poll_time_seconds=0.1) if benchmark is True else None
+        self.on_program_started = on_program_started
 
-    def _add_pid(self, pid: int, name: str) -> None:
-        if self.benchmarker is not None:
-            self.benchmarker.add(pid, name)
+    def _on_program_started(self, pid: int, name: str) -> None:
+        if self.on_program_started is not None:
+            self.on_program_started(pid, name)
 
     def program(self, command: Tuple[Command, Literal["snap", "deb", "pip"]], env: Dict[str, str] = {}) -> Program:
-        def add_application(pid: int):
-            self._add_pid(pid, "application")
+        def on_started(pid: int):
+            self._on_program_started(pid, "application")
 
         return Program(command[0], env=dict({
                 'DISPLAY': 'no',
@@ -58,11 +61,12 @@ class DisplayServer:
                 'WAYLAND_DISPLAY': self.display_name
             },
             **env),
-            on_started=add_application)
+            on_started=on_started,
+            systemd_slice=f"mirci-{time.time()}" if command[1] != "snap" else None)
 
     async def __aenter__(self) -> 'DisplayServer':
-        def add_compositor(pid: int):
-            self._add_pid(pid, "compositor")
+        def on_started(pid: int):
+            self._on_program_started(pid, "compositor")
 
         runtime_dir = os.environ['XDG_RUNTIME_DIR']
         clear_wayland_display(runtime_dir, self.display_name)
@@ -72,15 +76,11 @@ class DisplayServer:
                 'WAYLAND_DISPLAY': self.display_name,
                 'MIR_SERVER_ADD_WAYLAND_EXTENSIONS': ':'.join(self.add_extensions),
             },
-            on_started=add_compositor
+            on_started=on_started
         ).__aenter__()
         try:
             wait_for_wayland_display(runtime_dir, self.display_name)
-            if self.benchmarker:
-                self.benchmarker.start()
         except:
-            if self.benchmarker:
-                await self.benchmarker.stop()
             await self.server.kill()
             raise
         self.start_time = time.time()
@@ -93,16 +93,4 @@ class DisplayServer:
         if sleep_time > 0:
             await asyncio.sleep(sleep_time)
         await self.server.kill()
-        if self.benchmarker:
-            await self.benchmarker.stop()
-
-    def generate_report(self, record_property: Callable[[str, object], None]) -> None:
-        if self.benchmarker:
-            idx = 0
-            for item in self.benchmarker.get_data():
-                # TODO: I should probably output multiple values here instead dof one big JSON blob
-                record_property(f"{item.name}_pid", item.pid)
-                record_property(f"{item.name}_avg_cpu_percent", item.avg_cpu_percent)
-                record_property(f"{item.name}_max_mem_bytes", item.max_mem_bytes)
-                record_property(f"{item.name}_avg_mem_bytes", item.avg_mem_bytes)
-                idx = idx + 1
+            

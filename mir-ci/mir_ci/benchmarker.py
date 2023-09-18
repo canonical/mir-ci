@@ -93,7 +93,6 @@ class Benchmarker:
 
     def add(self, pid: int, name: str) -> None:
         self.data_records[pid] = RawInternalProcessInfo(pid, name)
-        self.backend.add(pid, name)
 
     def _on_packet(self, packet: ProcessInfoFrame) -> None:
         pid = packet.pid
@@ -134,10 +133,19 @@ class Benchmarker:
                 pass
             await asyncio.sleep(self.poll_time_seconds)
 
-    def start(self) -> None:
-        if self.running:
+    async def start(self) -> None:
+        if self.running is True:
             return
-          
+
+        # This sleep is unfortunate, but necessary. For the cgroups backend,
+        # we are waiting for the /proc/PID/cgroup to get written with the
+        # correct path. In the beginning, it will briefly have the value
+        # of the parent process.
+        await asyncio.sleep(self.poll_time_seconds)
+
+        for pid in self.data_records:
+            self.backend.add(pid, self.data_records[pid].name)
+        
         self.task = asyncio.ensure_future(self._run())
 
     async def stop(self) -> None:
@@ -157,10 +165,21 @@ class Benchmarker:
         return process_info_list
     
     async def __aenter__(self):
-        self.start()
+        await self.start()
 
     async def __aexit__(self, *args):
         await self.stop()
+
+    def generate_report(self, record_property: Callable[[str, object], None]):
+        idx = 0
+        for item in self.get_data():
+            # TODO: I should probably output multiple values here instead dof one big JSON blob
+            record_property(f"{item.name}_pid", item.pid)
+            record_property(f"{item.name}_avg_cpu_percent", item.avg_cpu_percent)
+            record_property(f"{item.name}_max_mem_bytes", item.max_mem_bytes)
+            record_property(f"{item.name}_avg_mem_bytes", item.avg_mem_bytes)
+            idx = idx + 1
+
 
 
 class PsutilBackend(BenchmarkBackend):
