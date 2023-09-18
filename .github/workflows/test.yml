@@ -50,6 +50,7 @@ jobs:
     - name: Set up dependencies
       working-directory: mir-ci/mir_ci
       run: |
+        sudo apt-get --yes install pkg-config libwayland-dev
         pip install -e ..
         [ '${{ matrix.mark }}' == 'self' ] && pip install pytest-cov
         python -m pytest ${{ steps.pytest-args.outputs.args }} --deps
