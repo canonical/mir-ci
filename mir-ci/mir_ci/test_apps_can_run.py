@@ -18,7 +18,7 @@ class TestAppsCanRun:
         apps.qterminal(),
     ])
     async def test_app_can_run(self, server, app, record_property) -> None:
-        benchmarker = Benchmarker(poll_time_seconds=0.1, backend="psutil")
+        benchmarker = Benchmarker(poll_time_seconds=0.1)
         def on_program_started(pid: int, name: str):
             benchmarker.add(pid, name)
             
