@@ -9,7 +9,7 @@ class Cgroup:
         self.path = Cgroup.get_cgroup_dir(pid)
 
     @staticmethod
-    def get_cgroup_dir(pid: int) -> Optional[str]:
+    def get_cgroup_dir(pid: int) -> Optional[pathlib.Path]:
         path = None
         directory = f"/proc/{pid}"
         if not os.path.isdir(directory):
@@ -20,7 +20,7 @@ class Cgroup:
         if not os.path.isfile(cgroup_file):
             print("Error: process has no cgroup file")
             return None
-        
+
         with open(cgroup_file, "r") as group_file:
             lines = group_file.readlines()
             if len(lines) == 0:
