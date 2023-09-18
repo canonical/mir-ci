@@ -28,7 +28,7 @@ for the selected tests, but skip them.
 `pytest`
 `pytest -k mir_kiosk`
 
-To run inside of a virtual X11 server:
+To run inside of a virtual X11 server: test
 `xvfb-run -a pytest`
 
 To record test properties:
