@@ -3,10 +3,10 @@ import os
 import time
 import asyncio
 
-from typing import Dict, Tuple, Callable
+from typing import Dict, Tuple, Callable, Literal
 
 from mir_ci.program import Program, Command
-from mir_ci.benchmarker import Benchmarker, benchmarker_preexec_fn
+from mir_ci.benchmarker import Benchmarker
 
 display_appear_timeout = 10
 min_mir_run_time = 0.1
@@ -44,21 +44,26 @@ class DisplayServer:
         self.display_name = 'wayland-00' + str(os.getpid())
         self.benchmarker = Benchmarker(poll_time_seconds=0.1) if benchmark is True else None
 
-    def _preexec_func(self, process_name: str):
-        if self.benchmarker:
-            benchmarker_preexec_fn(process_name)
+    def _add_pid(self, pid: int, name: str) -> None:
+        if self.benchmarker is not None:
+            self.benchmarker.add(pid, name)
 
-    def program(self, command: Command, env: Dict[str, str] = {}) -> Program:
-        return Program(command, env=dict({
+    def program(self, command: Tuple[Command, Literal["snap", "deb", "pip"]], env: Dict[str, str] = {}) -> Program:
+        def add_application(pid: int):
+            self._add_pid(pid, "application")
+
+        return Program(command[0], env=dict({
                 'DISPLAY': 'no',
                 'QT_QPA_PLATFORM': 'wayland',
                 'WAYLAND_DISPLAY': self.display_name
             },
             **env),
-            preexec_fn=lambda: self._preexec_func("application")
-        )
+            on_started=add_application)
 
     async def __aenter__(self) -> 'DisplayServer':
+        def add_compositor(pid: int):
+            self._add_pid(pid, "compositor")
+
         runtime_dir = os.environ['XDG_RUNTIME_DIR']
         clear_wayland_display(runtime_dir, self.display_name)
         self.server = await Program(
@@ -67,7 +72,7 @@ class DisplayServer:
                 'WAYLAND_DISPLAY': self.display_name,
                 'MIR_SERVER_ADD_WAYLAND_EXTENSIONS': ':'.join(self.add_extensions),
             },
-            preexec_fn=lambda: self._preexec_func("compositor")
+            on_started=add_compositor
         ).__aenter__()
         try:
             wait_for_wayland_display(runtime_dir, self.display_name)

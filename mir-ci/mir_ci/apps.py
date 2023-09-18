@@ -1,9 +1,12 @@
 import pytest
 
-from typing import Any, Optional, Union, Collection
+from typing import Any, Optional, Union, Collection, Tuple, Literal
+
+Dependency = Tuple[Collection[str], Literal["snap", "deb", "pip"]]
 
 def _dependency(
         cmd: Collection[str],
+        dependency_type: Literal["snap", "deb", "pip"],
         snap: Optional[str] = None,
         channel: str = 'latest/stable',
         debs: Collection[str] = (),
@@ -15,7 +18,7 @@ def _dependency(
     if isinstance(marks, pytest.Mark):
         marks = (marks,)
 
-    ret = cmd
+    ret: Dependency = (cmd, dependency_type)
     if extra is not None:
         ret = (ret, extra)
 
@@ -36,10 +39,10 @@ def snap(
         *args: str,
         cmd: Collection[str] = (),
         id=None,
-        **kwargs):
-
+        **kwargs) -> Dependency:
     return _dependency(
         cmd=cmd or (snap, *args),
+        dependency_type="snap",
         snap=snap,
         id=id or snap,
         **kwargs
@@ -51,10 +54,10 @@ def deb(
         cmd: Collection[str] = (),
         debs: Collection[str] = (),
         id: Optional[str] = None,
-        **kwargs):
-
+        **kwargs) -> Dependency:
     return _dependency(
         cmd=cmd or (deb, *args),
+        dependency_type="deb",
         debs=debs or (deb,),
         id=id or deb,
         **kwargs)
@@ -67,6 +70,7 @@ def pip(
         **kwargs):
     return _dependency(
         pip_pkgs=(pkg,),
+        dependency_type="pip",
         cmd=cmd or ('python3', '-m', pkg, *args),
         id=id or pkg,
         **kwargs)

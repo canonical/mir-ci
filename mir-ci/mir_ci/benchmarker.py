@@ -84,8 +84,6 @@ class BenchmarkBackend(ABC):
 
 
 class Benchmarker:
-    TMP_FILE_DIRECTORY = "/tmp/mir_ci_psutil_bakend"
-
     def __init__(self, poll_time_seconds: float = 1, backend: Literal["cgroups", "psutil"] = "cgroups"):
         self.data_records: Dict[int, RawInternalProcessInfo] = {}
         self.running = False
@@ -93,26 +91,9 @@ class Benchmarker:
         self.task: Optional[asyncio.Task[None]] = None
         self.poll_time_seconds = poll_time_seconds
 
-        if not os.path.isdir(Benchmarker.TMP_FILE_DIRECTORY):
-            os.mkdir(Benchmarker.TMP_FILE_DIRECTORY)
-
-        with open(Benchmarker._get_tmp_file_path(False), "w"):
-            pass
-
-    @staticmethod
-    def _get_tmp_file_path(in_new_process: bool):
-        pid = os.getpid() if in_new_process is False else os.getppid()
-        return f"{Benchmarker.TMP_FILE_DIRECTORY}/{pid}"
-
-    @staticmethod
-    def add(pid: int, name: str, in_new_process: bool) -> None:
-        """
-        Add a process to be benchmarked.
-
-        WARNING: This function is marked static because it is allowed to run from a forked process. 
-        """
-        with open(Benchmarker._get_tmp_file_path(in_new_process), "a") as file:
-            file.write(f"{pid}:{name}\n")
+    def add(self, pid: int, name: str) -> None:
+        self.data_records[pid] = RawInternalProcessInfo(pid, name)
+        self.backend.add(pid, name)
 
     def _on_packet(self, packet: ProcessInfoFrame) -> None:
         pid = packet.pid
@@ -146,31 +127,12 @@ class Benchmarker:
 
     async def _run(self) -> None:
         self.running = True
-        for pid, name in self._aggregate_processes():
-            self.data_records[pid] = RawInternalProcessInfo(pid, name)
-            self.backend.add(pid, name)
-
         while self.running:
             try:
                 self.backend.poll(self._on_packet)
             except:
                 pass
             await asyncio.sleep(self.poll_time_seconds)
-
-    def _aggregate_processes(self)-> Iterator[Tuple[int, str]]:
-        with open(Benchmarker._get_tmp_file_path(False), "r") as file:
-            while True:
-                line = file.readline()
-                if not line:
-                    break
-
-                split_line = line.split(':')
-                if len(split_line) != 2:
-                    continue
-
-                pid = int(split_line[0])
-                name = split_line[1].strip()
-                yield (pid, name)
 
     def start(self) -> None:
         if self.running:
@@ -202,7 +164,7 @@ class Benchmarker:
 
 
 class PsutilBackend(BenchmarkBackend):
-    def __init__(self):
+    def __init__(self) -> None:
         self.monitored: List[psutil.Process] = []
     
     def add(self, pid: int, name: str) -> None:
@@ -222,8 +184,7 @@ class CgroupsBackend(BenchmarkBackend):
         self._cgroup_list: Dict[int, Cgroup] = {}
 
     def add(self, pid: int, name: str) -> None:
-        cgroup = Cgroup(f"mir_ci_{name}_{int(time.time() * 1_000_000)}")
-        cgroup.add_process(pid)
+        cgroup = Cgroup(pid, name)
         self._cgroup_list[pid] = cgroup
     
     def poll(self, cb: Callable[[ProcessInfoFrame], None]) -> None:
@@ -234,9 +195,3 @@ class CgroupsBackend(BenchmarkBackend):
                 cgroup.get_cpu_time_seconds(),
                 cgroup.get_peak_memory()
             ))
-
-def benchmarker_preexec_fn(name: str) -> None:
-    """
-    Add the current process to the benchmark with the provided name
-    """
-    Benchmarker.add(os.getpid(), name, True)

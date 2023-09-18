@@ -4,11 +4,13 @@ import time
 import pytest
 import asyncio
 import subprocess
+import time
 
 from mir_ci.program import Program
-from mir_ci.benchmarker import Benchmarker, benchmarker_preexec_fn
+from mir_ci.benchmarker import Benchmarker
+from mir_ci.cgroups import Cgroup
 
-class TestTest:
+class TestTest:    
     @pytest.mark.self
     @pytest.mark.deps('python3', '-m', 'mypy', pip_pkgs=('mypy', 'pywayland'))
     def test_project_typechecks(self, deps) -> None:
@@ -62,19 +64,22 @@ class TestProgram:
 
     def test_program_command_has_prefix_when_systemd_slice_is_set(self) -> None:
         p = Program(['sh', '-c', 'sleep 1; echo abc'], systemd_slice="test-slice")
-        assert p.command == ("systemd-run", "--user", "--scope", f"--slice=test-slice", "sh", "-c", "sleep 1; echo abc")
+        assert p.command == ("systemd-run", "--user", "--scope", "--slice=test-slice", "sh", "-c", "sleep 1; echo abc")
+
+    async def test_program_has_cgroup_file_when_run_with_slice(self) -> None:
+        p = Program(['sh', '-c', 'sleep 1; echo abc'], systemd_slice="test-slice")
+        async with p:
+            assert Cgroup.get_cgroup_dir(p.process.pid) is not None
+            await asyncio.sleep(0.5)
 
 
 class TestBenchmarker:
-    @staticmethod
-    def add_to_benchmark():
-        # WARNING: This happens in a forked process. We do not
-        # have access to memory from the parent process here.
-        benchmarker_preexec_fn("sleepy")
-
     async def test_benchmarker_with_popen(self) -> None:
-        benchmarker = Benchmarker(poll_time_seconds=0.1, backend="psutil")
-        p = subprocess.Popen(['sh', '-c', 'sleep 1;'], preexec_fn=TestBenchmarker.add_to_benchmark)
+        benchmarker = Benchmarker(poll_time_seconds=0.1)
+        p = subprocess.Popen(['sh', '-c', 'sleep 1;'])
+
+        if p is not None:
+            benchmarker.add(p.pid, "sleep")
         async with benchmarker:
             await asyncio.sleep(1)
 
@@ -82,9 +87,11 @@ class TestBenchmarker:
         assert benchmarker.get_data()[0].pid == p.pid
 
     async def test_benchmarker_with_program(self) -> None:
-        benchmarker = Benchmarker(poll_time_seconds=0.1, backend="psutil")
-        p = Program(['sh', '-c', 'sleep 1;'], preexec_fn=TestBenchmarker.add_to_benchmark)
+        benchmarker = Benchmarker(poll_time_seconds=0.1)
+        p = Program(['sh', '-c', 'sleep 1;'])
         async with p:
+            if p.process is not None:
+                benchmarker.add(p.process.pid, "sleep")
             async with benchmarker:
                 await asyncio.sleep(1)
                 await p.kill(2)
@@ -95,9 +102,11 @@ class TestBenchmarker:
             assert benchmarker.get_data()[0].pid == p.process.pid
 
     async def test_benchmarker_cpu_has_value(self) -> None:
-        benchmarker = Benchmarker(poll_time_seconds=0.1, backend="psutil")
-        p = Program(['awk', 'BEGIN{for(i=0;i<100000000;i++){}}'], preexec_fn=TestBenchmarker.add_to_benchmark)
+        benchmarker = Benchmarker(poll_time_seconds=0.1)
+        p = Program(['awk', 'BEGIN{for(i=0;i<100000000;i++){}}'])
         async with p:
+            if p.process is not None:
+                benchmarker.add(p.process.pid, "awk")
             async with benchmarker:
                 await asyncio.sleep(1)
 

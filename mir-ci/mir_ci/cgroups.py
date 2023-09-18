@@ -1,42 +1,56 @@
 import os
-from typing import Iterator
+from typing import Iterator, Optional
+import pathlib
 
 class Cgroup:
-    def __init__(self, name: str) -> None:
+    def __init__(self, pid: int, name: str) -> None:
         self.name = name
-        self.path = f"/sys/fs/cgroup/{name}"
-        self._mount_if_not_exist()
+        self.pid = pid
+        self.path = Cgroup.get_cgroup_dir(pid)
 
-    def _mount_if_not_exist(self) -> None:
-        # On some distros, this might noe even be mounted (e.g. Debian AFAIK)
-        if not os.path.isdir("/sys/fs/cgroup"):
-            os.mkdir("/sys/fs/cgroup")
+    @staticmethod
+    def get_cgroup_dir(pid: int) -> Optional[str]:
+        path = None
+        directory = f"/proc/{pid}"
+        if not os.path.isdir(directory):
+            print("Error: process has no directory")
+            return None
 
-        if not os.path.ismount("/sys/fs/cgroup"):
-            os.system("mount -t cgroupv2 /sys/fs/cgroup")
+        cgroup_file = f"{directory}/cgroup"
+        if not os.path.isfile(cgroup_file):
+            print("Error: process has no cgroup file")
+            return None
+        
+        with open(cgroup_file, "r") as group_file:
+            lines = group_file.readlines()
+            if len(lines) == 0:
+                print(f"Error: process with pid={pid} lacks a cgroup folder")
+                return
+            
+            for line in lines:
+                if not line.startswith("0::"):
+                    continue
 
-        if os.path.isdir(self.path):
-            os.rmdir(self.path)
+                path = pathlib.Path(f"/sys/fs/cgroup/{line[3:]}".strip().replace("//", "/"))
 
-        os.mkdir(self.path)
-
-    def add_process(self, pid: int) -> None:
-        proc_path = f"{self.path}/cgroup.procs"
-        with open(proc_path, "a") as proc_file:
-            proc_file.write(f"{pid}\n")
-
-    def remove_process(self, pid: int) -> None:
-        proc_path = f"{self.path}/cgroup.procs"
-        with open(proc_path, "a") as proc_file:
-            proc_file.write(f"{pid}\n")
+        if not path:
+            print(f"Error: process with pid={pid} lacks a path")
+        return path
 
     def _read_file(self, file_name: str) -> Iterator[str]:
+        if not self.path:
+            return
+        
         file_path = f"{self.path}/{file_name}"
+        if not os.path.isfile(file_path):
+            print(f"Error: Requested fiel is not a file: {file_name}")
+            return
 
         try:
             with open(file_path, "r") as file:
                 yield file.readline()
-        except:
+        except Exception as e:
+            print(f"Error: Unable to read file at path: {file_path}")
             return
 
     def get_cpu_time_microseconds(self) -> int:

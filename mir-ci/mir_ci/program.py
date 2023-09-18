@@ -32,7 +32,7 @@ class Program:
             self,
             command: Command,
             env: Dict[str, str] = {},
-            preexec_fn: Optional[Callable[[], None]] = None,
+            on_started: Optional[Callable[[int], None]] = None,
             systemd_slice: Optional[str] = None):
         if isinstance(command, str):
             self.command: tuple[str, ...] = (command,)
@@ -45,7 +45,7 @@ class Program:
         self.send_signals_task: Optional[asyncio.Task[None]] = None
         self.output = ''
         self.sigkill_sent = False
-        self.preexec_fn = preexec_fn
+        self.on_started = on_started
 
         if systemd_slice is not None:
             prefix = ("systemd-run", "--user", "--scope", f"--slice={systemd_slice}")
@@ -92,18 +92,13 @@ class Program:
             pass
 
     async def __aenter__(self) -> 'Program':
-        def preexec_fn():
-            if self.preexec_fn:
-                self.preexec_fn()
-            os.setsid()
-
         process = await asyncio.create_subprocess_exec(
             *self.command,
             env=dict(os.environ, **self.env),
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.STDOUT,
             close_fds=True,
-            preexec_fn=preexec_fn)
+            preexec_fn=os.setsid)
         # Without setsid killing the subprocess doesn't kill the whole process tree,
         # see https://pymotw.com/2/subprocess/#process-groups-sessions
         # Without setsid killing the subprocess doesn't kill the whole process tree,
@@ -115,6 +110,8 @@ class Program:
             self.output = raw_output.decode('utf-8').strip()
         self.process = process
         self.process_end = communicate()
+        if self.on_started:
+            self.on_started(self.process.pid)
         return self
 
     async def __aexit__(self, *args) -> None:
