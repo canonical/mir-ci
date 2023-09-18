@@ -1,3 +1,4 @@
+import os
 import pathlib
 import shutil
 import subprocess
@@ -98,6 +99,9 @@ def _deps_install(request: pytest.FixtureRequest, spec: Union[str, Mapping[str, 
                     if shutil.which(f'/snap/{snap}/current/bin/setup.sh'):
                         subprocess.check_call(('sudo', f'/snap/{snap}/current/bin/setup.sh'))
                     subprocess.call(('sudo', 'snap', 'connect', f'{snap}:login-session-control'),
+                                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                if 'MIR_CI_SNAP' in os.environ:
+                    subprocess.call(('sudo', 'snap', 'connect', f'{snap}:wayland', os.environ['MIR_CI_SNAP']),
                                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                 checked_snaps.add(snap)
 
