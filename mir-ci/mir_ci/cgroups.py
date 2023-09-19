@@ -64,9 +64,6 @@ class Cgroup:
             
         return 0
     
-    def get_cpu_time_seconds(self) -> float:
-        return self.get_cpu_time_microseconds() / 1_000_000
-    
     def get_current_memory(self) -> int:
         for line in self._read_file("memory.current"):
             return int(line)

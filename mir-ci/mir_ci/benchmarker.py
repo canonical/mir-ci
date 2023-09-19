@@ -12,7 +12,7 @@ class RawInternalProcessInfo:
     pid: int
     name: str
     start_time_seconds: float
-    cpu_time_seconds_total: float
+    cpu_time_microseconds_total: float
     mem_bytes_total: int
     mem_bytes_max: int
     num_data_points: int
@@ -21,7 +21,7 @@ class RawInternalProcessInfo:
         self.pid = pid
         self.name = name
         self.start_time_seconds = time.time()
-        self.cpu_time_seconds_total = 0
+        self.cpu_time_microseconds_total = 0
         self.mem_bytes_total = 0
         self.mem_bytes_max = 0
         self.num_data_points = 0
@@ -30,15 +30,14 @@ class RawInternalProcessInfo:
 class ProcessInfo:
     pid: int
     name: str
-    avg_cpu_percent: float
+    cpu_time_microseconds_total: float
     max_mem_bytes: int
     avg_mem_bytes: float
 
     def __init__(self, info: RawInternalProcessInfo) -> None:
         self.pid = info.pid
         self.name = info.name
-        total_time_seconds = time.time() - info.start_time_seconds
-        self.avg_cpu_percent = 0 if info.start_time_seconds == 0 else info.cpu_time_seconds_total / total_time_seconds
+        self.cpu_time_microseconds_total = info.cpu_time_microseconds_total
         self.max_mem_bytes = info.mem_bytes_max
         self.avg_mem_bytes = 0 if info.num_data_points == 0 else info.mem_bytes_total / info.num_data_points
         
@@ -46,7 +45,7 @@ class ProcessInfo:
 class ProcessInfoFrame:
     pid: int
     current_memory_bytes: int
-    cpu_time_seconds_total: float
+    cpu_time_microseconds_total: float
 
     peak_memory_bytes: Optional[int]
     """
@@ -59,11 +58,11 @@ class ProcessInfoFrame:
             self,
             pid: int,
             current_memory_bytes: int,
-            cpu_time_seconds_total: float,
+            cpu_time_microseconds_total: float,
             peak_memory_bytes: Optional[int] = None) -> None:
         self.pid = pid
         self.current_memory_bytes = current_memory_bytes
-        self.cpu_time_seconds_total = cpu_time_seconds_total
+        self.cpu_time_microseconds_total = cpu_time_microseconds_total
         self.peak_memory_bytes = peak_memory_bytes
 
 
@@ -96,14 +95,14 @@ class Benchmarker:
 
     def _on_packet(self, packet: ProcessInfoFrame) -> None:
         pid = packet.pid
-        cpu_time_seconds_total = packet.cpu_time_seconds_total
+        cpu_time_microseconds_total = packet.cpu_time_microseconds_total
         current_memory_bytes = packet.current_memory_bytes
         if pid is None:
             print("Frame is lacking pid")
             return
         
-        if cpu_time_seconds_total is None:
-            print("Frame is lacking cpu_time_seconds_total")
+        if cpu_time_microseconds_total is None:
+            print("Frame is lacking cpu_time_microseconds_total")
             return
         
         if current_memory_bytes is None:
@@ -114,7 +113,7 @@ class Benchmarker:
             print("PID provided by frame is invalid")
             return
         
-        self.data_records[pid].cpu_time_seconds_total = cpu_time_seconds_total
+        self.data_records[pid].cpu_time_microseconds_total = cpu_time_microseconds_total
         self.data_records[pid].mem_bytes_total += current_memory_bytes
 
         if packet.peak_memory_bytes is not None:
@@ -173,7 +172,7 @@ class Benchmarker:
     def generate_report(self, record_property: Callable[[str, object], None]):
         idx = 0
         for item in self.get_data():
-            record_property(f"{item.name}_avg_cpu_percent", item.avg_cpu_percent)
+            record_property(f"{item.name}_cpu_time_microseconds", item.cpu_time_microseconds_total)
             record_property(f"{item.name}_max_mem_bytes", item.max_mem_bytes)
             record_property(f"{item.name}_avg_mem_bytes", item.avg_mem_bytes)
             idx = idx + 1
@@ -192,7 +191,7 @@ class PsutilBackend(BenchmarkBackend):
             cb(ProcessInfoFrame(
                 process.pid,
                 process.memory_info().rss,
-                process.cpu_times()[0]
+                process.cpu_times()[0] * 1_000_000 # To microseconds
             ))
 
 
@@ -209,6 +208,6 @@ class CgroupsBackend(BenchmarkBackend):
             cb(ProcessInfoFrame(
                 pid,
                 cgroup.get_current_memory(),
-                cgroup.get_cpu_time_seconds(),
+                cgroup.get_cpu_time_microseconds(),
                 cgroup.get_peak_memory()
             ))
