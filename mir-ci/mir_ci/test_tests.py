@@ -116,7 +116,7 @@ class TestBenchmarker:
 
         assert len(benchmarker.get_data()) > 0
         assert benchmarker.get_data()[0].max_mem_bytes > 0
-        assert benchmarker.get_data()[0].avg_cpu_percent > 0
+        assert benchmarker.get_data()[0].cpu_time_microseconds_total > 0
 
     async def test_benchmarker_can_measure_snaps(self) -> None:
         benchmarker = Benchmarker(poll_time_seconds=0.1)
@@ -135,4 +135,4 @@ class TestBenchmarker:
                     
         assert len(benchmarker.get_data()) > 0
         assert benchmarker.get_data()[0].max_mem_bytes > 0
-        assert benchmarker.get_data()[0].avg_cpu_percent > 0
+        assert benchmarker.get_data()[0].cpu_time_microseconds_total > 0
