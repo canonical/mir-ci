@@ -32,7 +32,6 @@ class Program:
             self,
             command: Command,
             env: Dict[str, str] = {},
-            on_started: Optional[Callable[[int], None]] = None,
             systemd_slice: Optional[str] = None):
         if isinstance(command, str):
             self.command: tuple[str, ...] = (command,)
@@ -46,7 +45,6 @@ class Program:
         self.send_signals_task: Optional[asyncio.Task[None]] = None
         self.output = ''
         self.sigkill_sent = False
-        self.on_started = on_started
 
         if systemd_slice is not None:
             prefix = ("systemd-run", "--user", "--scope", f"--slice={systemd_slice}")
@@ -111,8 +109,6 @@ class Program:
             self.output = raw_output.decode('utf-8').strip()
         self.process = process
         self.process_end = communicate()
-        if self.on_started:
-            self.on_started(self.process.pid)
         return self
 
     async def __aexit__(self, *args) -> None:

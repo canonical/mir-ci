@@ -19,11 +19,13 @@ class TestAppsCanRun:
     ])
     async def test_app_can_run(self, server, app: apps.Dependency, record_property) -> None:
         benchmarker = Benchmarker(poll_time_seconds=0.1)
-        def on_program_started(pid: int, name: str):
-            benchmarker.add(pid, name)
-            
-        async with DisplayServer(server, on_program_started=on_program_started) as server:
+        async with DisplayServer(server) as server:
             async with server.program(app.command, app_type=app.app_type) as p:
+                if server.server is not None and server.server.process is not None:
+                    benchmarker.add(server.server.process.pid, "compositor")
+                if p.process is not None:
+                    benchmarker.add(p.process.pid, "application")
+                    
                 async with benchmarker:
                     time.sleep(short_wait_time)
                     await p.kill(2)

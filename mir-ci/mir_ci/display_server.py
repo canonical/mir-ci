@@ -35,44 +35,28 @@ def wait_for_wayland_display(runtime_dir: str, name: str) -> None:
     raise RuntimeError('Wayland display ' + name + ' did not appear')
 
 class DisplayServer:
-    def __init__(
-            self,
-            command: Command,
-            add_extensions: Tuple[str, ...] = (),
-            on_program_started: Optional[Callable[[int, str], None]] = None) -> None:
+    def __init__(self, command: Command, add_extensions: Tuple[str, ...] = ()) -> None:
         self.command = command
         self.add_extensions = add_extensions
         # Snaps require the display to be in the form "waland-<number>". The 00 prefix lets us
         # easily identify displays created by this test suit and remove them in bulk if a bunch
         # don't get cleaned up properly.
         self.display_name = 'wayland-00' + str(os.getpid())
-        self.on_program_started = on_program_started
-
-    def _on_program_started(self, pid: int, name: str) -> None:
-        if self.on_program_started is not None:
-            self.on_program_started(pid, name)
 
     def program(
             self, 
             command: Command,
             env: Dict[str, str] = {},
             app_type: Optional[DependencyType] = None) -> Program:
-        def on_started(pid: int):
-            self._on_program_started(pid, "application")
-
         return Program(command, env=dict({
                 'DISPLAY': 'no',
                 'QT_QPA_PLATFORM': 'wayland',
                 'WAYLAND_DISPLAY': self.display_name
             },
             **env),
-            on_started=on_started,
             systemd_slice=f"mirci-{time.time()}" if app_type != "snap" else None)
 
     async def __aenter__(self) -> 'DisplayServer':
-        def on_started(pid: int):
-            self._on_program_started(pid, "compositor")
-
         runtime_dir = os.environ['XDG_RUNTIME_DIR']
         clear_wayland_display(runtime_dir, self.display_name)
         self.server = await Program(
@@ -81,7 +65,6 @@ class DisplayServer:
                 'WAYLAND_DISPLAY': self.display_name,
                 'MIR_SERVER_ADD_WAYLAND_EXTENSIONS': ':'.join(self.add_extensions),
             },
-            on_started=on_started
         ).__aenter__()
         try:
             wait_for_wayland_display(runtime_dir, self.display_name)
