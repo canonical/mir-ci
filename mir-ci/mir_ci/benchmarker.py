@@ -7,6 +7,7 @@ from mir_ci.cgroups import Cgroup
 import psutil
 import os
 import time
+import logging
 
 class RawInternalProcessInfo:
     pid: int
@@ -99,19 +100,19 @@ class Benchmarker:
         cpu_time_seconds_total = packet.cpu_time_seconds_total
         current_memory_bytes = packet.current_memory_bytes
         if pid is None:
-            print("Frame is lacking pid")
+            logging.getLogger().error("Frame is lacking pid")
             return
         
         if cpu_time_seconds_total is None:
-            print("Frame is lacking cpu_time_seconds_total")
+            logging.getLogger().error("Frame is lacking cpu_time_seconds_total")
             return
         
         if current_memory_bytes is None:
-            print("Frame is lacking current_memory_bytes")
+            logging.getLogger().error("Frame is lacking current_memory_bytes")
             return
         
         if not pid in self.data_records:
-            print("PID provided by frame is invalid")
+            logging.getLogger().error("PID provided by frame is invalid")
             return
         
         self.data_records[pid].cpu_time_seconds_total = cpu_time_seconds_total
