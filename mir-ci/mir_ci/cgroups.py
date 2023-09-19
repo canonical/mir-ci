@@ -31,7 +31,7 @@ class Cgroup:
                 if not line.startswith("0::"):
                     continue
 
-                path = pathlib.Path(f"/sys/fs/cgroup/{line[3:]}".strip().replace("//", "/"))
+                path = pathlib.Path(f"/sys/fs/cgroup/{line[3:]}".strip())
 
         if not path:
             print(f"Error: process with pid={pid} lacks a path")

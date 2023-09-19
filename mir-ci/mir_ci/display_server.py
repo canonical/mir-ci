@@ -3,9 +3,10 @@ import os
 import time
 import asyncio
 
-from typing import Dict, Tuple, Callable, Literal, Optional
+from typing import Dict, Tuple, Callable, Optional
 
 from mir_ci.program import Program, Command
+from mir_ci.apps import DependencyType
 
 display_appear_timeout = 10
 min_mir_run_time = 0.1
@@ -55,7 +56,7 @@ class DisplayServer:
             self, 
             command: Command,
             env: Dict[str, str] = {},
-            app_type: Optional[Literal["snap", "deb", "pip"]] = None) -> Program:
+            app_type: Optional[DependencyType] = None) -> Program:
         def on_started(pid: int):
             self._on_program_started(pid, "application")
 

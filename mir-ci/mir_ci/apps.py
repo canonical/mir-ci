@@ -14,7 +14,7 @@ class Dependency:
 
 def _dependency(
         cmd: Collection[str],
-        dependency_type: Literal["snap", "deb", "pip"],
+        dependency_type: DependencyType,
         snap: Optional[str] = None,
         channel: str = 'latest/stable',
         debs: Collection[str] = (),
