@@ -1,7 +1,6 @@
 from mir_ci.display_server import DisplayServer
 import pytest
 import time
-import logging
 
 from mir_ci import apps
 from mir_ci.benchmarker import Benchmarker

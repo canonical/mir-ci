@@ -2,6 +2,8 @@ import gi
 import sys
 import logging
 
+logger = logging.getLogger(__name__)
+
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, Gdk, GdkPixbuf
 
@@ -44,7 +46,7 @@ class DragDropWindow(Gtk.Window):
     def result_callback(self, result):
         self.result = result
         if self.expect != EXCHANGE_TYPE_NONE:
-            logging.getLogger().info("expect=", self.expect, ", actual=", self.result)
+            logger.info("expect=", self.expect, ", actual=", self.result)
             exit(self.result != self.expect)
 
 class DragSourceIconView(Gtk.IconView):
@@ -198,7 +200,7 @@ if __name__ == '__main__':
             else:
                 assert False, f'invalid argument: {arg}'
     except Exception as e:
-        logging.getLogger().error('Argument error:', str(e))
+        logger.error('Argument error:', str(e))
         exit(1)
     win = DragDropWindow(source_mode=source_mode, target_mode=target_mode, expect=expect)
     win.connect("destroy", Gtk.main_quit)
