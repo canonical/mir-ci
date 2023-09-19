@@ -9,6 +9,8 @@ import os
 import time
 import logging
 
+logger = logging.getLogger(__name__)
+
 class RawInternalProcessInfo:
     pid: int
     name: str
@@ -99,19 +101,19 @@ class Benchmarker:
         cpu_time_microseconds_total = packet.cpu_time_microseconds_total
         current_memory_bytes = packet.current_memory_bytes
         if pid is None:
-            logging.getLogger().error("Frame is lacking pid")
+            logger.error("Frame is lacking pid")
             return
         
         if cpu_time_microseconds_total is None:
-            logging.getLogger().error("Frame is lacking cpu_time_microseconds_total")
+            logger.error("Frame is lacking cpu_time_microseconds_total")
             return
         
         if current_memory_bytes is None:
-            logging.getLogger().error("Frame is lacking current_memory_bytes")
+            logger.error("Frame is lacking current_memory_bytes")
             return
         
         if not pid in self.data_records:
-            logging.getLogger().error("PID provided by frame is invalid")
+            logger.error("PID provided by frame is invalid")
             return
         
         self.data_records[pid].cpu_time_microseconds_total = cpu_time_microseconds_total
