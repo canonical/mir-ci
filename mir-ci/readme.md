@@ -1,3 +1,5 @@
+Test
+
 # Ubuntu Frame Integration Tests
 
 **NB:** Your working directory needs to be `mir-ci` for this to work.
