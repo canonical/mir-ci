@@ -1,10 +1,11 @@
+from mir_ci import SLOWDOWN
 from mir_ci.display_server import DisplayServer
 import pytest
 import time
 
 from mir_ci import apps
 
-short_wait_time = 3
+short_wait_time = 3 * SLOWDOWN
 
 class TestAppsCanRun:
     @pytest.mark.smoke
