@@ -1,3 +1,4 @@
+from mir_ci import SLOWDOWN
 from mir_ci.display_server import DisplayServer
 from pathlib import Path
 import pytest
@@ -9,7 +10,7 @@ from mir_ci import apps
 from mir_ci.virtual_pointer import VirtualPointer, Button
 
 APP_PATH = Path(__file__).parent / 'clients' / 'drag_and_drop_demo.py'
-STARTUP_TIME=1.5
+STARTUP_TIME=1.5 * SLOWDOWN
 A_SHORT_TIME=0.3
 
 @pytest.mark.parametrize('modern_server', [
