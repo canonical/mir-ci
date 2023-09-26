@@ -2,6 +2,14 @@ import os
 import signal
 from typing import Dict, List, Tuple, Union, Optional, Awaitable
 import asyncio
+import logging
+import uuid
+
+logger = logging.getLogger(__name__)
+
+from mir_ci.apps import App
+from mir_ci.interfaces.benchmarkable import Benchmarkable
+from mir_ci.cgroups import Cgroup
 
 default_wait_timeout = default_term_timeout = 10
 
@@ -27,12 +35,13 @@ def format_output(name: str, output: str) -> str:
 class ProgramError(RuntimeError):
     pass
 
-class Program:
-    def __init__(self, command: Command, env: Dict[str, str] = {}):
-        if isinstance(command, str):
-            self.command: tuple[str, ...] = (command,)
+class Program(Benchmarkable):
+    def __init__(self, app: App, env: Dict[str, str] = {}):
+        if isinstance(app.command, str):
+            self.command: tuple[str, ...] = (app.command,)
         else:
-            self.command = tuple(command)
+            self.command = tuple(app.command)
+
         self.name = self.command[0]
         self.env = env
         self.process: Optional[asyncio.subprocess.Process] = None
@@ -40,9 +49,14 @@ class Program:
         self.send_signals_task: Optional[asyncio.Task[None]] = None
         self.output = ''
         self.sigkill_sent = False
+        self.with_systemd_run = app.app_type == "deb" or app.app_type == "pip"
 
     def is_running(self) -> bool:
         return self.process is not None and self.process.returncode is None
+
+    async def get_cgroup(self) -> Cgroup:
+        await self.cgroups_task
+        return self.cgroups_task.result()
 
     async def send_kill_signals(self, timeout: int, term_timeout: int) -> None:
         '''Assigned to self.send_signals_task, cancelled when process ends'''
@@ -82,15 +96,18 @@ class Program:
             pass
 
     async def __aenter__(self) -> 'Program':
+        command = self.command
+        if self.with_systemd_run is True:
+            slice = f"mirci-{uuid.uuid4()}"
+            prefix = ("systemd-run", "--user", "--quiet", "--scope", f"--slice={slice}")
+            command = (*prefix, *command)
         process = await asyncio.create_subprocess_exec(
-            *self.command,
+            *command,
             env=dict(os.environ, **self.env),
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.STDOUT,
             close_fds=True,
             preexec_fn=os.setsid)
-        # Without setsid killing the subprocess doesn't kill the whole process tree,
-        # see https://pymotw.com/2/subprocess/#process-groups-sessions
         # Without setsid killing the subprocess doesn't kill the whole process tree,
         # see https://pymotw.com/2/subprocess/#process-groups-sessions
         async def communicate() -> None:
@@ -100,9 +117,13 @@ class Program:
             self.output = raw_output.decode('utf-8').strip()
         self.process = process
         self.process_end = communicate()
+        self.cgroups_task = Cgroup.create(process.pid)
         return self
 
     async def __aexit__(self, *args) -> None:
+        if self.cgroups_task:
+            self.cgroups_task.cancel()
+                
         if self.process_end is not None:
             assert self.is_running(), self.name + ' died without being waited for or killed'
             await self.kill()
