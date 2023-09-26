@@ -2,3 +2,4 @@ __pycache__
 *.pyc
 mir-ci/mir_ci/junit.xml
 .python-version
+venv
