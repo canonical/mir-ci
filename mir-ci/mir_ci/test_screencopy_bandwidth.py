@@ -35,9 +35,9 @@ class TestScreencopyBandwidth:
     async def test_active_app(self, record_property, server, app) -> None:
         server = DisplayServer(server, add_extensions=ScreencopyTracker.required_extensions)
         tracker = ScreencopyTracker(server.display_name)
-        async with server as s, tracker, s.program(app[0]) as p:
-            if app[1]:
-                await asyncio.wait_for(p.wait(timeout=app[1]), timeout=app[1] + 1)
+        async with server as s, tracker, s.program(apps.App(app.command[0], app.app_type)) as p:
+            if app.command[1]:
+                await asyncio.wait_for(p.wait(timeout=app.command[1]), timeout=app.command[1] + 1)
             else:
                 await asyncio.sleep(long_wait_time)
         _record_properties(record_property, server, tracker, 10)
@@ -73,7 +73,7 @@ class TestScreencopyBandwidth:
         extensions = ScreencopyTracker.required_extensions + VirtualPointer.required_extensions
         app_path = Path(__file__).parent / 'clients' / 'maximizing_gtk_app.py'
         server = DisplayServer(local_server, add_extensions=extensions)
-        app = server.program(('python3', str(app_path)))
+        app = server.program(apps.App(('python3', str(app_path))))
         tracker = ScreencopyTracker(server.display_name)
         pointer = VirtualPointer(server.display_name)
         async with server, tracker, app, pointer:

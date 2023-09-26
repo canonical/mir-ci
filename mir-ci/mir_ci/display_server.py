@@ -3,9 +3,13 @@ import os
 import time
 import asyncio
 
-from typing import Dict, Tuple
+from typing import Dict, Tuple, Optional
 
 from mir_ci.program import Program, Command
+from mir_ci.apps import AppType
+from mir_ci.interfaces.benchmarkable import Benchmarkable
+from mir_ci.cgroups import Cgroup
+from mir_ci.apps import App
 
 display_appear_timeout = 10
 min_mir_run_time = 0.1
@@ -33,17 +37,20 @@ def wait_for_wayland_display(runtime_dir: str, name: str) -> None:
             return
     raise RuntimeError('Wayland display ' + name + ' did not appear')
 
-class DisplayServer:
-    def __init__(self, command: Command, add_extensions: Tuple[str, ...] = ()) -> None:
-        self.command = command
+class DisplayServer(Benchmarkable):
+    def __init__(self, app: App, add_extensions: Tuple[str, ...] = ()) -> None:
+        self.app: App = app
         self.add_extensions = add_extensions
         # Snaps require the display to be in the form "waland-<number>". The 00 prefix lets us
         # easily identify displays created by this test suit and remove them in bulk if a bunch
         # don't get cleaned up properly.
         self.display_name = 'wayland-00' + str(os.getpid())
 
-    def program(self, command: Command, env: Dict[str, str] = {}) -> Program:
-        return Program(command, env=dict({
+    async def get_cgroup(self) -> Cgroup:
+        return await self.server.get_cgroup()
+
+    def program(self, app: App, env: Dict[str, str] = {}) -> Program:
+        return Program(app, env=dict({
                 'DISPLAY': 'no',
                 'QT_QPA_PLATFORM': 'wayland',
                 'WAYLAND_DISPLAY': self.display_name
@@ -54,7 +61,7 @@ class DisplayServer:
     async def __aenter__(self) -> 'DisplayServer':
         runtime_dir = os.environ['XDG_RUNTIME_DIR']
         clear_wayland_display(runtime_dir, self.display_name)
-        self.server = await Program(self.command, env={
+        self.server = await Program(self.app, env={
             'WAYLAND_DISPLAY': self.display_name,
             'MIR_SERVER_ADD_WAYLAND_EXTENSIONS': ':'.join(self.add_extensions),
         }).__aenter__()
