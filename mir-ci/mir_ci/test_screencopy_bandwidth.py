@@ -37,7 +37,7 @@ class TestScreencopyBandwidth:
         tracker = ScreencopyTracker(server.display_name)
         async with server as s, tracker, s.program(app[0]) as p:
             if app[1]:
-                await asyncio.wait_for(p.wait(), timeout=app[1])
+                await asyncio.wait_for(p.wait(timeout=app[1]), timeout=app[1] + 1)
             else:
                 await asyncio.sleep(long_wait_time)
         _record_properties(record_property, server, tracker, 10)
