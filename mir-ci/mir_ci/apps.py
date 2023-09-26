@@ -1,9 +1,20 @@
 import pytest
 
-from typing import Any, Optional, Union, Collection
+from typing import Any, Optional, Union, Collection, Literal
+
+AppType = Literal["snap", "deb", "pip"]
+
+class App:
+    command: Collection[str]
+    app_type: Optional[AppType]
+
+    def __init__(self, command: Collection[str], app_type: Optional[AppType] = None) -> None:
+        self.command = command
+        self.app_type = app_type
 
 def _dependency(
         cmd: Collection[str],
+        app_type: AppType,
         snap: Optional[str] = None,
         channel: str = 'latest/stable',
         debs: Collection[str] = (),
@@ -20,14 +31,15 @@ def _dependency(
         ret = (ret, extra)
 
     return pytest.param(
-        ret,
+        App(ret, app_type),
         marks=(                             # type: ignore
             pytest.mark.deps(
                 cmd=cmd,
                 snap=snap,
                 debs=debs,
                 pip_pkgs=pip_pkgs,
-                channel=channel),
+                channel=channel,
+                app_type=app_type),
             *marks),
         id=id)
 
@@ -40,6 +52,7 @@ def snap(
 
     return _dependency(
         cmd=cmd or (snap, *args),
+        app_type="snap",
         snap=snap,
         id=id or snap,
         **kwargs
@@ -52,9 +65,9 @@ def deb(
         debs: Collection[str] = (),
         id: Optional[str] = None,
         **kwargs):
-
     return _dependency(
         cmd=cmd or (deb, *args),
+        app_type="deb",
         debs=debs or (deb,),
         id=id or deb,
         **kwargs)
@@ -67,6 +80,7 @@ def pip(
         **kwargs):
     return _dependency(
         pip_pkgs=(pkg,),
+        app_type="pip",
         cmd=cmd or ('python3', '-m', pkg, *args),
         id=id or pkg,
         **kwargs)

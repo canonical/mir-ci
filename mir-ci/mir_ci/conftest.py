@@ -44,7 +44,7 @@ def _deps_skip(request: pytest.FixtureRequest) -> None:
         if request.keywords['depfixtures'] == DEP_FIXTURES.intersection(request.fixturenames):
             pytest.skip('dependency-only run')
 
-def _deps_install(request: pytest.FixtureRequest, spec: Union[str, Mapping[str, Any]]) -> List[str]:
+def _deps_install(request: pytest.FixtureRequest, spec: Union[str, Mapping[str, Any]]) -> apps.App:
     '''
     Install dependencies for the command spec provided. If `spec` is a string, it's assumed
     to be a snap and command name.
@@ -62,12 +62,14 @@ def _deps_install(request: pytest.FixtureRequest, spec: Union[str, Mapping[str, 
         snap: Optional[str] = spec.get('snap')
         channel: str = spec.get('channel', 'latest/stable')
         pip_pkgs: tuple[str, ...] = spec.get('pip_pkgs', ())
+        app_type: Optional[apps.AppType] = spec.get('app_type')
     elif isinstance(spec, str):
         cmd = [spec]
         debs = None
         snap = spec
         channel = 'latest/stable'
         pip_pkgs = ()
+        app_type = "snap"
     else:
         raise TypeError('Bad value for argument `spec`: ' + repr(spec))
 
@@ -111,7 +113,7 @@ def _deps_install(request: pytest.FixtureRequest, spec: Union[str, Mapping[str, 
 
         _deps_skip(request)
 
-    return cmd
+    return apps.App(cmd, app_type)
 
 @pytest.fixture(scope='session')
 def ppa() -> None:
@@ -133,7 +135,7 @@ def ppa() -> None:
     apps.mir_test_tools,
     apps.mir_demo_server,
 ))
-def server(request: pytest.FixtureRequest) -> List[str]:
+def server(request: pytest.FixtureRequest) -> apps.App:
     '''
     Parameterizes the servers (ubuntu-frame, mir-kiosk, confined-shell, mir_demo_server),
     or installs them if `--deps` is given on the command line.
@@ -143,9 +145,9 @@ def server(request: pytest.FixtureRequest) -> List[str]:
     return _deps_install(request, request.param().marks[0].kwargs)
 
 @pytest.fixture(scope='function')
-def deps(request: pytest.FixtureRequest) -> List[str]:
+def deps(request: pytest.FixtureRequest) -> Optional[apps.App]:
     '''
-    Ensures the dependenciesa are available, or installs them if `--deps` is given on the command line.
+    Ensures the dependencies are available, or installs them if `--deps` is given on the command line.
 
     You need to provide data through the `deps` mark:
     ```
@@ -162,7 +164,7 @@ def deps(request: pytest.FixtureRequest) -> List[str]:
         closest: pytest.Mark = next(marks)
     except StopIteration:
         _deps_skip(request)
-        return []
+        return None
 
     for mark in request.node.iter_markers('deps'):
         _deps_install(request, mark.kwargs and dict({'cmd': mark.args}, **mark.kwargs) or mark.args[0])
