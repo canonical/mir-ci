@@ -29,7 +29,7 @@ class TestDragAndDrop:
     async def test_source_and_dest_match(self, modern_server, app) -> None:
         modern_server = DisplayServer(modern_server, add_extensions=VirtualPointer.required_extensions)
         pointer = VirtualPointer(modern_server.display_name)
-        program = modern_server.program(app)
+        program = modern_server.program(apps.App(app))
 
         async with modern_server, program, pointer:
             await asyncio.sleep(STARTUP_TIME)
@@ -54,7 +54,7 @@ class TestDragAndDrop:
     async def test_source_and_dest_mismatch(self, modern_server, app) -> None:
         modern_server = DisplayServer(modern_server, add_extensions=VirtualPointer.required_extensions)
         pointer = VirtualPointer(modern_server.display_name)
-        program = modern_server.program(app)
+        program = modern_server.program(apps.App(app))
 
         async with modern_server, program, pointer:
             await asyncio.sleep(STARTUP_TIME)
