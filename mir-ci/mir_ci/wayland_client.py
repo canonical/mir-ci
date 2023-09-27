@@ -6,6 +6,7 @@ from abc import abstractmethod
 import time
 import asyncio
 
+
 class WaylandClient:
     def __init__(self, display_name: str) -> None:
         self.display = pywayland.client.Display(display_name)
@@ -34,11 +35,11 @@ class WaylandClient:
     def disconnected(self) -> None:
         pass
 
-    async def __aenter__(self) -> 'WaylandClient':
+    async def __aenter__(self) -> "WaylandClient":
         try:
             self.display.connect()
             self._registry = registry = self.display.get_registry()
-            registry.dispatcher['global'] = self.registry_global
+            registry.dispatcher["global"] = self.registry_global
             self.display.roundtrip()
             self.connected()
             asyncio.get_event_loop().add_writer(self.display.get_fd(), self._dispatch)
