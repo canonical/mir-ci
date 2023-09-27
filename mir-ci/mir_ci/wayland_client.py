@@ -1,10 +1,12 @@
+import asyncio
+import time
+from abc import abstractmethod
+from typing import Optional
+
 import pywayland
 import pywayland.client
 from mir_ci.protocols.wayland.wl_registry import WlRegistryProxy
-from typing import Optional
-from abc import abstractmethod
-import time
-import asyncio
+
 
 class WaylandClient:
     def __init__(self, display_name: str) -> None:
@@ -17,7 +19,7 @@ class WaylandClient:
             self.display.dispatch(block=False)
         except Exception as e:
             asyncio.get_event_loop().remove_writer(self.display.get_fd())
-            raise
+            raise e
 
     def timestamp(self) -> int:
         return int(time.monotonic() * 1000)
@@ -34,18 +36,18 @@ class WaylandClient:
     def disconnected(self) -> None:
         pass
 
-    async def __aenter__(self) -> 'WaylandClient':
+    async def __aenter__(self) -> "WaylandClient":
         try:
             self.display.connect()
             self._registry = registry = self.display.get_registry()
-            registry.dispatcher['global'] = self.registry_global
+            registry.dispatcher["global"] = self.registry_global
             self.display.roundtrip()
             self.connected()
             asyncio.get_event_loop().add_writer(self.display.get_fd(), self._dispatch)
             return self
-        except:
+        except Exception as e:
             await self.__aexit__()
-            raise
+            raise e
 
     async def __aexit__(self, *args) -> None:
         asyncio.get_event_loop().remove_writer(self.display.get_fd())
