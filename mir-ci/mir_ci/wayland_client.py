@@ -45,9 +45,9 @@ class WaylandClient:
             self.connected()
             asyncio.get_event_loop().add_writer(self.display.get_fd(), self._dispatch)
             return self
-        except:
+        except Exception as e:
             await self.__aexit__()
-            raise
+            raise e
 
     async def __aexit__(self, *args) -> None:
         asyncio.get_event_loop().remove_writer(self.display.get_fd())

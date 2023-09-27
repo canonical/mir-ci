@@ -6,7 +6,7 @@ import gi
 logger = logging.getLogger(__name__)
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gdk, GdkPixbuf, Gtk
+from gi.repository import Gdk, GdkPixbuf, Gtk  # noqa: E402
 
 (EXCHANGE_TYPE_NONE, EXCHANGE_TYPE_TEXT, EXCHANGE_TYPE_PIXBUF) = range(3)
 EXCHANGE_TYPES = {"text": EXCHANGE_TYPE_TEXT, "pixbuf": EXCHANGE_TYPE_PIXBUF}
@@ -42,7 +42,7 @@ class DragDropWindow(Gtk.Window):
 
         evbox = Gtk.EventBox()
         evbox.add(dropbox)
-        evbox.connect("enter-notify-event", lambda x, y: print(f"enter-notify-event: dropbox"))
+        evbox.connect("enter-notify-event", lambda x, y: print("enter-notify-event: dropbox"))
 
         hbox = Gtk.Box(spacing=12)
         hbox.pack_start(sourcebox, False, True, 0)
@@ -69,8 +69,8 @@ class DragSourceIconView(Gtk.IconView):
         self.add_item("Item 3", "edit-copy")
 
         self.enable_model_drag_source(Gdk.ModifierType.BUTTON1_MASK, [], DRAG_ACTION)
-        self.connect("drag-begin", lambda x, y: print(f"drag-begin"))
-        self.connect("drag-failed", lambda x, y, z: print(f"drag-failed"))
+        self.connect("drag-begin", lambda x, y: print("drag-begin"))
+        self.connect("drag-failed", lambda x, y, z: print("drag-failed"))
         self.connect("drag-data-get", self.on_drag_data_get)
 
         if source_mode == EXCHANGE_TYPE_TEXT:
@@ -124,7 +124,7 @@ class DragSourceIconView(Gtk.IconView):
     def add_item(self, text, icon_name):
         try:
             pixbuf = Gtk.IconTheme.get_default().load_icon(icon_name, 16, 0)
-        except:
+        except gi.repository.GLib.GError:
             pixbuf = Gtk.IconTheme.get_default().load_icon(icon_name + "-symbolic", 16, 0)
 
         self.get_model().append([text, pixbuf])

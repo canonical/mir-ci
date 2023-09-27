@@ -2,7 +2,7 @@ import gi
 
 gi.require_version("Gtk", "4.0")
 
-from gi.repository import GLib, Gtk
+from gi.repository import GLib, Gtk  # noqa: E402
 
 
 def on_activate(app):
