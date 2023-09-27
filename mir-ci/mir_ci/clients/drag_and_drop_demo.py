@@ -6,6 +6,7 @@ import gi
 logger = logging.getLogger(__name__)
 
 gi.require_version("Gtk", "3.0")
+gi.require_version("Gdk", "3.0")
 from gi.repository import Gdk, GdkPixbuf, Gtk  # noqa: E402
 
 (EXCHANGE_TYPE_NONE, EXCHANGE_TYPE_TEXT, EXCHANGE_TYPE_PIXBUF) = range(3)
