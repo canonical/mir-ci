@@ -1,11 +1,10 @@
 import asyncio
 import logging
-from typing import Dict, Callable, Optional
 from contextlib import suppress
+from typing import Callable, Dict, Optional
 
 from mir_ci.interfaces.benchmarkable import Benchmarkable
 from mir_ci.interfaces.benchmarker_backend import BenchmarkBackend
-
 
 logger = logging.getLogger(__name__)
 

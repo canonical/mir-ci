@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+
 from mir_ci.cgroups import Cgroup
 
 

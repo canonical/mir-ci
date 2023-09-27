@@ -1,15 +1,13 @@
-import inotify.adapters
+import asyncio
 import os
 import time
-import asyncio
+from typing import Dict, Optional, Tuple
 
-from typing import Dict, Tuple, Optional
-
-from mir_ci.program import Program, Command
-from mir_ci.apps import AppType
-from mir_ci.interfaces.benchmarkable import Benchmarkable
+import inotify.adapters
+from mir_ci.apps import App, AppType
 from mir_ci.cgroups import Cgroup
-from mir_ci.apps import App
+from mir_ci.interfaces.benchmarkable import Benchmarkable
+from mir_ci.program import Command, Program
 
 display_appear_timeout = 10
 min_mir_run_time = 0.1

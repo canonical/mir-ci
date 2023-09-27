@@ -1,14 +1,15 @@
-from mir_ci.protocols import ZwlrVirtualPointerManagerV1, ZxdgOutputManagerV1, ZxdgOutputV1, WlOutput
+from enum import IntEnum
+from typing import List, Optional
+
+from mir_ci.protocols import WlOutput, ZwlrVirtualPointerManagerV1, ZxdgOutputManagerV1, ZxdgOutputV1
+from mir_ci.protocols.wayland.wl_output import WlOutputProxy
 from mir_ci.protocols.wlr_virtual_pointer_unstable_v1.zwlr_virtual_pointer_manager_v1 import (
     ZwlrVirtualPointerManagerV1Proxy,
 )
 from mir_ci.protocols.wlr_virtual_pointer_unstable_v1.zwlr_virtual_pointer_v1 import ZwlrVirtualPointerV1Proxy
 from mir_ci.protocols.xdg_output_unstable_v1.zxdg_output_manager_v1 import ZxdgOutputManagerV1Proxy
 from mir_ci.protocols.xdg_output_unstable_v1.zxdg_output_v1 import ZxdgOutputV1Proxy
-from mir_ci.protocols.wayland.wl_output import WlOutputProxy
 from mir_ci.wayland_client import WaylandClient
-from typing import Optional, List
-from enum import IntEnum
 
 
 # Codes taken from input-event-codes.h

@@ -1,6 +1,7 @@
-from mir_ci.interfaces.benchmarkable import Benchmarkable
-from typing import Dict
 from abc import ABC, abstractmethod
+from typing import Dict
+
+from mir_ci.interfaces.benchmarkable import Benchmarkable
 
 
 class BenchmarkBackend(ABC):

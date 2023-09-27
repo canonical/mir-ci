@@ -1,10 +1,9 @@
-from mir_ci import SLOWDOWN
-from mir_ci.display_server import DisplayServer
-import pytest
 import asyncio
 
-from mir_ci import apps
+import pytest
+from mir_ci import SLOWDOWN, apps
 from mir_ci.benchmarker import Benchmarker
+from mir_ci.display_server import DisplayServer
 
 short_wait_time = 3 * SLOWDOWN
 
