@@ -5,7 +5,7 @@ import time
 from unittest.mock import MagicMock, Mock, mock_open, patch
 
 import pytest
-from mir_ci.apps import App, ubuntu_frame
+from mir_ci.apps import App
 from mir_ci.benchmarker import Benchmarker
 from mir_ci.cgroups import Cgroup
 from mir_ci.display_server import DisplayServer
