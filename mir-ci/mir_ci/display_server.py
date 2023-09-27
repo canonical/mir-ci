@@ -1,27 +1,24 @@
-import inotify.adapters
+import asyncio
 import os
 import time
-import asyncio
+from typing import Dict, Tuple
 
-from typing import Dict, Tuple, Optional
-
-from mir_ci.program import Program, Command
-from mir_ci.apps import AppType
-from mir_ci.interfaces.benchmarkable import Benchmarkable
-from mir_ci.cgroups import Cgroup
+import inotify.adapters
 from mir_ci.apps import App
+from mir_ci.cgroups import Cgroup
+from mir_ci.interfaces.benchmarkable import Benchmarkable
+from mir_ci.program import Program
 
 display_appear_timeout = 10
 min_mir_run_time = 0.1
 
+
 def clear_wayland_display(runtime_dir: str, name: str) -> None:
     # Clear out any existing display before waiting for the new one
-    for path in [
-        os.path.join(runtime_dir, name),
-        os.path.join(runtime_dir, name + '.lock')
-    ]:
+    for path in [os.path.join(runtime_dir, name), os.path.join(runtime_dir, name + ".lock")]:
         if os.path.exists(path):
             os.remove(path)
+
 
 def wait_for_wayland_display(runtime_dir: str, name: str) -> None:
     i = inotify.adapters.Inotify()
@@ -35,7 +32,8 @@ def wait_for_wayland_display(runtime_dir: str, name: str) -> None:
         (_, type_names, path, filename) = event
         if filename == name:
             return
-    raise RuntimeError('Wayland display ' + name + ' did not appear')
+    raise RuntimeError("Wayland display " + name + " did not appear")
+
 
 class DisplayServer(Benchmarkable):
     def __init__(self, app: App, add_extensions: Tuple[str, ...] = ()) -> None:
@@ -44,32 +42,31 @@ class DisplayServer(Benchmarkable):
         # Snaps require the display to be in the form "waland-<number>". The 00 prefix lets us
         # easily identify displays created by this test suit and remove them in bulk if a bunch
         # don't get cleaned up properly.
-        self.display_name = 'wayland-00' + str(os.getpid())
+        self.display_name = "wayland-00" + str(os.getpid())
 
     async def get_cgroup(self) -> Cgroup:
         return await self.server.get_cgroup()
 
     def program(self, app: App, env: Dict[str, str] = {}) -> Program:
-        return Program(app, env=dict({
-                'DISPLAY': 'no',
-                'QT_QPA_PLATFORM': 'wayland',
-                'WAYLAND_DISPLAY': self.display_name
-            },
-            **env)
+        return Program(
+            app, env=dict({"DISPLAY": "no", "QT_QPA_PLATFORM": "wayland", "WAYLAND_DISPLAY": self.display_name}, **env)
         )
 
-    async def __aenter__(self) -> 'DisplayServer':
-        runtime_dir = os.environ['XDG_RUNTIME_DIR']
+    async def __aenter__(self) -> "DisplayServer":
+        runtime_dir = os.environ["XDG_RUNTIME_DIR"]
         clear_wayland_display(runtime_dir, self.display_name)
-        self.server = await Program(self.app, env={
-            'WAYLAND_DISPLAY': self.display_name,
-            'MIR_SERVER_ADD_WAYLAND_EXTENSIONS': ':'.join(self.add_extensions),
-        }).__aenter__()
+        self.server = await Program(
+            self.app,
+            env={
+                "WAYLAND_DISPLAY": self.display_name,
+                "MIR_SERVER_ADD_WAYLAND_EXTENSIONS": ":".join(self.add_extensions),
+            },
+        ).__aenter__()
         try:
             wait_for_wayland_display(runtime_dir, self.display_name)
-        except:
+        except Exception as e:
             await self.server.kill()
-            raise
+            raise e
         self.start_time = time.time()
         return self
 

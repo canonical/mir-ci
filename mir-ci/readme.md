@@ -35,5 +35,12 @@ To record test properties:
 `xvfb-run -a pytest --junitxml=junit.xml`
 
 ## To run self-tests
-This type checks and tests for the test helpers.
+This runs internal tests.
 `pytest -m self`
+
+## To run static check and linters
+`pip install pre-commit`
+`pre-commit run`
+
+And to run it before each commit:
+`pre-commit install`
