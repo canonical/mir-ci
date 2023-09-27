@@ -4,10 +4,10 @@ import time
 from typing import Dict, Tuple
 
 import inotify.adapters
-from mir_ci.apps import App, AppType
+from mir_ci.apps import App
 from mir_ci.cgroups import Cgroup
 from mir_ci.interfaces.benchmarkable import Benchmarkable
-from mir_ci.program import Command, Program
+from mir_ci.program import Program
 
 display_appear_timeout = 10
 min_mir_run_time = 0.1
@@ -64,9 +64,9 @@ class DisplayServer(Benchmarkable):
         ).__aenter__()
         try:
             wait_for_wayland_display(runtime_dir, self.display_name)
-        except:
+        except Exception as e:
             await self.server.kill()
-            raise
+            raise e
         self.start_time = time.time()
         return self
 

@@ -5,11 +5,11 @@ import signal
 import uuid
 from typing import Awaitable, Dict, List, Optional, Tuple, Union
 
-logger = logging.getLogger(__name__)
-
 from mir_ci.apps import App
 from mir_ci.cgroups import Cgroup
 from mir_ci.interfaces.benchmarkable import Benchmarkable
+
+logger = logging.getLogger(__name__)
 
 default_wait_timeout = default_term_timeout = 10
 
