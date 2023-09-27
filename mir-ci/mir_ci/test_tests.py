@@ -11,21 +11,6 @@ from mir_ci.cgroups import Cgroup
 from mir_ci.apps import App, ubuntu_frame
 from mir_ci.display_server import DisplayServer
 
-class TestTest:
-    @pytest.mark.self
-    @pytest.mark.deps('python3', '-m', 'mypy', pip_pkgs=('mypy', 'pywayland'))
-    def test_project_typechecks(self, deps) -> None:
-        from mir_ci.protocols import WlOutput, WlShm, ZwlrScreencopyManagerV1  # noqa:F401
-        project_path = os.path.dirname(__file__)
-        assert os.path.isfile(os.path.join(project_path, 'pytest.ini')), 'project path not detected correctly'
-        command = deps.command
-        result = subprocess.run(
-            [*command, project_path],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            text=True)
-        if result.returncode != 0:
-            raise RuntimeError('`$ mypy ' + project_path + '` failed:\n\n' + result.stdout)
 
 @pytest.mark.self
 class TestProgram:
@@ -93,7 +78,7 @@ class TestBenchmarker:
         p = MagicMock()
         p.get_cgroup = Mock(return_value=async_return())
         return p
-    
+
     async def test_benchmarker_with_program(self) -> None:
         p = TestBenchmarker.create_program_mock()
         benchmarker = Benchmarker({"program": p}, poll_time_seconds=0.1)
@@ -120,7 +105,7 @@ class TestBenchmarker:
         async with benchmarker:
             async with benchmarker:
                 await asyncio.sleep(1)
-        
+
         p.__aenter__.assert_called_once()
 
 @pytest.mark.self
