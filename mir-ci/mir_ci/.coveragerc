@@ -1,5 +1,5 @@
 [run]
-omit = 
+omit =
   protocols/*
   test_*
   virtual_pointer_debug.py
