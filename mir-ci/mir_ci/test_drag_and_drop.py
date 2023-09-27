@@ -45,10 +45,10 @@ class TestDragAndDrop:
             await program.wait()
 
     @pytest.mark.parametrize('app', [
-        ('python3', str(APP_PATH), '--source', 'pixbuf', '--target', 'text', '--expect', 'pixbuf'),
-        ('python3', str(APP_PATH), '--source', 'text', '--target', 'pixbuf', '--expect', 'text'),
-        ('python3', str(APP_PATH), '--source', 'pixbuf', '--target', 'text', '--expect', 'text'),
-        ('python3', str(APP_PATH), '--source', 'text', '--target', 'pixbuf', '--expect', 'pixbuf'),
+        ('python3', '-u', str(APP_PATH), '--source', 'pixbuf', '--target', 'text', '--expect', 'pixbuf'),
+        ('python3', '-u', str(APP_PATH), '--source', 'text', '--target', 'pixbuf', '--expect', 'text'),
+        ('python3', '-u', str(APP_PATH), '--source', 'pixbuf', '--target', 'text', '--expect', 'text'),
+        ('python3', '-u', str(APP_PATH), '--source', 'text', '--target', 'pixbuf', '--expect', 'pixbuf'),
     ])
     @pytest.mark.deps(debs=('libgtk-4-dev',), pip_pkgs=(('pygobject', 'gi'),))
     async def test_source_and_dest_mismatch(self, modern_server, app) -> None:
@@ -68,5 +68,8 @@ class TestDragAndDrop:
             await asyncio.sleep(A_SHORT_TIME)
             pointer.button(Button.LEFT, False)
             await asyncio.sleep(A_SHORT_TIME)
+            pointer.move_to_absolute(220, 120)
+            await asyncio.sleep(A_SHORT_TIME)
             assert program.is_running()
             await program.kill()
+        assert "drag-begin\ndrag-failed\nenter-notify-event: dropbox" in program.output
