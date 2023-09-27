@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from mir_ci.cgroups import Cgroup
 
+
 class Benchmarkable(ABC):
     @abstractmethod
     async def get_cgroup(self) -> Cgroup:

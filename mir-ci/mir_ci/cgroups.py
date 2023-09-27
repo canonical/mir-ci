@@ -8,6 +8,7 @@ if TYPE_CHECKING:
 else:
     CreateReturnType = asyncio.Task
 
+
 class Cgroup:
     def __init__(self, pid: int, path: pathlib.Path) -> None:
         self.pid = pid
@@ -18,6 +19,7 @@ class Cgroup:
         async def inner():
             path = await Cgroup.get_cgroup_dir(pid)
             return Cgroup(pid, path)
+
         task = asyncio.create_task(inner())
         return task
 
@@ -53,20 +55,20 @@ class Cgroup:
     def get_cpu_time_microseconds(self) -> int:
         try:
             for line in self._read_file("cpu.stat"):
-                split_line = line.split(' ')
+                split_line = line.split(" ")
                 if split_line[0] == "usage_usec":
                     return int(split_line[1])
 
             raise RuntimeError("usage_usec line not found")
         except Exception as ex:
             raise RuntimeError(f"Unable to get the cpu time for cgroup with pid: {self.pid}") from ex
-    
+
     def get_current_memory(self) -> int:
         try:
             return int(next(self._read_file("memory.current")))
         except Exception as ex:
             raise RuntimeError(f"Unable to get the current memory for cgroup with pid: {self.pid}") from ex
-    
+
     def get_peak_memory(self) -> int:
         try:
             return int(next(self._read_file("memory.peak")))
