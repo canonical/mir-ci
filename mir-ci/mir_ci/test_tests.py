@@ -1,15 +1,15 @@
-import os
-import pytest
 import asyncio
-import time
+import os
 import subprocess
-from unittest.mock import Mock, MagicMock, patch, mock_open
+import time
+from unittest.mock import MagicMock, Mock, mock_open, patch
 
-from mir_ci.program import Program
+import pytest
+from mir_ci.apps import App, ubuntu_frame
 from mir_ci.benchmarker import Benchmarker
 from mir_ci.cgroups import Cgroup
-from mir_ci.apps import App, ubuntu_frame
 from mir_ci.display_server import DisplayServer
+from mir_ci.program import Program
 
 
 @pytest.mark.self

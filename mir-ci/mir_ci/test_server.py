@@ -1,5 +1,4 @@
 import pytest
-
 from mir_ci.display_server import DisplayServer
 
 

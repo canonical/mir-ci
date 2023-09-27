@@ -1,14 +1,13 @@
-from mir_ci import SLOWDOWN
-from mir_ci.display_server import DisplayServer
-from pathlib import Path
-import pytest
+import asyncio
 import os
 import re
-import asyncio
-from mir_ci import apps
+from pathlib import Path
 
+import pytest
+from mir_ci import SLOWDOWN, apps
+from mir_ci.display_server import DisplayServer
 from mir_ci.screencopy_tracker import ScreencopyTracker
-from mir_ci.virtual_pointer import VirtualPointer, Button
+from mir_ci.virtual_pointer import Button, VirtualPointer
 
 long_wait_time = 10
 
