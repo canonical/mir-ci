@@ -1,10 +1,11 @@
+import asyncio
+import time
+from abc import abstractmethod
+from typing import Optional
+
 import pywayland
 import pywayland.client
 from mir_ci.protocols.wayland.wl_registry import WlRegistryProxy
-from typing import Optional
-from abc import abstractmethod
-import time
-import asyncio
 
 
 class WaylandClient:

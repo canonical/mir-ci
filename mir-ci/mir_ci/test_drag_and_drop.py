@@ -1,13 +1,12 @@
-from mir_ci import SLOWDOWN
-from mir_ci.display_server import DisplayServer
-from pathlib import Path
-import pytest
+import asyncio
 import os
 import re
-import asyncio
-from mir_ci import apps
+from pathlib import Path
 
-from mir_ci.virtual_pointer import VirtualPointer, Button
+import pytest
+from mir_ci import SLOWDOWN, apps
+from mir_ci.display_server import DisplayServer
+from mir_ci.virtual_pointer import Button, VirtualPointer
 
 APP_PATH = Path(__file__).parent / "clients" / "drag_and_drop_demo.py"
 STARTUP_TIME = 1.5 * SLOWDOWN

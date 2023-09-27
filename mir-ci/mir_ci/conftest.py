@@ -3,13 +3,11 @@ import pathlib
 import shutil
 import subprocess
 import warnings
-
 from collections.abc import Iterator
 from typing import Any, Generator, List, Mapping, Optional, Union
 
 import distro
 import pytest
-
 from mir_ci import apps
 
 RELEASE_PPA = "mir-team/release"

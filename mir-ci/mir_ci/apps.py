@@ -1,6 +1,6 @@
-import pytest
+from typing import Any, Collection, Literal, Optional, Union
 
-from typing import Any, Optional, Union, Collection, Literal
+import pytest
 
 AppType = Literal["snap", "deb", "pip"]
 

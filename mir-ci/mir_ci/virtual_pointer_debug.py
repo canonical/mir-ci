@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-from mir_ci.virtual_pointer import VirtualPointer, Button
+import asyncio
 import os
 import sys
-import asyncio
 import time
+
+from mir_ci.virtual_pointer import Button, VirtualPointer
 
 states = {"down": True, "up": False}
 

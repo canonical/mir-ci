@@ -1,11 +1,12 @@
-import gi
-import sys
 import logging
+import sys
+
+import gi
 
 logger = logging.getLogger(__name__)
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, Gdk, GdkPixbuf
+from gi.repository import Gdk, GdkPixbuf, Gtk
 
 (EXCHANGE_TYPE_NONE, EXCHANGE_TYPE_TEXT, EXCHANGE_TYPE_PIXBUF) = range(3)
 EXCHANGE_TYPES = {"text": EXCHANGE_TYPE_TEXT, "pixbuf": EXCHANGE_TYPE_PIXBUF}

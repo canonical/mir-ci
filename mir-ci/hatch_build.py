@@ -1,12 +1,9 @@
+import time
 from pathlib import Path
-
 from typing import Dict
 
 import pywayland
 import pywayland.scanner
-
-import time
-
 from hatchling.builders.hooks.plugin.interface import BuildHookInterface
 
 
