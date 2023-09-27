@@ -1,7 +1,7 @@
 import asyncio
 import os
 import time
-from typing import Dict, Optional, Tuple
+from typing import Dict, Tuple
 
 import inotify.adapters
 from mir_ci.apps import App, AppType

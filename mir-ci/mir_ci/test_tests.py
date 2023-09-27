@@ -52,7 +52,6 @@ class TestProgram:
     @patch("uuid.uuid4")
     async def test_program_runs_with_systemd_when_flag_is_set(self, mock_uuid) -> None:
         mock_uuid.return_value = "12345"
-        start = time.time()
         p = Program(App(["sh", "-c", "sleep 1"], "deb"))
         async with p:
             await asyncio.sleep(0.5)
