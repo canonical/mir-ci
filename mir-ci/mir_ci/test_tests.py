@@ -15,52 +15,52 @@ from mir_ci.display_server import DisplayServer
 @pytest.mark.self
 class TestProgram:
     async def test_program_gives_output(self) -> None:
-        p = Program(App(['printf', '%s - %s', 'abc', 'xyz']))
+        p = Program(App(["printf", "%s - %s", "abc", "xyz"]))
         async with p:
             await p.wait()
-        assert p.output == 'abc - xyz'
+        assert p.output == "abc - xyz"
 
     async def test_program_can_be_waited_for(self) -> None:
         start = time.time()
-        p = Program(App(['sh', '-c', 'sleep 1; echo abc']))
+        p = Program(App(["sh", "-c", "sleep 1; echo abc"]))
         async with p:
             await p.wait()
         elapsed = time.time() - start
-        assert p.output.strip() == 'abc'
+        assert p.output.strip() == "abc"
         assert abs(elapsed - 1) < 0.1
 
     async def test_program_can_be_terminated(self) -> None:
         start = time.time()
-        p = Program(App(['sh', '-c', 'echo abc; sleep 1; echo ijk']))
+        p = Program(App(["sh", "-c", "echo abc; sleep 1; echo ijk"]))
         async with p:
             await asyncio.sleep(0.5)
             await p.kill(2)
         elapsed = time.time() - start
-        assert p.output.strip() == 'abc'
+        assert p.output.strip() == "abc"
         assert abs(elapsed - 0.5) < 0.1
 
     async def test_program_is_killed_when_terminate_fails(self) -> None:
         start = time.time()
-        p = Program(App(['sh', '-c', 'trap "" TERM; echo abc; sleep 1; echo ijk; sleep 5; echo xyz']))
+        p = Program(App(["sh", "-c", 'trap "" TERM; echo abc; sleep 1; echo ijk; sleep 5; echo xyz']))
         async with p:
             await asyncio.sleep(0.5)
             await p.kill(2)
         elapsed = time.time() - start
-        assert p.output.strip() == 'abc\nijk'
+        assert p.output.strip() == "abc\nijk"
         assert abs(elapsed - 2.5) < 0.1
 
     @patch("uuid.uuid4")
     async def test_program_runs_with_systemd_when_flag_is_set(self, mock_uuid) -> None:
         mock_uuid.return_value = "12345"
         start = time.time()
-        p = Program(App(['sh', '-c', 'sleep 1'], "deb"))
+        p = Program(App(["sh", "-c", "sleep 1"], "deb"))
         async with p:
             await asyncio.sleep(0.5)
             await p.kill(2)
         mock_uuid.assert_called_once()
 
     async def test_program_can_get_cgroup(self) -> None:
-        p = Program(App(['sh', '-c', 'sleep 100'], "deb"))
+        p = Program(App(["sh", "-c", "sleep 100"], "deb"))
         async with p:
             cgroup = await p.get_cgroup()
             assert cgroup is not None
@@ -75,6 +75,7 @@ class TestBenchmarker:
             f = asyncio.Future()
             f.set_result(MagicMock())
             return f
+
         p = MagicMock()
         p.get_cgroup = Mock(return_value=async_return())
         return p
@@ -108,12 +109,15 @@ class TestBenchmarker:
 
         p.__aenter__.assert_called_once()
 
+
 @pytest.mark.self
 class TestCgroup:
-    @patch("builtins.open", new_callable=mock_open, read_data="usage_usec 100\nline_two 30\nline_three 40\nline_four 50")
+    @patch(
+        "builtins.open", new_callable=mock_open, read_data="usage_usec 100\nline_two 30\nline_three 40\nline_four 50"
+    )
     def test_cgroup_can_get_cpu_time_microseconds(self, mock_open):
         cgroup = Cgroup(12345, "/fake/path")
-        assert(cgroup.get_cpu_time_microseconds() == 100)
+        assert cgroup.get_cpu_time_microseconds() == 100
 
     @patch("builtins.open", new_callable=mock_open, read_data="usage_usec string")
     def test_cgroup_get_cpu_time_microseconds_raises_when_not_integer(self, mock_open):
@@ -130,7 +134,7 @@ class TestCgroup:
     @patch("builtins.open", new_callable=mock_open, read_data="100")
     def test_cgroup_can_get_current_memory(self, mock_open):
         cgroup = Cgroup(12345, "/fake/path")
-        assert(cgroup.get_current_memory() == 100)
+        assert cgroup.get_current_memory() == 100
 
     @patch("builtins.open", new_callable=mock_open, read_data="string")
     def test_cgroup_get_current_memory_raises_when_not_integer(self, mock_open):
@@ -141,7 +145,7 @@ class TestCgroup:
     @patch("builtins.open", new_callable=mock_open, read_data="100")
     def test_cgroup_can_get_peak_memory(self, mock_open):
         cgroup = Cgroup(12345, "/fake/path")
-        assert(cgroup.get_peak_memory() == 100)
+        assert cgroup.get_peak_memory() == 100
 
     @patch("builtins.open", new_callable=mock_open, read_data="string")
     def test_cgroup_get_peak_memory_raises_when_not_integer(self, mock_open):

@@ -38,7 +38,7 @@ class Benchmarker:
     async def __aexit__(self, *args):
         if self.running is False:
             return
-        
+
         self.running = False
         if self.task:
             self.task.cancel()
@@ -64,13 +64,13 @@ class CgroupsBackend(BenchmarkBackend):
 
         def __init__(self, program: Benchmarkable) -> None:
             self.program = program
-        
+
     def __init__(self) -> None:
         self.data_records: Dict[str, CgroupsBackend.ProcessInfo] = {}
 
     def add(self, name: str, program: Benchmarkable) -> None:
         self.data_records[name] = CgroupsBackend.ProcessInfo(program)
-    
+
     async def poll(self) -> None:
         for name, info in self.data_records.items():
             cgroup = await info.program.get_cgroup()
@@ -84,5 +84,7 @@ class CgroupsBackend(BenchmarkBackend):
         for name, info in self.data_records.items():
             result[f"{name}_cpu_time_microseconds"] = info.cpu_time_microseconds
             result[f"{name}_max_mem_bytes"] = info.mem_bytes_max
-            result[f"{name}_avg_mem_bytes"] = 0 if info.num_data_points == 0 else info.mem_bytes_accumulator / info.num_data_points
+            result[f"{name}_avg_mem_bytes"] = (
+                0 if info.num_data_points == 0 else info.mem_bytes_accumulator / info.num_data_points
+            )
         return result

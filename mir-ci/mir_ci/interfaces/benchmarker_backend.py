@@ -2,10 +2,12 @@ from mir_ci.interfaces.benchmarkable import Benchmarkable
 from typing import Dict
 from abc import ABC, abstractmethod
 
+
 class BenchmarkBackend(ABC):
     """
     Abstract class that aggregates programs together and emits process stats as it is requested
     """
+
     @abstractmethod
     def add(self, name: str, program: Benchmarkable) -> None:
         """
