@@ -19,7 +19,7 @@ class WaylandClient:
             self.display.dispatch(block=False)
         except Exception as e:
             asyncio.get_event_loop().remove_writer(self.display.get_fd())
-            raise
+            raise e
 
     def timestamp(self) -> int:
         return int(time.monotonic() * 1000)
