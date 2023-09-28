@@ -46,13 +46,16 @@ class Benchmarker:
             return
 
         self.running = False
-        if self.task:
-            self.task.cancel()
-            with suppress(asyncio.CancelledError):
-                await self.task
-
-        for program in self.running_programs:
-            await program.__aexit__()
+        try:
+            if self.task:
+                self.task.cancel()
+                with suppress(asyncio.CancelledError):
+                    await self.task
+        except Exception as e:
+            raise e
+        finally:
+            for program in self.running_programs:
+                await program.__aexit__()
 
     def generate_report(self, record_property: Callable[[str, object], None]) -> None:
         report = self.backend.generate_report()
