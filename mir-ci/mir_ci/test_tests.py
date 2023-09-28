@@ -1,8 +1,9 @@
 import asyncio
 import os
 import time
+from collections import OrderedDict
 from unittest import IsolatedAsyncioTestCase
-from unittest.mock import MagicMock, Mock, mock_open, patch
+from unittest.mock import MagicMock, Mock, call, mock_open, patch
 
 import pytest
 from mir_ci.apps import App
@@ -111,6 +112,23 @@ class TestBenchmarker(IsolatedAsyncioTestCase):
                 await asyncio.sleep(1)
 
         p.__aenter__.assert_called_once()
+
+    async def test_benchmarker_unwinds_programs(self) -> None:
+        p1 = self.create_program_mock("p1")
+        p2 = self.create_program_mock("p2")
+        benchmarker = Benchmarker(OrderedDict(p1=p1, p2=p2), poll_time_seconds=0.1)
+        async with benchmarker:
+            pass
+
+        assert self.parent_mock.mock_calls[:2] == [
+            call.p1.__aenter__(),
+            call.p2.__aenter__(),
+        ]
+
+        assert self.parent_mock.mock_calls[-2:] == [
+            call.p2.__aexit__(),
+            call.p1.__aexit__(),
+        ]
 
 
 @pytest.mark.self
