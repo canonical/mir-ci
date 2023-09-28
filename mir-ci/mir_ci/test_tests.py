@@ -130,6 +130,26 @@ class TestBenchmarker(IsolatedAsyncioTestCase):
             call.p1.__aexit__(),
         ]
 
+    async def test_benchmarker_unwinds_programs_on_enter_failure(self) -> None:
+        p1 = self.create_program_mock("p1")
+        p2 = self.create_program_mock("p2")
+        p3 = self.create_program_mock("p3")
+        p2.__aenter__.side_effect = Exception
+
+        benchmarker = Benchmarker(OrderedDict(p1=p1, p2=p2, p3=p3))
+
+        with pytest.raises(Exception):
+            async with benchmarker:
+                pass
+
+        self.parent_mock.assert_has_calls(
+            [
+                call.p1.__aenter__(),
+                call.p2.__aenter__(),
+                call.p1.__aexit__(),
+            ]
+        )
+
 
 @pytest.mark.self
 class TestCgroup:
