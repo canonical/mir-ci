@@ -203,10 +203,12 @@ def xdg(request: pytest.FixtureRequest, tmp_path: pathlib.Path) -> Generator:
                 var_path = tmp_path / var
                 var_path.mkdir(exist_ok=True)
                 # If mocking the config home, copy over any existing fontconfig
-                if var == 'XDG_CONFIG_HOME':
-                    base_config = pathlib.Path(os.environ.get(var, '~/.config')).expanduser() / 'fontconfig'
+                if var == "XDG_CONFIG_HOME":
+                    base_config = pathlib.Path(os.environ.get(var, "~/.config")).expanduser() / "fontconfig"
                     if base_config.exists():
-                        shutil.copytree(str(base_config), str(var_path / 'fontconfig'), symlinks=True, ignore_dangling_symlinks=True)
+                        shutil.copytree(
+                            str(base_config), str(var_path / "fontconfig"), symlinks=True, ignore_dangling_symlinks=True
+                        )
 
                 for file, contents in files.items():
                     (var_path / file).parent.mkdir(exist_ok=True, parents=True)
