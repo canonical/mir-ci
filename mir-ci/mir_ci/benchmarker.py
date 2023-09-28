@@ -32,7 +32,7 @@ class Benchmarker:
         try:
             for program_id, program in self.programs.items():
                 await program.__aenter__()
-                self.running_programs.append(program)
+                self.running_programs.insert(0, program)
                 self.backend.add(program_id, program)
         except Exception as e:
             for program in self.running_programs:
