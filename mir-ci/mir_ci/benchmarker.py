@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import warnings
 from contextlib import suppress
 from typing import Callable, Dict, List, Optional
 
@@ -82,11 +83,18 @@ class CgroupsBackend(BenchmarkBackend):
 
     async def poll(self) -> None:
         for name, info in self.data_records.items():
-            cgroup = await info.program.get_cgroup()
-            self.data_records[name].cpu_time_microseconds = cgroup.get_cpu_time_microseconds()
-            self.data_records[name].mem_bytes_accumulator += cgroup.get_current_memory()
-            self.data_records[name].mem_bytes_max = cgroup.get_peak_memory()
-            self.data_records[name].num_data_points += 1
+            try:
+                cgroup = await info.program.get_cgroup()
+                cpu_ms = cgroup.get_cpu_time_microseconds()
+                mem_current = cgroup.get_current_memory()
+                mem_max = cgroup.get_peak_memory()
+            except RuntimeError as ex:
+                warnings.warn(f"Ignoring cgroup read failure: {ex}")
+            else:
+                self.data_records[name].cpu_time_microseconds = cpu_ms
+                self.data_records[name].mem_bytes_accumulator += mem_current
+                self.data_records[name].mem_bytes_max = mem_max
+                self.data_records[name].num_data_points += 1
 
     def generate_report(self) -> Dict[str, object]:
         result: Dict[str, object] = {}
