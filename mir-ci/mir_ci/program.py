@@ -130,5 +130,7 @@ class Program(Benchmarkable):
             self.cgroups_task.cancel()
 
         if self.process_end is not None:
-            assert self.is_running(), self.name + " died without being waited for or killed"
+            if not self.is_running():
+                await self.process_end
+                raise AssertionError(f"{self.name} died without being waited for or killed")
             await self.kill()
