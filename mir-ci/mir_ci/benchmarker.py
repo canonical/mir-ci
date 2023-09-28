@@ -62,7 +62,7 @@ class Benchmarker:
                 except Exception as e:
                     exs.append(e)
             if exs:
-                raise Exception("; ".join(exs))
+                raise Exception("; ".join(str(ex) for ex in (exs)))
 
     def generate_report(self, record_property: Callable[[str, object], None]) -> None:
         report = self.backend.generate_report()
