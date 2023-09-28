@@ -1,6 +1,7 @@
 import asyncio
 import os
 import time
+from unittest import IsolatedAsyncioTestCase
 from unittest.mock import MagicMock, Mock, mock_open, patch
 
 import pytest
@@ -66,9 +67,12 @@ class TestProgram:
 
 
 @pytest.mark.self
-class TestBenchmarker:
-    @staticmethod
-    def create_program_mock():
+class TestBenchmarker(IsolatedAsyncioTestCase):
+    def setUp(self) -> None:
+        self.parent_mock = Mock()
+        return super().setUp()
+
+    def create_program_mock(self, name="mock"):
         def async_return():
             f = asyncio.Future()
             f.set_result(MagicMock())
@@ -76,10 +80,11 @@ class TestBenchmarker:
 
         p = MagicMock()
         p.get_cgroup = Mock(return_value=async_return())
+        self.parent_mock.attach_mock(p, name)
         return p
 
     async def test_benchmarker_with_program(self) -> None:
-        p = TestBenchmarker.create_program_mock()
+        p = self.create_program_mock()
         benchmarker = Benchmarker({"program": p}, poll_time_seconds=0.1)
         async with benchmarker:
             await asyncio.sleep(1)
@@ -89,7 +94,7 @@ class TestBenchmarker:
         p.__aexit__.assert_called_once()
 
     async def test_benchmarker_can_generate_report(self) -> None:
-        p = TestBenchmarker.create_program_mock()
+        p = self.create_program_mock()
         benchmarker = Benchmarker({"program": p}, poll_time_seconds=0.1)
         async with benchmarker:
             await asyncio.sleep(1)
@@ -99,7 +104,7 @@ class TestBenchmarker:
         callback.assert_called()
 
     async def test_benchmarker_cant_enter_twice(self) -> None:
-        p = TestBenchmarker.create_program_mock()
+        p = self.create_program_mock()
         benchmarker = Benchmarker({"program": p}, poll_time_seconds=0.1)
         async with benchmarker:
             async with benchmarker:
