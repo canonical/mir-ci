@@ -55,8 +55,14 @@ class Benchmarker:
         except Exception as e:
             raise e
         finally:
+            exs = []
             for program in self.running_programs:
-                await program.__aexit__()
+                try:
+                    await program.__aexit__()
+                except Exception as e:
+                    exs.append(e)
+            if exs:
+                raise Exception("; ".join(exs))
 
     def generate_report(self, record_property: Callable[[str, object], None]) -> None:
         report = self.backend.generate_report()
