@@ -87,7 +87,10 @@ class CgroupsBackend(BenchmarkBackend):
                 cgroup = await info.program.get_cgroup()
                 cpu_ms = cgroup.get_cpu_time_microseconds()
                 mem_current = cgroup.get_current_memory()
-                mem_max = cgroup.get_peak_memory()
+                try:
+                    mem_max = cgroup.get_peak_memory()
+                except RuntimeError:
+                    mem_max = max(self.data_records[name].mem_bytes_max, mem_current)
             except RuntimeError as ex:
                 warnings.warn(f"Ignoring cgroup read failure: {ex}")
             else:
