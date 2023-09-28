@@ -2,6 +2,7 @@ import asyncio
 import os
 import time
 from collections import OrderedDict
+from contextlib import suppress
 from unittest import IsolatedAsyncioTestCase
 from unittest.mock import MagicMock, Mock, call, mock_open, patch
 
@@ -167,6 +168,23 @@ class TestBenchmarker(IsolatedAsyncioTestCase):
             call.p2.__aexit__(),
             call.p1.__aexit__(),
         ]
+
+    async def test_benchmarker_unwinds_programs_on_task_failure(self) -> None:
+        p1 = self.create_program_mock("p1")
+
+        benchmarker = Benchmarker({"p1": p1})
+
+        with pytest.raises(Exception, match="cancel exception"):
+            async with benchmarker:
+                # FIXME: this reaches too deep into Benchmarker
+                if benchmarker.task is not None:
+                    benchmarker.task.cancel()
+                    with suppress(asyncio.CancelledError):
+                        await benchmarker.task
+                benchmarker.task = Mock()
+                benchmarker.task.cancel.side_effect = Exception("cancel exception")
+
+        call.p1.__aexit__.assert_called_once()
 
 
 @pytest.mark.self
