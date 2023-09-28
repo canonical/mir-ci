@@ -1,7 +1,7 @@
 import asyncio
 import logging
 from contextlib import suppress
-from typing import Callable, Dict, Optional
+from typing import Callable, Dict, List, Optional
 
 from mir_ci.interfaces.benchmarkable import Benchmarkable
 from mir_ci.interfaces.benchmarker_backend import BenchmarkBackend
@@ -16,6 +16,7 @@ class Benchmarker:
         self.poll_time_seconds = poll_time_seconds
         self.task: Optional[asyncio.Task[None]] = None
         self.running: bool = False
+        self.running_programs: List[Benchmarkable] = []
 
     async def _run(self) -> None:
         while self.running:
@@ -27,9 +28,15 @@ class Benchmarker:
             return self
 
         self.running = True
-        for program_id, program in self.programs.items():
-            await program.__aenter__()
-            self.backend.add(program_id, program)
+        try:
+            for program_id, program in self.programs.items():
+                await program.__aenter__()
+                self.running_programs.append(program)
+                self.backend.add(program_id, program)
+        except Exception as e:
+            for program in self.running_programs:
+                await program.__aexit__()
+            raise e
 
         self.task = asyncio.ensure_future(self._run())
         return self
@@ -44,7 +51,7 @@ class Benchmarker:
             with suppress(asyncio.CancelledError):
                 await self.task
 
-        for program_id, program in self.programs.items():
+        for program in self.running_programs:
             await program.__aexit__()
 
     def generate_report(self, record_property: Callable[[str, object], None]) -> None:
