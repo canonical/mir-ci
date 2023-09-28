@@ -1,4 +1,5 @@
 import asyncio
+from collections import OrderedDict
 
 import pytest
 from mir_ci import SLOWDOWN, apps
@@ -24,7 +25,7 @@ class TestAppsCanRun:
     async def test_app_can_run(self, server, app, record_property) -> None:
         server_instance = DisplayServer(server)
         program = server_instance.program(app)
-        benchmarker = Benchmarker({"compositor": server_instance, "client": program}, poll_time_seconds=0.1)
+        benchmarker = Benchmarker(OrderedDict(compositor=server_instance, client=program), poll_time_seconds=0.1)
         async with benchmarker:
             await asyncio.sleep(short_wait_time)
 
