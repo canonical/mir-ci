@@ -102,9 +102,11 @@ class CgroupsBackend(BenchmarkBackend):
     def generate_report(self) -> Dict[str, object]:
         result: Dict[str, object] = {}
         for name, info in self.data_records.items():
+            if not all(
+                (info.cpu_time_microseconds, info.mem_bytes_max, info.mem_bytes_accumulator, info.num_data_points)
+            ):
+                raise RuntimeError(f"Failed to collect benchmarking data for {name}")
             result[f"{name}_cpu_time_microseconds"] = info.cpu_time_microseconds
             result[f"{name}_max_mem_bytes"] = info.mem_bytes_max
-            result[f"{name}_avg_mem_bytes"] = int(
-                0 if info.num_data_points == 0 else info.mem_bytes_accumulator / info.num_data_points
-            )
+            result[f"{name}_avg_mem_bytes"] = int(info.mem_bytes_accumulator / info.num_data_points)
         return result
