@@ -154,11 +154,11 @@ class TestBenchmarker(IsolatedAsyncioTestCase):
         p1 = self.create_program_mock("p1")
         p2 = self.create_program_mock("p2")
         p3 = self.create_program_mock("p3")
-        p2.__aexit__.side_effect = Exception
+        p2.__aexit__.side_effect = Exception("exit exception")
 
         benchmarker = Benchmarker(OrderedDict(p1=p1, p2=p2, p3=p3))
 
-        with pytest.raises(Exception):
+        with pytest.raises(Exception, match="exit exception"):
             async with benchmarker:
                 pass
 
