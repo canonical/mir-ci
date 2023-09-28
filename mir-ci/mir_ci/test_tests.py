@@ -1,16 +1,24 @@
 import asyncio
 import os
+import random
 import time
 from collections import OrderedDict
+from contextlib import suppress
 from unittest import IsolatedAsyncioTestCase
 from unittest.mock import MagicMock, Mock, call, mock_open, patch
 
 import pytest
 from mir_ci.apps import App
-from mir_ci.benchmarker import Benchmarker
+from mir_ci.benchmarker import Benchmarker, CgroupsBackend
 from mir_ci.cgroups import Cgroup
 from mir_ci.display_server import DisplayServer
 from mir_ci.program import Program
+
+
+def _async_return(mock=None):
+    f = asyncio.Future()
+    f.set_result(mock or MagicMock())
+    return f
 
 
 @pytest.mark.self
@@ -74,13 +82,8 @@ class TestBenchmarker(IsolatedAsyncioTestCase):
         return super().setUp()
 
     def create_program_mock(self, name="mock"):
-        def async_return():
-            f = asyncio.Future()
-            f.set_result(MagicMock())
-            return f
-
         p = MagicMock()
-        p.get_cgroup = Mock(return_value=async_return())
+        p.get_cgroup = Mock(return_value=_async_return())
         self.parent_mock.attach_mock(p, name)
         return p
 
@@ -134,11 +137,11 @@ class TestBenchmarker(IsolatedAsyncioTestCase):
         p1 = self.create_program_mock("p1")
         p2 = self.create_program_mock("p2")
         p3 = self.create_program_mock("p3")
-        p2.__aenter__.side_effect = Exception
+        p2.__aenter__.side_effect = Exception("enter exception")
 
         benchmarker = Benchmarker(OrderedDict(p1=p1, p2=p2, p3=p3))
 
-        with pytest.raises(Exception):
+        with pytest.raises(Exception, match="enter exception"):
             async with benchmarker:
                 pass
 
@@ -154,11 +157,11 @@ class TestBenchmarker(IsolatedAsyncioTestCase):
         p1 = self.create_program_mock("p1")
         p2 = self.create_program_mock("p2")
         p3 = self.create_program_mock("p3")
-        p2.__aexit__.side_effect = Exception
+        p2.__aexit__.side_effect = Exception("exit exception")
 
         benchmarker = Benchmarker(OrderedDict(p1=p1, p2=p2, p3=p3))
 
-        with pytest.raises(Exception):
+        with pytest.raises(Exception, match="exit exception"):
             async with benchmarker:
                 pass
 
@@ -167,6 +170,68 @@ class TestBenchmarker(IsolatedAsyncioTestCase):
             call.p2.__aexit__(),
             call.p1.__aexit__(),
         ]
+
+    async def test_benchmarker_unwinds_programs_on_task_failure(self) -> None:
+        p1 = self.create_program_mock("p1")
+
+        benchmarker = Benchmarker({"p1": p1})
+
+        with pytest.raises(Exception, match="cancel exception"):
+            async with benchmarker:
+                # FIXME: this reaches too deep into Benchmarker
+                if benchmarker.task is not None:
+                    benchmarker.task.cancel()
+                    with suppress(asyncio.CancelledError):
+                        await benchmarker.task
+                benchmarker.task = Mock()
+                benchmarker.task.cancel.side_effect = Exception("cancel exception")
+
+        call.p1.__aexit__.assert_called_once()
+
+
+@pytest.mark.self
+class TestCGroupsBackend:
+    async def test_eats_runtime_error_on_poll(self):
+        pi = Mock()
+        pi.get_cgroup.side_effect = RuntimeError("read error")
+
+        cgb = CgroupsBackend()
+        cgb.add("pi", pi)
+
+        with pytest.warns(UserWarning, match="Ignoring cgroup read failure: read error"):
+            await cgb.poll()
+
+    @pytest.mark.filterwarnings("error")
+    async def test_converts_max_to_peak(self):
+        pi = Mock()
+        cg = Mock()
+        pi.get_cgroup.return_value = _async_return(cg)
+        cg.get_current_memory.return_value = random.randint(0, 100)
+        cg.get_peak_memory.side_effect = RuntimeError
+
+        cgb = CgroupsBackend()
+        cgb.add("pi", pi)
+
+        await cgb.poll()
+
+        assert cgb.generate_report() == {
+            "pi_cpu_time_microseconds": cg.get_cpu_time_microseconds.return_value,
+            "pi_max_mem_bytes": cg.get_current_memory.return_value,
+            "pi_avg_mem_bytes": cg.get_current_memory.return_value,
+        }
+
+    @pytest.mark.filterwarnings("ignore:Ignoring cgroup")
+    async def test_raises_runtime_error_on_empty(self):
+        pi = Mock()
+        pi.get_cgroup.side_effect = RuntimeError("read error")
+
+        cgb = CgroupsBackend()
+        cgb.add("pi", pi)
+
+        await cgb.poll()
+
+        with pytest.raises(RuntimeError, match="Failed to collect benchmarking data"):
+            cgb.generate_report()
 
 
 @pytest.mark.self
