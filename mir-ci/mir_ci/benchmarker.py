@@ -32,7 +32,7 @@ class Benchmarker:
         try:
             for program_id, program in self.programs.items():
                 await program.__aenter__()
-                self.running_programs.append(program)
+                self.running_programs.insert(0, program)
                 self.backend.add(program_id, program)
         except Exception as e:
             for program in self.running_programs:
@@ -55,8 +55,14 @@ class Benchmarker:
         except Exception as e:
             raise e
         finally:
+            exs = []
             for program in self.running_programs:
-                await program.__aexit__()
+                try:
+                    await program.__aexit__()
+                except Exception as e:
+                    exs.append(e)
+            if exs:
+                raise Exception("; ".join(exs))
 
     def generate_report(self, record_property: Callable[[str, object], None]) -> None:
         report = self.backend.generate_report()
