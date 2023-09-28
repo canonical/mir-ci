@@ -104,7 +104,7 @@ class CgroupsBackend(BenchmarkBackend):
         for name, info in self.data_records.items():
             result[f"{name}_cpu_time_microseconds"] = info.cpu_time_microseconds
             result[f"{name}_max_mem_bytes"] = info.mem_bytes_max
-            result[f"{name}_avg_mem_bytes"] = (
+            result[f"{name}_avg_mem_bytes"] = int(
                 0 if info.num_data_points == 0 else info.mem_bytes_accumulator / info.num_data_points
             )
         return result
