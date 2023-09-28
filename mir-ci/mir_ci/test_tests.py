@@ -220,6 +220,19 @@ class TestCGroupsBackend:
             "pi_avg_mem_bytes": cg.get_current_memory.return_value,
         }
 
+    @pytest.mark.filterwarnings("ignore:Ignoring cgroup")
+    async def test_raises_runtime_error_on_empty(self):
+        pi = Mock()
+        pi.get_cgroup.side_effect = RuntimeError("read error")
+
+        cgb = CgroupsBackend()
+        cgb.add("pi", pi)
+
+        await cgb.poll()
+
+        with pytest.raises(RuntimeError, match="Failed to collect benchmarking data"):
+            cgb.generate_report()
+
 
 @pytest.mark.self
 class TestCgroup:
