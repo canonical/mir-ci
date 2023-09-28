@@ -1,7 +1,9 @@
 import asyncio
 import os
 import time
-from unittest.mock import MagicMock, Mock, mock_open, patch
+from collections import OrderedDict
+from unittest import IsolatedAsyncioTestCase
+from unittest.mock import MagicMock, Mock, call, mock_open, patch
 
 import pytest
 from mir_ci.apps import App
@@ -66,9 +68,12 @@ class TestProgram:
 
 
 @pytest.mark.self
-class TestBenchmarker:
-    @staticmethod
-    def create_program_mock():
+class TestBenchmarker(IsolatedAsyncioTestCase):
+    def setUp(self) -> None:
+        self.parent_mock = Mock()
+        return super().setUp()
+
+    def create_program_mock(self, name="mock"):
         def async_return():
             f = asyncio.Future()
             f.set_result(MagicMock())
@@ -76,10 +81,11 @@ class TestBenchmarker:
 
         p = MagicMock()
         p.get_cgroup = Mock(return_value=async_return())
+        self.parent_mock.attach_mock(p, name)
         return p
 
     async def test_benchmarker_with_program(self) -> None:
-        p = TestBenchmarker.create_program_mock()
+        p = self.create_program_mock()
         benchmarker = Benchmarker({"program": p}, poll_time_seconds=0.1)
         async with benchmarker:
             await asyncio.sleep(1)
@@ -89,7 +95,7 @@ class TestBenchmarker:
         p.__aexit__.assert_called_once()
 
     async def test_benchmarker_can_generate_report(self) -> None:
-        p = TestBenchmarker.create_program_mock()
+        p = self.create_program_mock()
         benchmarker = Benchmarker({"program": p}, poll_time_seconds=0.1)
         async with benchmarker:
             await asyncio.sleep(1)
@@ -99,13 +105,68 @@ class TestBenchmarker:
         callback.assert_called()
 
     async def test_benchmarker_cant_enter_twice(self) -> None:
-        p = TestBenchmarker.create_program_mock()
+        p = self.create_program_mock()
         benchmarker = Benchmarker({"program": p}, poll_time_seconds=0.1)
         async with benchmarker:
             async with benchmarker:
                 await asyncio.sleep(1)
 
         p.__aenter__.assert_called_once()
+
+    async def test_benchmarker_unwinds_programs(self) -> None:
+        p1 = self.create_program_mock("p1")
+        p2 = self.create_program_mock("p2")
+        benchmarker = Benchmarker(OrderedDict(p1=p1, p2=p2), poll_time_seconds=0.1)
+        async with benchmarker:
+            pass
+
+        assert self.parent_mock.mock_calls[:2] == [
+            call.p1.__aenter__(),
+            call.p2.__aenter__(),
+        ]
+
+        assert self.parent_mock.mock_calls[-2:] == [
+            call.p2.__aexit__(),
+            call.p1.__aexit__(),
+        ]
+
+    async def test_benchmarker_unwinds_programs_on_enter_failure(self) -> None:
+        p1 = self.create_program_mock("p1")
+        p2 = self.create_program_mock("p2")
+        p3 = self.create_program_mock("p3")
+        p2.__aenter__.side_effect = Exception
+
+        benchmarker = Benchmarker(OrderedDict(p1=p1, p2=p2, p3=p3))
+
+        with pytest.raises(Exception):
+            async with benchmarker:
+                pass
+
+        self.parent_mock.assert_has_calls(
+            [
+                call.p1.__aenter__(),
+                call.p2.__aenter__(),
+                call.p1.__aexit__(),
+            ]
+        )
+
+    async def test_benchmarker_unwinds_programs_on_exit_failure(self) -> None:
+        p1 = self.create_program_mock("p1")
+        p2 = self.create_program_mock("p2")
+        p3 = self.create_program_mock("p3")
+        p2.__aexit__.side_effect = Exception
+
+        benchmarker = Benchmarker(OrderedDict(p1=p1, p2=p2, p3=p3))
+
+        with pytest.raises(Exception):
+            async with benchmarker:
+                pass
+
+        assert self.parent_mock.mock_calls[-3:] == [
+            call.p3.__aexit__(),
+            call.p2.__aexit__(),
+            call.p1.__aexit__(),
+        ]
 
 
 @pytest.mark.self
