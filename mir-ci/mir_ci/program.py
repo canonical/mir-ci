@@ -100,8 +100,8 @@ class Program(Benchmarkable):
     async def __aenter__(self) -> "Program":
         command = self.command
         if self.with_systemd_run is True:
-            slice = f"mirci-{uuid.uuid4()}"
-            prefix = ("systemd-run", "--user", "--quiet", "--scope", f"--slice={slice}")
+            scope = f"mirci-{uuid.uuid4()}.scope"
+            prefix = ("systemd-run", "--user", "--quiet", "--scope", f"--unit={scope}")
             command = (*prefix, *command)
         process = await asyncio.create_subprocess_exec(
             *command,
