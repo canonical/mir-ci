@@ -74,6 +74,25 @@ class TestProgram:
             assert cgroup is not None
             await p.kill(2)
 
+    @patch("mir_ci.program.Path")
+    @patch("mir_ci.cgroups.Cgroup.create")
+    async def test_passes_when_cgroup_not_got(self, mock_create, mock_path) -> None:
+        mock_path.return_value.exists.return_value = False
+        mock_create.side_effect = FileNotFoundError
+
+        p = Program(App(["sh", "-c", "sleep 100"], "deb"))
+        async with p:
+            await p.kill(2)
+
+    @patch("mir_ci.program.Path")
+    async def test_get_cgroup_asserts_without_cgroupv2(self, mock_path) -> None:
+        mock_path.return_value.exists.return_value = False
+
+        p = Program(App(["sh", "-c", "sleep 100"], "deb"))
+        with pytest.raises(AssertionError, match="Cgroup task is None, is cgroupv2 supported?"):
+            async with p:
+                await p.get_cgroup()
+
 
 @pytest.mark.self
 class TestBenchmarker(IsolatedAsyncioTestCase):
