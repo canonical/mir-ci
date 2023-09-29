@@ -3,10 +3,11 @@ import logging
 import os
 import signal
 import uuid
+from pathlib import Path
 from typing import Awaitable, Dict, List, Optional, Tuple, Union
 
 from mir_ci.apps import App
-from mir_ci.cgroups import Cgroup
+from mir_ci.cgroups import Cgroup, CreateReturnType
 from mir_ci.interfaces.benchmarkable import Benchmarkable
 
 logger = logging.getLogger(__name__)
@@ -44,20 +45,22 @@ class Program(Benchmarkable):
             self.command: tuple[str, ...] = (app.command,)
         else:
             self.command = tuple(app.command)
+        self.app_type = app.app_type
 
         self.name = self.command[0]
         self.env = env
         self.process: Optional[asyncio.subprocess.Process] = None
         self.process_end: Optional[Awaitable[None]] = None
         self.send_signals_task: Optional[asyncio.Task[None]] = None
+        self.cgroups_task: Optional[CreateReturnType] = None
         self.output = ""
         self.sigkill_sent = False
-        self.with_systemd_run = app.app_type == "deb" or app.app_type == "pip"
 
     def is_running(self) -> bool:
         return self.process is not None and self.process.returncode is None
 
     async def get_cgroup(self) -> Cgroup:
+        assert self.cgroups_task is not None, "Cgroup task is None, is cgroupv2 supported?"
         await self.cgroups_task
         return self.cgroups_task.result()
 
@@ -99,9 +102,9 @@ class Program(Benchmarkable):
 
     async def __aenter__(self) -> "Program":
         command = self.command
-        if self.with_systemd_run is True:
-            slice = f"mirci-{uuid.uuid4()}"
-            prefix = ("systemd-run", "--user", "--quiet", "--scope", f"--slice={slice}")
+        if self.app_type != "snap":
+            scope = f"mirci-{uuid.uuid4()}.scope"
+            prefix = ("systemd-run", "--user", "--quiet", "--scope", f"--unit={scope}")
             command = (*prefix, *command)
         process = await asyncio.create_subprocess_exec(
             *command,
@@ -122,7 +125,8 @@ class Program(Benchmarkable):
 
         self.process = process
         self.process_end = communicate()
-        self.cgroups_task = Cgroup.create(process.pid)
+        if Path("/sys/fs/cgroup/cgroup.controllers").exists():
+            self.cgroups_task = Cgroup.create(process.pid)
         return self
 
     async def __aexit__(self, *args) -> None:
