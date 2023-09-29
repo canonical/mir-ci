@@ -44,6 +44,7 @@ class Program(Benchmarkable):
             self.command: tuple[str, ...] = (app.command,)
         else:
             self.command = tuple(app.command)
+        self.app_type = app.app_type
 
         self.name = self.command[0]
         self.env = env
@@ -52,7 +53,6 @@ class Program(Benchmarkable):
         self.send_signals_task: Optional[asyncio.Task[None]] = None
         self.output = ""
         self.sigkill_sent = False
-        self.with_systemd_run = app.app_type == "deb" or app.app_type == "pip"
 
     def is_running(self) -> bool:
         return self.process is not None and self.process.returncode is None
@@ -99,7 +99,7 @@ class Program(Benchmarkable):
 
     async def __aenter__(self) -> "Program":
         command = self.command
-        if self.with_systemd_run is True:
+        if self.app_type != "snap":
             scope = f"mirci-{uuid.uuid4()}.scope"
             prefix = ("systemd-run", "--user", "--quiet", "--scope", f"--unit={scope}")
             command = (*prefix, *command)
