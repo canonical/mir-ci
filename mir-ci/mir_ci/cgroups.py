@@ -10,15 +10,14 @@ else:
 
 
 class Cgroup:
-    def __init__(self, pid: int, path: pathlib.Path) -> None:
-        self.pid = pid
+    def __init__(self, path: pathlib.Path) -> None:
         self.path = path
 
     @staticmethod
     def create(pid: int) -> CreateReturnType:
         async def inner():
             path = await Cgroup.get_cgroup_dir(pid)
-            return Cgroup(pid, path)
+            return Cgroup(path)
 
         task = asyncio.create_task(inner())
         return task
@@ -61,16 +60,16 @@ class Cgroup:
 
             raise RuntimeError("usage_usec line not found")
         except Exception as ex:
-            raise RuntimeError(f"Unable to get the cpu time for cgroup with pid: {self.pid}") from ex
+            raise RuntimeError(f"Unable to get the cpu time for cgroup: {self.path}") from ex
 
     def get_current_memory(self) -> int:
         try:
             return int(next(self._read_file("memory.current")))
         except Exception as ex:
-            raise RuntimeError(f"Unable to get the current memory for cgroup with pid: {self.pid}") from ex
+            raise RuntimeError(f"Unable to get the current memory for cgroup: {self.path}") from ex
 
     def get_peak_memory(self) -> int:
         try:
             return int(next(self._read_file("memory.peak")))
         except Exception as ex:
-            raise RuntimeError(f"Unable to get the peak memory for cgroup with pid: {self.pid}") from ex
+            raise RuntimeError(f"Unable to get the peak memory for cgroup: {self.path}") from ex

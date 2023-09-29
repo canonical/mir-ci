@@ -35,7 +35,7 @@ class TestScreencopyBandwidth:
                 f"python3 -m asciinema play {ASCIINEMA_CAST}",
                 pip_pkgs=("asciinema",),
                 id="asciinema",
-                extra=15,
+                extra=20 + SLOWDOWN,
             ),
             apps.snap("mir-kiosk-neverputt", extra=False),
         ],

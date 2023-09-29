@@ -74,6 +74,25 @@ class TestProgram:
             assert cgroup is not None
             await p.kill(2)
 
+    @patch("mir_ci.program.Path")
+    @patch("mir_ci.cgroups.Cgroup.create")
+    async def test_passes_when_cgroup_not_got(self, mock_create, mock_path) -> None:
+        mock_path.return_value.exists.return_value = False
+        mock_create.side_effect = FileNotFoundError
+
+        p = Program(App(["sh", "-c", "sleep 100"], "deb"))
+        async with p:
+            await p.kill(2)
+
+    @patch("mir_ci.program.Path")
+    async def test_get_cgroup_asserts_without_cgroupv2(self, mock_path) -> None:
+        mock_path.return_value.exists.return_value = False
+
+        p = Program(App(["sh", "-c", "sleep 100"], "deb"))
+        with pytest.raises(AssertionError, match="Cgroup task is None, is cgroupv2 supported?"):
+            async with p:
+                await p.get_cgroup()
+
 
 @pytest.mark.self
 class TestBenchmarker(IsolatedAsyncioTestCase):
@@ -240,41 +259,41 @@ class TestCgroup:
         "builtins.open", new_callable=mock_open, read_data="usage_usec 100\nline_two 30\nline_three 40\nline_four 50"
     )
     def test_cgroup_can_get_cpu_time_microseconds(self, mock_open):
-        cgroup = Cgroup(12345, "/fake/path")
+        cgroup = Cgroup("/fake/path")
         assert cgroup.get_cpu_time_microseconds() == 100
 
     @patch("builtins.open", new_callable=mock_open, read_data="usage_usec string")
     def test_cgroup_get_cpu_time_microseconds_raises_when_not_integer(self, mock_open):
-        cgroup = Cgroup(12345, "/fake/path")
-        with pytest.raises(RuntimeError, match="Unable to get the cpu time for cgroup with pid: 12345"):
+        cgroup = Cgroup("/fake/path")
+        with pytest.raises(RuntimeError, match="Unable to get the cpu time for cgroup: /fake/path"):
             cgroup.get_cpu_time_microseconds()
 
     @patch("builtins.open", new_callable=mock_open, read_data="100")
     def test_cgroup_get_cpu_time_microseconds_raises_when_usage_usec_not_found(self, mock_open):
-        cgroup = Cgroup(12345, "/fake/path")
-        with pytest.raises(RuntimeError, match="Unable to get the cpu time for cgroup with pid: 12345"):
+        cgroup = Cgroup("/fake/path")
+        with pytest.raises(RuntimeError, match="Unable to get the cpu time for cgroup: /fake/path"):
             cgroup.get_cpu_time_microseconds()
 
     @patch("builtins.open", new_callable=mock_open, read_data="100")
     def test_cgroup_can_get_current_memory(self, mock_open):
-        cgroup = Cgroup(12345, "/fake/path")
+        cgroup = Cgroup("/fake/path")
         assert cgroup.get_current_memory() == 100
 
     @patch("builtins.open", new_callable=mock_open, read_data="string")
     def test_cgroup_get_current_memory_raises_when_not_integer(self, mock_open):
-        cgroup = Cgroup(12345, "/fake/path")
-        with pytest.raises(RuntimeError, match="Unable to get the current memory for cgroup with pid: 12345"):
+        cgroup = Cgroup("/fake/path")
+        with pytest.raises(RuntimeError, match="Unable to get the current memory for cgroup: /fake/path"):
             cgroup.get_current_memory()
 
     @patch("builtins.open", new_callable=mock_open, read_data="100")
     def test_cgroup_can_get_peak_memory(self, mock_open):
-        cgroup = Cgroup(12345, "/fake/path")
+        cgroup = Cgroup("/fake/path")
         assert cgroup.get_peak_memory() == 100
 
     @patch("builtins.open", new_callable=mock_open, read_data="string")
     def test_cgroup_get_peak_memory_raises_when_not_integer(self, mock_open):
-        cgroup = Cgroup(12345, "/fake/path")
-        with pytest.raises(RuntimeError, match="Unable to get the peak memory for cgroup with pid: 12345"):
+        cgroup = Cgroup("/fake/path")
+        with pytest.raises(RuntimeError, match="Unable to get the peak memory for cgroup: /fake/path"):
             cgroup.get_peak_memory()
 
     @patch("builtins.open", new_callable=mock_open, read_data="string")
