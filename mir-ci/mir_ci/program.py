@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Awaitable, Dict, List, Optional, Tuple, Union
 
 from mir_ci.apps import App
-from mir_ci.cgroups import Cgroup, CreateReturnType
+from mir_ci.cgroups import Cgroup
 from mir_ci.interfaces.benchmarkable import Benchmarkable
 
 logger = logging.getLogger(__name__)
@@ -52,7 +52,7 @@ class Program(Benchmarkable):
         self.process: Optional[asyncio.subprocess.Process] = None
         self.process_end: Optional[Awaitable[None]] = None
         self.send_signals_task: Optional[asyncio.Task[None]] = None
-        self.cgroups_task: Optional[CreateReturnType] = None
+        self.cgroups_task: Optional[asyncio.Task[Cgroup]] = None
         self.output = ""
         self.sigkill_sent = False
 
