@@ -1,5 +1,6 @@
 import logging
 import sys
+from enum import Enum
 
 import gi
 
@@ -9,8 +10,13 @@ gi.require_version("Gtk", "3.0")
 gi.require_version("Gdk", "3.0")
 from gi.repository import Gdk, GdkPixbuf, Gtk  # noqa: E402
 
-(EXCHANGE_TYPE_NONE, EXCHANGE_TYPE_TEXT, EXCHANGE_TYPE_PIXBUF) = range(3)
-EXCHANGE_TYPES = {"text": EXCHANGE_TYPE_TEXT, "pixbuf": EXCHANGE_TYPE_PIXBUF}
+
+class ExchangeType(str, Enum):
+    NONE = ""
+    TEXT = "text"
+    PIXBUF = "pixbuf"
+
+
 (TARGET_ENTRY_TEXT, TARGET_ENTRY_PIXBUF) = range(2)
 (COLUMN_TEXT, COLUMN_PIXBUF) = range(2)
 
@@ -18,8 +24,8 @@ DRAG_ACTION = Gdk.DragAction.COPY
 
 
 class DragDropWindow(Gtk.Window):
-    expect = EXCHANGE_TYPE_NONE
-    result = EXCHANGE_TYPE_NONE
+    expect = ExchangeType.NONE
+    result = ExchangeType.NONE
 
     def __init__(self, source_mode, target_mode, expect):
         super().__init__(title="Drag and Drop Demo")
@@ -31,12 +37,12 @@ class DragDropWindow(Gtk.Window):
         iconview = DragSourceIconView(source_mode)
 
         sourcebox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
-        if source_mode == EXCHANGE_TYPE_NONE:
+        if source_mode == ExchangeType.NONE:
             sourcebox.pack_start(iconview.buttons(), False, False, 0)
         sourcebox.pack_start(iconview, True, True, 0)
 
         dropbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
-        if target_mode == EXCHANGE_TYPE_NONE:
+        if target_mode == ExchangeType.NONE:
             dropbox.pack_start(drop_area.buttons(), False, False, 0)
         dropbox.pack_start(drop_area, True, True, 0)
         dropbox.pack_start(drop_area.feedback, False, True, 0)
@@ -52,7 +58,7 @@ class DragDropWindow(Gtk.Window):
 
     def result_callback(self, result):
         self.result = result
-        if self.expect != EXCHANGE_TYPE_NONE:
+        if self.expect != ExchangeType.NONE:
             logger.info("expect=", self.expect, ", actual=", self.result)
             exit(self.result != self.expect)
 
@@ -74,10 +80,11 @@ class DragSourceIconView(Gtk.IconView):
         self.connect("drag-failed", lambda x, y, z: print("drag-failed"))
         self.connect("drag-data-get", self.on_drag_data_get)
 
-        if source_mode == EXCHANGE_TYPE_TEXT:
-            self.set_text_targets()
-        elif source_mode == EXCHANGE_TYPE_PIXBUF:
-            self.set_image_targets()
+        match source_mode:
+            case ExchangeType.TEXT:
+                self.set_text_targets()
+            case ExchangeType.PIXBUF:
+                self.set_image_targets()
 
     def buttons(self):
         self.set_image_targets()
@@ -146,9 +153,9 @@ class DropArea(Gtk.Label):
         self.connect("drag-leave", self.on_drag_leave)
 
         if target_mode:
-            if target_mode == EXCHANGE_TYPE_TEXT:
+            if target_mode == ExchangeType.TEXT:
                 self.set_text_targets()
-            if target_mode == EXCHANGE_TYPE_PIXBUF:
+            if target_mode == ExchangeType.PIXBUF:
                 self.set_image_targets()
 
     def buttons(self):
@@ -184,11 +191,11 @@ class DropArea(Gtk.Label):
 
     def on_drag_data_received(self, widget, drag_context, x, y, data, info, time):
         if info == TARGET_ENTRY_TEXT:
-            self.result_callback(EXCHANGE_TYPE_TEXT)
+            self.result_callback(ExchangeType.TEXT)
             text = data.get_text()
             self.feedback.set_label("Received text: %s" % text)
         elif info == TARGET_ENTRY_PIXBUF:
-            self.result_callback(EXCHANGE_TYPE_PIXBUF)
+            self.result_callback(ExchangeType.PIXBUF)
             pixbuf = data.get_pixbuf()
             width = pixbuf.get_width()
             height = pixbuf.get_height()
@@ -196,20 +203,20 @@ class DropArea(Gtk.Label):
 
 
 if __name__ == "__main__":
-    source_mode = EXCHANGE_TYPE_NONE
-    target_mode = EXCHANGE_TYPE_NONE
-    expect = EXCHANGE_TYPE_NONE
+    source_mode = ExchangeType.NONE
+    target_mode = ExchangeType.NONE
+    expect = ExchangeType.NONE
     try:
         args = sys.argv[1:] or []
         commands: list = []
         while args:
             arg = args.pop(0)
             if arg == "--source":
-                source_mode = EXCHANGE_TYPES[args.pop(0)]
+                source_mode = ExchangeType(args.pop(0))
             elif arg == "--target":
-                target_mode = EXCHANGE_TYPES[args.pop(0)]
+                target_mode = ExchangeType(args.pop(0))
             elif arg == "--expect":
-                expect = EXCHANGE_TYPES[args.pop(0)]
+                expect = ExchangeType(args.pop(0))
             else:
                 assert False, f"invalid argument: {arg}"
     except Exception as e:
@@ -219,5 +226,5 @@ if __name__ == "__main__":
     win.connect("destroy", Gtk.main_quit)
     win.show_all()
     Gtk.main()
-    if expect != EXCHANGE_TYPE_NONE:
+    if expect != ExchangeType.NONE:
         exit(win.result != expect)
