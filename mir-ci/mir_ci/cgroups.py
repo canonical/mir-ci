@@ -1,12 +1,7 @@
 import asyncio
 import os
 import pathlib
-from typing import TYPE_CHECKING, Iterator
-
-if TYPE_CHECKING:
-    CreateReturnType = asyncio.Task["Cgroup"]
-else:
-    CreateReturnType = asyncio.Task
+from typing import Iterator
 
 
 class Cgroup:
@@ -14,7 +9,7 @@ class Cgroup:
         self.path = path
 
     @staticmethod
-    def create(pid: int) -> CreateReturnType:
+    def create(pid: int) -> asyncio.Task["Cgroup"]:
         async def inner():
             path = await Cgroup.get_cgroup_dir(pid)
             return Cgroup(path)
