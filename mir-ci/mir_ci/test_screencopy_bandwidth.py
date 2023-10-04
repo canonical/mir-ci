@@ -1,6 +1,5 @@
 import asyncio
 import os
-import re
 from pathlib import Path
 
 import pytest
@@ -12,15 +11,12 @@ from mir_ci.virtual_pointer import Button, VirtualPointer
 long_wait_time = 10
 
 ASCIINEMA_CAST = f"{os.path.dirname(__file__)}/data/demo.cast"
-SERVER_MODE_RE = re.compile(r"Current mode ([0-9x]+ [0-9.]+Hz)")
-SERVER_RENDERER_RE = re.compile(r"GL renderer: (.*)$", re.MULTILINE)
 
 
 def _record_properties(fixture, server, tracker, min_frames):
+    server.record_properties(fixture)
     for name, val in tracker.properties().items():
         fixture(name, val)
-    fixture("server_mode", SERVER_MODE_RE.search(server.server.output).group(1))
-    fixture("server_renderer", SERVER_RENDERER_RE.search(server.server.output).group(1))
     frames = tracker.properties()["frame_count"]
     assert frames >= min_frames, f"expected to capture at least {min_frames} frames, but only got {frames}"
 
