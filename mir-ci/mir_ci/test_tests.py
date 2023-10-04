@@ -314,3 +314,16 @@ class TestDisplayServer:
         async with server_instance:
             cgroup = await server_instance.get_cgroup()
             assert cgroup is not None
+
+    def test_display_server_records_mode(self) -> None:
+        mock_fixture = Mock()
+        server = DisplayServer(App("foo"))
+
+        class MockServer:
+            output = """Current mode 123x456 78.9Hz
+                        GL renderer: Mock renderer"""
+
+        with patch.object(server, "server", MockServer()):
+            server.record_properties(mock_fixture)
+
+        mock_fixture.assert_has_calls([call("server_mode", "123x456 78.9Hz"), call("server_renderer", "Mock renderer")])
