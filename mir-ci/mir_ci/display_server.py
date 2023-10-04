@@ -1,7 +1,8 @@
 import asyncio
 import os
+import re
 import time
-from typing import Dict, Tuple
+from typing import Dict, Optional, Tuple
 
 import inotify.adapters
 from mir_ci.apps import App
@@ -11,6 +12,10 @@ from mir_ci.program import Program
 
 display_appear_timeout = 10
 min_mir_run_time = 0.1
+
+
+SERVER_MODE_RE = re.compile(r"Current mode ([0-9x]+ [0-9.]+Hz)")
+SERVER_RENDERER_RE = re.compile(r"GL renderer: (.*)$", re.MULTILINE)
 
 
 def clear_wayland_display(runtime_dir: str, name: str) -> None:
@@ -36,6 +41,8 @@ def wait_for_wayland_display(runtime_dir: str, name: str) -> None:
 
 
 class DisplayServer(Benchmarkable):
+    server: Optional[Program] = None
+
     def __init__(self, app: App, add_extensions: Tuple[str, ...] = ()) -> None:
         self.app: App = app
         self.add_extensions = add_extensions
@@ -45,12 +52,20 @@ class DisplayServer(Benchmarkable):
         self.display_name = "wayland-00" + str(os.getpid())
 
     async def get_cgroup(self) -> Cgroup:
+        assert self.server
         return await self.server.get_cgroup()
 
     def program(self, app: App, env: Dict[str, str] = {}) -> Program:
         return Program(
             app, env=dict({"DISPLAY": "no", "QT_QPA_PLATFORM": "wayland", "WAYLAND_DISPLAY": self.display_name}, **env)
         )
+
+    def record_properties(self, fixture) -> None:
+        assert self.server
+        if m := SERVER_MODE_RE.search(self.server.output):
+            fixture("server_mode", m.group(1))
+        if m := SERVER_RENDERER_RE.search(self.server.output):
+            fixture("server_renderer", m.group(1))
 
     async def __aenter__(self) -> "DisplayServer":
         runtime_dir = os.environ["XDG_RUNTIME_DIR"]
@@ -76,4 +91,5 @@ class DisplayServer(Benchmarkable):
         sleep_time = self.start_time + min_mir_run_time - time.time()
         if sleep_time > 0:
             await asyncio.sleep(sleep_time)
+        assert self.server
         await self.server.kill()
