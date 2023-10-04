@@ -29,4 +29,5 @@ class TestAppsCanRun:
         async with benchmarker:
             await asyncio.sleep(short_wait_time)
 
+        server_instance.record_properties(record_property)
         benchmarker.generate_report(record_property)
