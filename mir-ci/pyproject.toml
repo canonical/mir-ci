@@ -12,7 +12,7 @@ dependencies = [
     "inotify",
     "pytest",
     "pytest-asyncio",
-    "pywayland @ git+https://github.com/Saviq/pywayland.git@patch-1",
+    "pywayland @ git+https://github.com/flacjacket/pywayland.git",
 ]
 
 [project.urls]
