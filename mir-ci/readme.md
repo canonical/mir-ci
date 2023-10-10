@@ -1,6 +1,6 @@
 # Ubuntu Frame Integration Tests
 
-**NB:** Your working directory needs to be `mir-ci` for this to work.
+**NB:** Your working directory needs to be `mir-ci/mir_ci` for this to work.
 
 ## To install the package and suite dependencies
 `pip install -e ..`
