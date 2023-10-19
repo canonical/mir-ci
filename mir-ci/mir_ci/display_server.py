@@ -80,10 +80,7 @@ class DisplayServer(Benchmarkable):
         clear_wayland_display(runtime_dir, self.display_name)
         self.env["WAYLAND_DISPLAY"] = self.display_name
         self.env["MIR_SERVER_ADD_WAYLAND_EXTENSIONS"] = ":".join(self.add_extensions)
-        self.server = await Program(
-            self.app,
-            env=self.env
-        ).__aenter__()
+        self.server = await Program(self.app, env=self.env).__aenter__()
         try:
             wait_for_wayland_display(runtime_dir, self.display_name)
         except Exception as e:

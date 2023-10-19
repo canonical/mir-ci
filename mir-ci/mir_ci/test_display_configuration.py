@@ -1,8 +1,9 @@
-import pytest
 import asyncio
-import yaml
 import os
-from mir_ci import apps, SLOWDOWN
+
+import pytest
+import yaml
+from mir_ci import SLOWDOWN, apps
 from mir_ci.display_server import DisplayServer
 
 short_wait_time = 1 * SLOWDOWN
@@ -10,20 +11,18 @@ short_wait_time = 1 * SLOWDOWN
 
 class TestDisplayConfiguration:
     @pytest.mark.parametrize(
-    "server",
-    [
-        apps.mir_demo_server(),
-    ],
-)
+        "server",
+        [
+            apps.mir_demo_server(),
+        ],
+    )
     async def test_can_update_scale(self, server) -> None:
         CONFIG_FILE = "/tmp/mir_ci_display_config.yaml"
         try:
             os.remove(CONFIG_FILE)
         except OSError:
             pass
-        server = DisplayServer(server).environment(
-            "MIR_SERVER_DISPLAY_CONFIG",
-            f"static={CONFIG_FILE}")
+        server = DisplayServer(server).environment("MIR_SERVER_DISPLAY_CONFIG", f"static={CONFIG_FILE}")
 
         async with server:
             await asyncio.sleep(short_wait_time)
