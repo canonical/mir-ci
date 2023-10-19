@@ -80,10 +80,7 @@ class DisplayServer(Benchmarkable):
     async def __aenter__(self) -> "DisplayServer":
         runtime_dir = os.environ["XDG_RUNTIME_DIR"]
         clear_wayland_display(runtime_dir, self.display_name)
-        self.server = await Program(
-            self.app,
-            env=self.env
-        ).__aenter__()
+        self.server = await Program(self.app, env=self.env).__aenter__()
         try:
             wait_for_wayland_display(runtime_dir, self.display_name)
         except Exception as e:
