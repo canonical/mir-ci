@@ -51,7 +51,7 @@ class DisplayServer(Benchmarkable):
         self.display_name = "wayland-00" + str(os.getpid())
         self.env: Dict[str, str] = {
             "WAYLAND_DISPLAY": self.display_name,
-            "MIR_SERVER_ADD_WAYLAND_EXTENSIONS": ":".join(add_extensions)
+            "MIR_SERVER_ADD_WAYLAND_EXTENSIONS": ":".join(add_extensions),
         }
 
     async def get_cgroup(self) -> Cgroup:
