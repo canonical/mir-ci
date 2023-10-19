@@ -13,6 +13,7 @@ dependencies = [
     "pytest",
     "pytest-asyncio",
     "pywayland @ git+https://github.com/Saviq/pywayland.git@patch-1",
+    "pyyaml"
 ]
 
 [project.urls]
