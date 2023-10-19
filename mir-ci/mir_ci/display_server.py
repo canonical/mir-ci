@@ -50,6 +50,7 @@ class DisplayServer(Benchmarkable):
         # easily identify displays created by this test suit and remove them in bulk if a bunch
         # don't get cleaned up properly.
         self.display_name = "wayland-00" + str(os.getpid())
+        self.env: Dict[str, str] = {}
 
     async def get_cgroup(self) -> Cgroup:
         assert self.server
@@ -59,6 +60,13 @@ class DisplayServer(Benchmarkable):
         return Program(
             app, env=dict({"DISPLAY": "no", "QT_QPA_PLATFORM": "wayland", "WAYLAND_DISPLAY": self.display_name}, **env)
         )
+
+    def environment(self, key: str, value: str):
+        """
+        Set an environment variable
+        """
+        self.env[key] = value
+        return self
 
     def record_properties(self, fixture) -> None:
         assert self.server
@@ -70,12 +78,11 @@ class DisplayServer(Benchmarkable):
     async def __aenter__(self) -> "DisplayServer":
         runtime_dir = os.environ["XDG_RUNTIME_DIR"]
         clear_wayland_display(runtime_dir, self.display_name)
+        self.env["WAYLAND_DISPLAY"] = self.display_name
+        self.env["MIR_SERVER_ADD_WAYLAND_EXTENSIONS"] = ":".join(self.add_extensions)
         self.server = await Program(
             self.app,
-            env={
-                "WAYLAND_DISPLAY": self.display_name,
-                "MIR_SERVER_ADD_WAYLAND_EXTENSIONS": ":".join(self.add_extensions),
-            },
+            env=self.env
         ).__aenter__()
         try:
             wait_for_wayland_display(runtime_dir, self.display_name)
