@@ -11,19 +11,19 @@ short_wait_time = 1 * SLOWDOWN
 
 class TestDisplayConfiguration:
     @pytest.mark.parametrize(
-        "server",
+        "local_server",
         [
             apps.mir_demo_server(),
         ],
     )
     @pytest.mark.deps(pip_pkgs=("pyyaml",))
-    async def test_can_update_scale(self, server) -> None:
+    async def test_can_update_scale(self, local_server) -> None:
         CONFIG_FILE = "/tmp/mir_ci_display_config.yaml"
         try:
             os.remove(CONFIG_FILE)
         except OSError:
             pass
-        server = DisplayServer(server).environment("MIR_SERVER_DISPLAY_CONFIG", f"static={CONFIG_FILE}")
+        server = DisplayServer(local_server).environment("MIR_SERVER_DISPLAY_CONFIG", f"static={CONFIG_FILE}")
 
         async with server:
             yaml = importlib.import_module("yaml")
