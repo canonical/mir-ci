@@ -5,6 +5,8 @@ import os
 import pytest
 from mir_ci import SLOWDOWN, apps
 from mir_ci.display_server import DisplayServer
+from mir_ci.output_watcher import OutputWatcher
+from unittest.mock import Mock, ANY
 
 short_wait_time = 1 * SLOWDOWN
 
@@ -23,9 +25,12 @@ class TestDisplayConfiguration:
             os.remove(CONFIG_FILE)
         except OSError:
             pass
-        server = DisplayServer(local_server).environment("MIR_SERVER_DISPLAY_CONFIG", f"static={CONFIG_FILE}")
 
-        async with server:
+        server = DisplayServer(local_server).environment("MIR_SERVER_DISPLAY_CONFIG", f"static={CONFIG_FILE}")
+        on_scale = Mock()
+        watcher = OutputWatcher(server.display_name, on_scale=on_scale)
+
+        async with server, watcher:
             yaml = importlib.import_module("yaml")
             await asyncio.sleep(short_wait_time)
             with open(CONFIG_FILE, "r") as file:
@@ -38,5 +43,4 @@ class TestDisplayConfiguration:
                 yaml.dump(data, file)
             await asyncio.sleep(short_wait_time)
 
-        assert "New display configuration:" in server.server.output
-        assert "New base display configuration:" in server.server.output
+        on_scale.assert_called_with(ANY, 2)
