@@ -1,12 +1,12 @@
 import asyncio
 import importlib
 import os
+from unittest.mock import ANY, Mock
 
 import pytest
 from mir_ci import SLOWDOWN, apps
 from mir_ci.display_server import DisplayServer
 from mir_ci.output_watcher import OutputWatcher
-from unittest.mock import Mock, ANY
 
 short_wait_time = 1 * SLOWDOWN
 
