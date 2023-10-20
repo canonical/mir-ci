@@ -1,8 +1,8 @@
 import asyncio
+import importlib
 import os
 
 import pytest
-import yaml
 from mir_ci import SLOWDOWN, apps
 from mir_ci.display_server import DisplayServer
 
@@ -16,6 +16,7 @@ class TestDisplayConfiguration:
             apps.mir_demo_server(),
         ],
     )
+    @pytest.mark.deps(pip_pkgs=("pyyaml",))
     async def test_can_update_scale(self, server) -> None:
         CONFIG_FILE = "/tmp/mir_ci_display_config.yaml"
         try:
@@ -25,6 +26,7 @@ class TestDisplayConfiguration:
         server = DisplayServer(server).environment("MIR_SERVER_DISPLAY_CONFIG", f"static={CONFIG_FILE}")
 
         async with server:
+            yaml = importlib.import_module("yaml")
             await asyncio.sleep(short_wait_time)
             with open(CONFIG_FILE, "r") as file:
                 # the yaml parser doesn't like tabs before our comments
