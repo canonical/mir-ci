@@ -15,6 +15,9 @@ class TestDisplayConfiguration:
     @pytest.mark.parametrize(
         "local_server",
         [
+            # TODO: Test other servers. Frame-based servers use
+            # a configuration file that is within the snap, so it
+            # is unclear how to read/modify that file from the outside
             apps.mir_demo_server(),
         ],
     )
