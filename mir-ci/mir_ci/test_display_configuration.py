@@ -26,7 +26,7 @@ class TestDisplayConfiguration:
         except OSError:
             pass
 
-        server = DisplayServer(local_server).environment("MIR_SERVER_DISPLAY_CONFIG", f"static={CONFIG_FILE}")
+        server = DisplayServer(local_server, env={"MIR_SERVER_DISPLAY_CONFIG": f"static={CONFIG_FILE}"})
         on_scale = Mock()
         watcher = OutputWatcher(server.display_name, on_scale=on_scale)
 
