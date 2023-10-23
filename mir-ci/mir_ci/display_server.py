@@ -43,16 +43,15 @@ def wait_for_wayland_display(runtime_dir: str, name: str) -> None:
 class DisplayServer(Benchmarkable):
     server: Optional[Program] = None
 
-    def __init__(self, app: App, add_extensions: Tuple[str, ...] = ()) -> None:
+    def __init__(self, app: App, add_extensions: Tuple[str, ...] = (), env: Dict[str, str] = {}) -> None:
         self.app: App = app
         # Snaps require the display to be in the form "waland-<number>". The 00 prefix lets us
         # easily identify displays created by this test suit and remove them in bulk if a bunch
         # don't get cleaned up properly.
         self.display_name = "wayland-00" + str(os.getpid())
-        self.env: Dict[str, str] = {
-            "WAYLAND_DISPLAY": self.display_name,
-            "MIR_SERVER_ADD_WAYLAND_EXTENSIONS": ":".join(add_extensions),
-        }
+        self.env: Dict[str, str] = env
+        self.env["WAYLAND_DISPLAY"] = self.display_name
+        self.env["MIR_SERVER_ADD_WAYLAND_EXTENSIONS"] = ":".join(add_extensions)
 
     async def get_cgroup(self) -> Cgroup:
         assert self.server
@@ -62,13 +61,6 @@ class DisplayServer(Benchmarkable):
         return Program(
             app, env=dict({"DISPLAY": "no", "QT_QPA_PLATFORM": "wayland", "WAYLAND_DISPLAY": self.display_name}, **env)
         )
-
-    def environment(self, key: str, value: str):
-        """
-        Set an environment variable
-        """
-        self.env[key] = value
-        return self
 
     def record_properties(self, fixture) -> None:
         assert self.server
