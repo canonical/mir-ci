@@ -7,6 +7,7 @@ import pytest
 from mir_ci import SLOWDOWN, apps
 from mir_ci.display_server import DisplayServer
 from mir_ci.output_watcher import OutputWatcher
+import tempfile
 
 short_wait_time = 1 * SLOWDOWN
 
@@ -23,20 +24,21 @@ class TestDisplayConfiguration:
     )
     @pytest.mark.deps(pip_pkgs=("pyyaml",))
     async def test_can_update_scale(self, local_server) -> None:
-        CONFIG_FILE = "/tmp/mir_ci_display_config.yaml"
+        tmp_file = tempfile.NamedTemporaryFile(delete=False)
+        tmp_filename = tmp_file.name
         try:
-            os.remove(CONFIG_FILE)
+            os.remove(tmp_filename)
         except OSError:
             pass
 
-        server = DisplayServer(local_server, env={"MIR_SERVER_DISPLAY_CONFIG": f"static={CONFIG_FILE}"})
+        server = DisplayServer(local_server, env={"MIR_SERVER_DISPLAY_CONFIG": f"static={tmp_filename}"})
         on_scale = Mock()
         watcher = OutputWatcher(server.display_name, on_scale=on_scale)
 
         async with server, watcher:
             yaml = importlib.import_module("yaml")
             await asyncio.sleep(short_wait_time)
-            with open(CONFIG_FILE, "r") as file:
+            with open(tmp_filename, "r") as file:
                 # the yaml parser doesn't like tabs before our comments
                 content = file.read().replace("\t#", "  #")
                 data = yaml.safe_load(content)
@@ -47,7 +49,7 @@ class TestDisplayConfiguration:
                     card[k]["scale"] = 2
                     break
 
-            with open(CONFIG_FILE, "w") as file:
+            with open(tmp_filename, "w") as file:
                 yaml.dump(data, file)
             await asyncio.sleep(short_wait_time)
 
