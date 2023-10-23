@@ -1,10 +1,8 @@
 import asyncio
 from typing import Callable, List, Optional
 
-from mir_ci.protocols import WlOutput, ZxdgOutputManagerV1
+from mir_ci.protocols import WlOutput
 from mir_ci.protocols.wayland.wl_output import WlOutputProxy
-from mir_ci.protocols.xdg_output_unstable_v1.zxdg_output_manager_v1 import ZxdgOutputManagerV1Proxy
-from mir_ci.protocols.xdg_output_unstable_v1.zxdg_output_v1 import ZxdgOutputV1Proxy
 from mir_ci.wayland_client import WaylandClient
 
 
