@@ -45,6 +45,3 @@ async def main():
     output_watcher = OutputWatcher("wayland-0", on_scale=on_scale)
     async with output_watcher:
         await asyncio.sleep(5)
-
-
-asyncio.run(main())
