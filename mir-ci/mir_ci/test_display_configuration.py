@@ -38,7 +38,12 @@ class TestDisplayConfiguration:
                 content = file.read().replace("\t#", "  #")
                 data = yaml.safe_load(content)
 
-            data["layouts"]["default"]["cards"][0]["unknown-1"]["scale"] = "2"
+            card = data["layouts"]["default"]["cards"][0]
+            for k in card:
+                if type(card[k]) is dict:
+                    card[k]["scale"] = 2
+                    break
+
             with open(CONFIG_FILE, "w") as file:
                 yaml.dump(data, file)
             await asyncio.sleep(short_wait_time)
