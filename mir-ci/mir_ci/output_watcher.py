@@ -6,10 +6,6 @@ from mir_ci.protocols.wayland.wl_output import WlOutputProxy
 from mir_ci.wayland_client import WaylandClient
 
 
-def passthrough(**args):
-    pass
-
-
 class OutputWatcher(WaylandClient):
     def __init__(
         self,
