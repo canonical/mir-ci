@@ -1,4 +1,3 @@
-import asyncio
 from typing import Callable, List, Optional
 
 from mir_ci.protocols import WlOutput
@@ -30,12 +29,3 @@ class OutputWatcher(WaylandClient):
 
     def disconnected(self) -> None:
         pass
-
-
-async def main():
-    def on_scale(output: WlOutput, scale: int):
-        print(scale)
-
-    output_watcher = OutputWatcher("wayland-0", on_scale=on_scale)
-    async with output_watcher:
-        await asyncio.sleep(5)
