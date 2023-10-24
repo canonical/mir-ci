@@ -44,9 +44,9 @@ class TestDisplayConfiguration:
                 data = yaml.safe_load(content)
 
             card = data["layouts"]["default"]["cards"][0]
-            for k in card:
-                if type(card[k]) is dict:
-                    card[k]["scale"] = 2
+            for v in card.values():
+                if type(v) is dict:
+                    v["scale"] = 2
                     break
 
             with open(tmp_filename, "w") as file:
