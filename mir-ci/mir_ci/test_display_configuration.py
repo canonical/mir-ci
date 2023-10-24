@@ -2,13 +2,13 @@ import asyncio
 import importlib
 import os
 import tempfile
+from typing import Any
 from unittest.mock import ANY, Mock
 
 import pytest
 from mir_ci import SLOWDOWN, apps
 from mir_ci.display_server import DisplayServer
 from mir_ci.output_watcher import OutputWatcher
-from typing import Optional, Any
 
 short_wait_time = 1 * SLOWDOWN
 
@@ -23,9 +23,7 @@ class DisplayServerStaticFile:
         except OSError:
             pass
 
-        self.server = DisplayServer(
-            self.local_server,
-            env={"MIR_SERVER_DISPLAY_CONFIG": f"static={self.tmp_filename}"})
+        self.server = DisplayServer(self.local_server, env={"MIR_SERVER_DISPLAY_CONFIG": f"static={self.tmp_filename}"})
 
     async def __aenter__(self) -> "DisplayServer":
         await self.server.__aenter__()
@@ -97,4 +95,3 @@ class TestDisplayConfiguration:
             await asyncio.sleep(short_wait_time)
 
         on_geometry.assert_called_with(ANY, 10, 20, ANY, ANY, ANY, ANY, ANY, ANY)
-
