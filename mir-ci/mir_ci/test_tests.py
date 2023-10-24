@@ -13,6 +13,8 @@ from mir_ci.benchmarker import Benchmarker, CgroupsBackend
 from mir_ci.cgroups import Cgroup
 from mir_ci.display_server import DisplayServer
 from mir_ci.program import Program
+from mir_ci.output_watcher import OutputWatcher
+from mir_ci.protocols import WlOutput
 
 
 def _async_return(mock=None):
@@ -327,3 +329,18 @@ class TestDisplayServer:
             server.record_properties(mock_fixture)
 
         mock_fixture.assert_has_calls([call("server_mode", "123x456 78.9Hz"), call("server_renderer", "Mock renderer")])
+
+
+@pytest.mark.self
+class TestOutputWatcher:
+    def test_can_register(self) -> None:
+        mock_fixture = MagicMock()
+        watcher = OutputWatcher("test-display-name")
+        watcher.registry_global(mock_fixture, 12345, WlOutput.name, 1)
+        mock_fixture.assert_has_calls([
+            call.bind(12345, WlOutput, 1),
+            call.bind().dispatcher.__setitem__('geometry', None),
+            call.bind().dispatcher.__setitem__('mode', None),
+            call.bind().dispatcher.__setitem__('scale', None),
+            call.bind().dispatcher.__setitem__('name', None)
+        ])
