@@ -25,8 +25,9 @@ class DisplayServerStaticFile:
 
         self.server = DisplayServer(self.local_server, env={"MIR_SERVER_DISPLAY_CONFIG": f"static={self.tmp_filename}"})
 
-    async def __aenter__(self) -> "DisplayServer":
+    async def __aenter__(self) -> "DisplayServerStaticFile":
         await self.server.__aenter__()
+        return self
 
     async def __aexit__(self, *args):
         await self.server.__aexit__(*args)
