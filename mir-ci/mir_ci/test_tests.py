@@ -12,8 +12,8 @@ from mir_ci.apps import App
 from mir_ci.benchmarker import Benchmarker, CgroupsBackend
 from mir_ci.cgroups import Cgroup
 from mir_ci.display_server import DisplayServer
-from mir_ci.program import Program
 from mir_ci.output_watcher import OutputWatcher
+from mir_ci.program import Program
 from mir_ci.protocols import WlOutput
 
 
@@ -337,10 +337,12 @@ class TestOutputWatcher:
         mock_fixture = MagicMock()
         watcher = OutputWatcher("test-display-name")
         watcher.registry_global(mock_fixture, 12345, WlOutput.name, 1)
-        mock_fixture.assert_has_calls([
-            call.bind(12345, WlOutput, 1),
-            call.bind().dispatcher.__setitem__('geometry', None),
-            call.bind().dispatcher.__setitem__('mode', None),
-            call.bind().dispatcher.__setitem__('scale', None),
-            call.bind().dispatcher.__setitem__('name', None)
-        ])
+        mock_fixture.assert_has_calls(
+            [
+                call.bind(12345, WlOutput, 1),
+                call.bind().dispatcher.__setitem__("geometry", None),
+                call.bind().dispatcher.__setitem__("mode", None),
+                call.bind().dispatcher.__setitem__("scale", None),
+                call.bind().dispatcher.__setitem__("name", None),
+            ]
+        )
