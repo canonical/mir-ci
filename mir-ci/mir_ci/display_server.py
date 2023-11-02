@@ -43,13 +43,15 @@ def wait_for_wayland_display(runtime_dir: str, name: str) -> None:
 class DisplayServer(Benchmarkable):
     server: Optional[Program] = None
 
-    def __init__(self, app: App, add_extensions: Tuple[str, ...] = ()) -> None:
+    def __init__(self, app: App, add_extensions: Tuple[str, ...] = (), env: Dict[str, str] = {}) -> None:
         self.app: App = app
-        self.add_extensions = add_extensions
         # Snaps require the display to be in the form "waland-<number>". The 00 prefix lets us
         # easily identify displays created by this test suit and remove them in bulk if a bunch
         # don't get cleaned up properly.
         self.display_name = "wayland-00" + str(os.getpid())
+        self.env: Dict[str, str] = env
+        self.env["WAYLAND_DISPLAY"] = self.display_name
+        self.env["MIR_SERVER_ADD_WAYLAND_EXTENSIONS"] = ":".join(add_extensions)
 
     async def get_cgroup(self) -> Cgroup:
         assert self.server
@@ -70,13 +72,7 @@ class DisplayServer(Benchmarkable):
     async def __aenter__(self) -> "DisplayServer":
         runtime_dir = os.environ["XDG_RUNTIME_DIR"]
         clear_wayland_display(runtime_dir, self.display_name)
-        self.server = await Program(
-            self.app,
-            env={
-                "WAYLAND_DISPLAY": self.display_name,
-                "MIR_SERVER_ADD_WAYLAND_EXTENSIONS": ":".join(self.add_extensions),
-            },
-        ).__aenter__()
+        self.server = await Program(self.app, env=self.env).__aenter__()
         try:
             wait_for_wayland_display(runtime_dir, self.display_name)
         except Exception as e:
