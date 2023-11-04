@@ -34,7 +34,7 @@ SNAPS = {
         "edge": {"recipe": "confined-shell-edge"},
     },
     "graphics-test-tools": {
-        "beta": {"recipe": "graphics-test-tools-20-beta"},
+        "20/beta": {"recipe": "graphics-test-tools-20-beta"},
         "22/beta": {"recipe": "graphics-test-tools-22-beta"},
     },
     "mircade": {
@@ -54,8 +54,8 @@ SNAPS = {
         "edge": {"recipe": "mir-kiosk-scummvm-edge"},
     },
     "mir-test-tools": {
-        "edge": {"ppa": "dev", "recipe": "mir-test-tools-20-edge", "release": "focal"},
-        "beta": {"ppa": "rc", "recipe": "mir-test-tools-20-beta", "release": "focal"},
+        "20/edge": {"ppa": "dev", "recipe": "mir-test-tools-20-edge", "release": "focal"},
+        "20/beta": {"ppa": "rc", "recipe": "mir-test-tools-20-beta", "release": "focal"},
         "22/edge": {"ppa": "dev", "recipe": "mir-test-tools-22-edge"},
         "22/beta": {"ppa": "rc", "recipe": "mir-test-tools-22-beta"},
     },
@@ -68,18 +68,18 @@ SNAPS = {
         "beta": {"ppa": "rc", "recipe": "egmde-mir-beta", "release": "focal"},
     },
     "ubuntu-frame": {
-        "edge": {"ppa": "dev", "recipe": "ubuntu-frame-20-edge", "release": "focal"},
-        "beta": {"ppa": "rc", "recipe": "ubuntu-frame-20-beta", "release": "focal"},
+        "20/edge": {"ppa": "dev", "recipe": "ubuntu-frame-20-edge", "release": "focal"},
+        "20/beta": {"ppa": "rc", "recipe": "ubuntu-frame-20-beta", "release": "focal"},
         "22/edge": {"ppa": "dev", "recipe": "ubuntu-frame-22-edge"},
         "22/beta": {"ppa": "rc", "recipe": "ubuntu-frame-22-beta"},
     },
     "ubuntu-frame-osk": {
-        "beta": {"recipe": "ubuntu-frame-osk-20-beta"},
+        "20/beta": {"recipe": "ubuntu-frame-osk-20-beta"},
         "22/edge": {"recipe": "ubuntu-frame-osk-22-edge"},
         "22/beta": {"recipe": "ubuntu-frame-osk-22-beta"},
     },
     "ubuntu-frame-vnc": {
-        "beta": {"recipe": "ubuntu-frame-vnc-20-beta"},
+        "20/beta": {"recipe": "ubuntu-frame-vnc-20-beta"},
         "22/edge": {"recipe": "ubuntu-frame-vnc-22-edge"},
         "22/beta": {"recipe": "ubuntu-frame-vnc-22-beta"},
     },
