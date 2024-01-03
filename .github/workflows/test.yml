@@ -78,6 +78,7 @@ jobs:
       name: Upload coverage data
       uses: codecov/codecov-action@v3
       with:
+        token: ${{ secrets.CODECOV_TOKEN }}
         directory: mir-ci/mir_ci
         fail_ci_if_error: true
         verbose: true

@@ -37,9 +37,6 @@ SNAPS = {
         "20/beta": {"recipe": "graphics-test-tools-20-beta"},
         "22/beta": {"recipe": "graphics-test-tools-22-beta"},
     },
-    "mircade": {
-        "edge": {"recipe": "mircade-edge"},
-    },
     "mir-kiosk": {
         "edge": {"ppa": "dev", "recipe": "mir-kiosk-edge", "release": "focal"},
         "beta": {"ppa": "rc", "recipe": "mir-kiosk-beta", "release": "focal"},
@@ -62,10 +59,6 @@ SNAPS = {
     "miriway": {
         "edge": {"ppa": "dev", "recipe": "miriway-edge"},
         "beta": {"ppa": "rc", "recipe": "miriway-beta"},
-    },
-    "egmde": {
-        "edge": {"ppa": "dev", "recipe": "egmde-mir-edge", "release": "focal"},
-        "beta": {"ppa": "rc", "recipe": "egmde-mir-beta", "release": "focal"},
     },
     "ubuntu-frame": {
         "20/edge": {"ppa": "dev", "recipe": "ubuntu-frame-20-edge", "release": "focal"},
@@ -93,7 +86,6 @@ SNAPS = {
         "beta": {"recipe": "nvidia-core22-beta"},
     },
     "mir-kiosk-x11": {
-        "edge": {"ppa": "dev", "recipe": "mir-kiosk-x11-edge", "release": "focal"},
         "beta": {"ppa": "rc", "recipe": "mir-kiosk-x11-beta", "release": "focal"},
     },
 }
