@@ -13,6 +13,7 @@ dependencies = [
     "pytest",
     "pytest-asyncio",
     "pywayland @ git+https://github.com/flacjacket/pywayland.git",
+    "robotframework",
 ]
 
 [project.urls]
