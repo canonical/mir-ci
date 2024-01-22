@@ -46,7 +46,7 @@ Test Source And Destination Match
 
 Test Source And Destination Mismatch
     Log To Console    \n
-    FOR    ${app_index}    ${app}    IN ENUMERATE    @{APPS_MATCH}    start=0
+    FOR    ${app_index}    ${app}    IN ENUMERATE    @{APPS_MISMATCH}    start=0
         FOR    ${server}    IN    @{SERVERS}
             Log    [app${app_index}-${server}]    console=True
             
