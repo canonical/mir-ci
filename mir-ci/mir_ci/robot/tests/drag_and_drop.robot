@@ -1,9 +1,10 @@
 *** Settings ***
-Documentation    Test suite for drag and drop match
+Documentation    Test suite for drag and drop
 
-Library       ../libraries/VirtualPointer.py    %{WAYLAND_DISPLAY=0}
-Resource      ../resources/variables.resource
-Test Setup    Connect to Display
+Library          ../libraries/WaylandHid.py    %{WAYLAND_DISPLAY=0}
+Resource         ../resources/variables.resource
+Test Setup       Connect
+Test Teardown    Disconnect
 
 *** Variables ***
 ${STARTUP_TIME}    ${{1.5 * ${SLOWDOWN}}}
@@ -15,30 +16,30 @@ Drag And Drop Match
     [Tags]    match
 
     Sleep     ${STARTUP_TIME}
-    Move To Absolute    40    40
+    Move Pointer To Absolute    40    40
     Sleep     ${A_SHORT_TIME}
-    Button    ${LEFT}    True
+    Press LEFT Button
     Sleep     ${A_SHORT_TIME}
-    Move To Absolute    120    70
+    Move Pointer To Absolute    120    70
     Sleep     ${A_SHORT_TIME}
-    Move To Absolute    200    100
+    Move Pointer To Absolute    200    100
     Sleep     ${A_SHORT_TIME}
-    Button    ${LEFT}    False
+    Release LEFT Button
 
 Drag And Drop Mismatch
     [Documentation]    Tests drag-and-drop mismatches
     [Tags]    mismatch
 
     Sleep     ${STARTUP_TIME}
-    Move To Absolute    40    40
+    Move Pointer To Absolute    40    40
     Sleep     ${A_SHORT_TIME}
-    Button    ${LEFT}    True
+    Press LEFT Button
     Sleep     ${A_SHORT_TIME}
-    Move To Absolute    120    70
+    Move Pointer To Absolute    120    70
     Sleep     ${A_SHORT_TIME}
-    Move To Absolute    200    100
+    Move Pointer To Absolute    200    100
     Sleep     ${A_SHORT_TIME}
-    Button    ${LEFT}    False
+    Release LEFT Button
     Sleep     ${A_SHORT_TIME}
-    Move To Absolute    220    120
+    Move Pointer To Absolute    220    120
     Sleep     ${A_SHORT_TIME}

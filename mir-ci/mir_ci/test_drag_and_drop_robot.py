@@ -23,22 +23,15 @@ class TestDragAndDrop:
     @pytest.mark.parametrize(
         "app",
         [
-            ("python3", "-u", str(APP_PATH), "--source", "pixbuf", "--target", "pixbuf", "--expect", "pixbuf"),
-            ("python3", "-u", str(APP_PATH), "--source", "pixbuf", "--target", "pixbuf", "--expect", "pixbuf"),
+            ("python3", str(APP_PATH), "--source", "pixbuf", "--target", "pixbuf", "--expect", "pixbuf"),
             ("python3", str(APP_PATH), "--source", "text", "--target", "text", "--expect", "text"),
         ],
     )
-    @pytest.mark.parametrize(
-        "robot",
-        [
-            ("robot", "-d", "robot/result", "-i", "match", str(ROBOT_PATH))
-        ],
-    )
     @pytest.mark.deps(debs=("libgtk-4-dev",), pip_pkgs=(("pygobject", "gi"),))
-    async def test_source_and_dest_match(self, modern_server, app, robot) -> None:
+    async def test_source_and_dest_match(self, modern_server, app) -> None:
         modern_server = DisplayServer(modern_server, add_extensions=VirtualPointer.required_extensions)
         program = modern_server.program(apps.App(app))
-        robot = modern_server.program(apps.App(robot))
+        robot = modern_server.program(apps.App(("robot", "-d", "robot/result", "-i", "match", str(ROBOT_PATH))))
 
         async with modern_server, program, robot:
             await program.wait()
@@ -52,17 +45,11 @@ class TestDragAndDrop:
             ("python3", "-u", str(APP_PATH), "--source", "text", "--target", "pixbuf", "--expect", "pixbuf"),
         ],
     )
-    @pytest.mark.parametrize(
-        "robot",
-        [
-            ("robot", "-d", "robot/result", "-i", "mismatch", str(ROBOT_PATH))
-        ],
-    )
     @pytest.mark.deps(debs=("libgtk-4-dev",), pip_pkgs=(("pygobject", "gi"),))
-    async def test_source_and_dest_mismatch(self, modern_server, app, robot) -> None:
+    async def test_source_and_dest_mismatch(self, modern_server, app) -> None:
         modern_server = DisplayServer(modern_server, add_extensions=VirtualPointer.required_extensions)
         program = modern_server.program(apps.App(app))
-        robot = modern_server.program(apps.App(robot))
+        robot = modern_server.program(apps.App(("robot", "-d", "robot/result", "-i", "mismatch", str(ROBOT_PATH))))
 
         async with modern_server, program, robot:
             assert program.is_running()
