@@ -3,8 +3,6 @@ Documentation    Test suite for drag and drop
 
 Library          ../libraries/WaylandHid.py    %{WAYLAND_DISPLAY=0}
 Resource         ../resources/variables.resource
-Test Setup       Connect
-Test Teardown    Disconnect
 
 *** Variables ***
 ${STARTUP_TIME}    ${{1.5 * ${SLOWDOWN}}}
