@@ -6,11 +6,13 @@ from mir_ci import SLOWDOWN, apps
 from mir_ci.display_server import DisplayServer
 from mir_ci.virtual_pointer import VirtualPointer
 
-APP_PATH = Path(__file__).parent / "clients" / "drag_and_drop_demo.py"
+MIR_CI_PATH = str(Path(__file__).parent)
+APP_PATH = MIR_CI_PATH + "/clients/drag_and_drop_demo.py"
 STARTUP_TIME = 1.5 * SLOWDOWN
 A_SHORT_TIME = 0.3
-ROBOT_HEADER = "*** Settings ***\n" \
-               "Library\t" + str(Path(__file__).parent) + "/robot/libraries/WaylandHid.py    %{WAYLAND_DISPLAY=0}"
+ROBOT_HEADER = f"""*** Settings ***
+Library    {MIR_CI_PATH}/robot/libraries/WaylandHid.py
+"""
 
 
 @pytest.mark.parametrize(
@@ -27,8 +29,8 @@ class TestDragAndDrop:
     @pytest.mark.parametrize(
         "app",
         [
-            ("python3", str(APP_PATH), "--source", "pixbuf", "--target", "pixbuf", "--expect", "pixbuf"),
-            ("python3", str(APP_PATH), "--source", "text", "--target", "text", "--expect", "text"),
+            ("python3", APP_PATH, "--source", "pixbuf", "--target", "pixbuf", "--expect", "pixbuf"),
+            ("python3", APP_PATH, "--source", "text", "--target", "text", "--expect", "text"),
         ],
     )
     @pytest.mark.deps(debs=("libgtk-4-dev",), pip_pkgs=(("pygobject", "gi"),))
@@ -52,17 +54,17 @@ class TestDragAndDrop:
         with tempfile.NamedTemporaryFile(mode='w+', suffix='.robot', buffering=1) as robot_file:
             robot_file.write(ROBOT_HEADER + "\n*** Test Cases ***\n" + robot_test_case)
             robot = modern_server.program(apps.App(("robot", "-d", "robot/result", str(Path(robot_file.name)))))
-
             async with modern_server, program, robot:
+                await robot.wait()
                 await program.wait()
 
     @pytest.mark.parametrize(
         "app",
         [
-            ("python3", "-u", str(APP_PATH), "--source", "pixbuf", "--target", "text", "--expect", "pixbuf"),
-            ("python3", "-u", str(APP_PATH), "--source", "text", "--target", "pixbuf", "--expect", "text"),
-            ("python3", "-u", str(APP_PATH), "--source", "pixbuf", "--target", "text", "--expect", "text"),
-            ("python3", "-u", str(APP_PATH), "--source", "text", "--target", "pixbuf", "--expect", "pixbuf"),
+            ("python3", "-u", APP_PATH, "--source", "pixbuf", "--target", "text", "--expect", "pixbuf"),
+            ("python3", "-u", APP_PATH, "--source", "text", "--target", "pixbuf", "--expect", "text"),
+            ("python3", "-u", APP_PATH, "--source", "pixbuf", "--target", "text", "--expect", "text"),
+            ("python3", "-u", APP_PATH, "--source", "text", "--target", "pixbuf", "--expect", "pixbuf"),
         ],
     )
     @pytest.mark.deps(debs=("libgtk-4-dev",), pip_pkgs=(("pygobject", "gi"),))
@@ -88,7 +90,7 @@ class TestDragAndDrop:
 
         with tempfile.NamedTemporaryFile(mode='w+', suffix='.robot', buffering=1) as robot_file:
             robot_file.write(ROBOT_HEADER + "\n*** Test Cases ***\n" + robot_test_case)
-            robot = modern_server.program(apps.App(("robot", "-d", "robot/result", str(Path(robot_file.name)))))            
+            robot = modern_server.program(apps.App(("robot", "-d", "robot/result", str(Path(robot_file.name)))))
 
             async with modern_server, program, robot:
                 assert program.is_running()
