@@ -14,6 +14,7 @@ ROBOT_HEADER = f"""*** Settings ***
 Library    {MIR_CI_PATH}/robot/libraries/WaylandHid.py
 """
 
+
 @pytest.mark.parametrize(
     "modern_server",
     [
@@ -50,7 +51,7 @@ class TestDragAndDrop:
             Release LEFT Button
         """
 
-        with tempfile.NamedTemporaryFile(mode='w+', suffix='.robot', buffering=1) as robot_file:
+        with tempfile.NamedTemporaryFile(mode="w+", suffix=".robot", buffering=1) as robot_file:
             robot_file.write(ROBOT_HEADER + "\n*** Test Cases ***\n" + robot_test_case)
             robot = modern_server.program(apps.App(("robot", "-o", "NONE", "-r", "NONE", robot_file.name)))
 
@@ -88,7 +89,7 @@ class TestDragAndDrop:
             Sleep     {A_SHORT_TIME}
         """
 
-        with tempfile.NamedTemporaryFile(mode='w+', suffix='.robot', buffering=1) as robot_file:
+        with tempfile.NamedTemporaryFile(mode="w+", suffix=".robot", buffering=1) as robot_file:
             robot_file.write(ROBOT_HEADER + "\n*** Test Cases ***\n" + robot_test_case)
             robot = modern_server.program(apps.App(("robot", "-o", "NONE", "-r", "NONE", robot_file.name)))
 
