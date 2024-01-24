@@ -1,17 +1,23 @@
 import asyncio
+import os
 
 from robot.api.deco import keyword, library
+from robot.api.exceptions import FatalError
 from mir_ci.virtual_pointer import VirtualPointer, Button
 
 
 @library(scope='TEST', listener='SELF')
 class WaylandHid(VirtualPointer):
+    def __init__(self) -> None:
+        display_name = os.environ.get("WAYLAND_DISPLAY")
+        if display_name is None:
+            raise FatalError("WAYLAND_DISPLAY is not defined.")
+        if not display_name:
+            display_name = "wayland-0"
 
-    def __init__(self, display_name: str) -> None:
         super().__init__(display_name)
-        self.event_loop = None
 
-    @keyword()
+    @keyword
     async def move_pointer_to_absolute(self, x: float, y: float) -> None:
         await self.connect()
         self.move_to_absolute(x, y)
@@ -32,11 +38,8 @@ class WaylandHid(VirtualPointer):
         self.button(Button[button], False)
 
     async def connect(self):
-        if self.pointer:
-            return
-        await self.__aenter__()  # pylint: disable=unnecessary-dunder-call
-        self.event_loop = asyncio.get_event_loop()
+        if not self.pointer:
+            await self.__aenter__()  # pylint: disable=unnecessary-dunder-call
 
-    def _end_test(self, data, result):
-        _ = (data, result)
-        self.event_loop.run_until_complete(self.__aexit__())
+    def _end_test(self, data, result):  # pylint: disable=unused-argument
+        asyncio.get_event_loop().run_until_complete(self.__aexit__())
