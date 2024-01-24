@@ -2,9 +2,9 @@
 Documentation    Test suite for drag and drop
 
 Library          ../libraries/WaylandHid.py    %{WAYLAND_DISPLAY=0}
-Resource         ../resources/variables.resource
 
 *** Variables ***
+${SLOWDOWN}        %{MIR_CI_SLOWDOWN=1}
 ${STARTUP_TIME}    ${{1.5 * ${SLOWDOWN}}}
 ${A_SHORT_TIME}    ${{0.3}}
 
