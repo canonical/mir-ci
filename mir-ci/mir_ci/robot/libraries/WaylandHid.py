@@ -1,12 +1,12 @@
 import asyncio
 import os
 
+from mir_ci.virtual_pointer import Button, VirtualPointer
 from robot.api.deco import keyword, library
 from robot.api.exceptions import FatalError
-from mir_ci.virtual_pointer import VirtualPointer, Button
 
 
-@library(scope='TEST', listener='SELF')
+@library(scope="TEST", listener="SELF")
 class WaylandHid(VirtualPointer):
     """
     A Robot Framework library for interacting with virtual Wayland-based HIDs.
