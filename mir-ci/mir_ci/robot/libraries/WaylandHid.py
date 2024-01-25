@@ -58,4 +58,5 @@ class WaylandHid(VirtualPointer):
 
     def _end_test(self, data, result):  # pylint: disable=unused-argument
         """Listener method called at the end of the test case to disconnect the client."""
-        asyncio.get_event_loop().run_until_complete(self.__aexit__())
+        if self.pointer:
+            asyncio.get_event_loop().run_until_complete(self.__aexit__())
