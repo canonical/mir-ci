@@ -15,6 +15,7 @@ class WaylandHid(VirtualPointer):
 
     If WAYLAND_DISPLAY is not defined, it defaults to 'wayland-0'.
     """
+
     ROBOT_LISTENER_API_VERSION = 3
 
     def __init__(self) -> None:
