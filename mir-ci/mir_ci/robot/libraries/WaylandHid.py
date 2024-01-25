@@ -5,18 +5,20 @@ from mir_ci.virtual_pointer import Button, VirtualPointer
 from robot.api.deco import keyword, library
 
 
-@library(scope="TEST", listener="SELF")
+@library(scope="GLOBAL")
 class WaylandHid(VirtualPointer):
     """
     A Robot Framework library for interacting with virtual Wayland-based HIDs.
 
     The client connects to the display upon entering the first keyword,
-    and disconnects when the test case ends.
+    and disconnects when the library goes out of scope.
 
     If WAYLAND_DISPLAY is not defined, it defaults to 'wayland-0'.
     """
+    ROBOT_LISTENER_API_VERSION = 3
 
     def __init__(self) -> None:
+        self.ROBOT_LIBRARY_LISTENER = self
         display_name = os.environ.get("WAYLAND_DISPLAY", "wayland-0")
         super().__init__(display_name)
 
@@ -54,6 +56,6 @@ class WaylandHid(VirtualPointer):
         if self.pointer:
             await super().disconnect()
 
-    def _end_test(self, data, result):  # pylint: disable=unused-argument
-        """Listener method called at the end of the test case."""
+    def _close(self):
+        """Listener method called when the library goes out of scope."""
         asyncio.get_event_loop().run_until_complete(self.disconnect())
