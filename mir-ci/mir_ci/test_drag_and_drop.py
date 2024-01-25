@@ -6,12 +6,17 @@ from mir_ci import SLOWDOWN, apps
 from mir_ci.display_server import DisplayServer
 from mir_ci.virtual_pointer import VirtualPointer
 
-MIR_CI_PATH = str(Path(__file__).parent)
-APP_PATH = MIR_CI_PATH + "/clients/drag_and_drop_demo.py"
+MIR_CI_PATH = Path(__file__).parent
+APP_PATH = MIR_CI_PATH / "clients/drag_and_drop_demo.py"
+ROBOT_LIBRARY_PATH = MIR_CI_PATH / "robot/libraries/WaylandHid.py"
 STARTUP_TIME = 1.5 * SLOWDOWN
 A_SHORT_TIME = 0.3
-ROBOT_HEADER = f"""*** Settings ***
-Library    {MIR_CI_PATH}/robot/libraries/WaylandHid.py
+
+ROBOT_TEMPLATE = """*** Settings ***
+Library    {library_path}
+
+*** Test Cases ***
+{test_case}
 """
 
 
@@ -52,7 +57,7 @@ class TestDragAndDrop:
         """
 
         with tempfile.NamedTemporaryFile(mode="w+", suffix=".robot", buffering=1) as robot_file:
-            robot_file.write(ROBOT_HEADER + "\n*** Test Cases ***\n" + robot_test_case)
+            robot_file.write(ROBOT_TEMPLATE.format(library_path=ROBOT_LIBRARY_PATH, test_case=robot_test_case))
             robot = modern_server.program(apps.App(("robot", "-o", "NONE", "-r", "NONE", robot_file.name)))
 
             async with modern_server, program, robot:
@@ -90,7 +95,7 @@ class TestDragAndDrop:
         """
 
         with tempfile.NamedTemporaryFile(mode="w+", suffix=".robot", buffering=1) as robot_file:
-            robot_file.write(ROBOT_HEADER + "\n*** Test Cases ***\n" + robot_test_case)
+            robot_file.write(ROBOT_TEMPLATE.format(library_path=ROBOT_LIBRARY_PATH, test_case=robot_test_case))
             robot = modern_server.program(apps.App(("robot", "-o", "NONE", "-r", "NONE", robot_file.name)))
 
             async with modern_server, program, robot:
