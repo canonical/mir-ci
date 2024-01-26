@@ -101,7 +101,7 @@ class Program(Benchmarkable):
             pass
 
     async def __aenter__(self) -> "Program":
-        command = self.command
+        command = tuple(str(arg) for arg in self.command)
         if self.app_type != "snap":
             scope = f"mirci-{uuid.uuid4()}.scope"
             prefix = ("systemd-run", "--user", "--quiet", "--scope", f"--unit={scope}")
