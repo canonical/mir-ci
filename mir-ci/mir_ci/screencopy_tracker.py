@@ -47,6 +47,7 @@ class ScreencopyTracker(WaylandClient):
         self.buffer_width = 0
         self.buffer_height = 0
         self.buffer_size = 0
+        self.buffer_stride = 0
         self.pending_damage = 0
 
     def registry_global(self, registry, id_num: int, iface_name: str, version: int) -> None:
@@ -72,6 +73,7 @@ class ScreencopyTracker(WaylandClient):
         self.buffer_width = width
         assert self.buffer_height == 0 or self.buffer_height == height, "Buffer height changed"
         self.buffer_height = height
+        self.buffer_stride = stride
         buffer_size = stride * height
         assert self.buffer_size == 0 or self.buffer_size == buffer_size, "Buffer size changed"
         self.buffer_size = buffer_size
