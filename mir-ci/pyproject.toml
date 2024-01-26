@@ -14,6 +14,8 @@ dependencies = [
     "pytest-asyncio",
     "pywayland @ git+https://github.com/flacjacket/pywayland.git",
     "robotframework~=6.1.1",
+    "rpaframework",
+    "rpaframework-recognition",
 ]
 
 [project.urls]
