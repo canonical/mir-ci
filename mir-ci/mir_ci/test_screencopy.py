@@ -24,7 +24,7 @@ Library    {library_path2}
 
 
 @pytest.mark.parametrize(
-    "modern_server",
+    "server",
     [
         apps.ubuntu_frame(),
         # apps.mir_kiosk(), we need servers based on Mir 2.14 or later
@@ -37,21 +37,24 @@ class TestDragAndDrop:
     @pytest.mark.parametrize(
         "app",
         [
+            # apps.snap("mir-kiosk-neverputt"),
             ("python3", APP_PATH, "--source", "pixbuf", "--target", "pixbuf", "--expect", "pixbuf"),
         ],
     )
     @pytest.mark.deps(debs=("libgtk-4-dev",), pip_pkgs=(("pygobject", "gi"),))
-    async def test_screencopy_match(self, modern_server, app) -> None:
+    async def test_screencopy_match(self, server, app) -> None:
         extensions = VirtualPointer.required_extensions + ScreencopyTracker.required_extensions
-        modern_server = DisplayServer(modern_server, add_extensions=extensions)
-        program = modern_server.program(apps.App(app))
+        server = DisplayServer(server, add_extensions=extensions)
+        # program = server.program(app)
+        program = server.program(apps.App(app))
 
         robot_test_case = f"""Screencopy Match
             Sleep     {STARTUP_TIME}
+            # Record As Gif    temp.gif    1
+            Record As Video    temp.avi    5
             Move Pointer To Absolute    40    40
             Sleep     {A_SHORT_TIME}
             Press LEFT Button
-            Save Frame
             Sleep     {A_SHORT_TIME}
             Move Pointer To Absolute    120    70
             Sleep     {A_SHORT_TIME}
@@ -60,10 +63,22 @@ class TestDragAndDrop:
             Release LEFT Button
         """
 
+        # robot_test_case = f"""Screencopy Match
+        #     Sleep     {STARTUP_TIME}
+        #     ${{regions}} =    Wait Match    {MIR_CI_PATH / "robot/templates/drag_and_drop_src.png"}
+        #     ${{length}} =    Get Length    ${{regions}}
+        #     LOG    Number of regions: ${{length}}
+        #     FOR    ${{region}}    IN    @{{regions}}
+        #         ${{center}} =    Get Center    ${{region}}
+        #         Log    ${{center}}
+        #     END
+        # """
+
         with tempfile.NamedTemporaryFile(mode="w+", suffix=".robot", buffering=1) as robot_file:
             robot_file.write(ROBOT_TEMPLATE.format(library_path=ROBOT_LIBRARY_PATH, library_path2=ROBOT_LIBRARY_PATH2, test_case=robot_test_case))
-            robot = modern_server.program(apps.App(("robot", "-o", "NONE", "-r", "NONE", robot_file.name)))
+            robot = server.program(apps.App(("robot", robot_file.name)))
+            # robot = server.program(apps.App(("robot", "-o", "NONE", "-r", "NONE", robot_file.name)))
 
-            async with modern_server, program, robot:
+            async with server, program, robot:
                 await robot.wait()
-                await program.wait()
+                await program.kill()
