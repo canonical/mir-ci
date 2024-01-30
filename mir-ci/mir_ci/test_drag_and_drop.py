@@ -1,5 +1,6 @@
 import tempfile
 from pathlib import Path
+from textwrap import dedent
 
 import pytest
 from mir_ci import SLOWDOWN, apps
@@ -8,16 +9,16 @@ from mir_ci.virtual_pointer import VirtualPointer
 
 MIR_CI_PATH = Path(__file__).parent
 APP_PATH = MIR_CI_PATH / "clients/drag_and_drop_demo.py"
-ROBOT_LIBRARY_PATH = MIR_CI_PATH / "robot/libraries/WaylandHid.py"
 STARTUP_TIME = 1.5 * SLOWDOWN
 A_SHORT_TIME = 0.3
 
-ROBOT_TEMPLATE = """*** Settings ***
-Library    {library_path}
+ROBOT_TEMPLATE = dedent("""\
+*** Settings ***
+{settings}
 
 *** Test Cases ***
 {test_case}
-"""
+""")
 
 
 @pytest.mark.parametrize(
@@ -43,21 +44,26 @@ class TestDragAndDrop:
         modern_server = DisplayServer(modern_server, add_extensions=VirtualPointer.required_extensions)
         program = modern_server.program(apps.App(app))
 
-        robot_test_case = f"""Source and Destination Match
-            Sleep     {STARTUP_TIME}
-            Move Pointer To Absolute    40    40
-            Sleep     {A_SHORT_TIME}
-            Press LEFT Button
-            Sleep     {A_SHORT_TIME}
-            Move Pointer To Absolute    120    70
-            Sleep     {A_SHORT_TIME}
-            Move Pointer To Absolute    200    100
-            Sleep     {A_SHORT_TIME}
-            Release LEFT Button
-        """
+        robot_settings = dedent(f"""\
+            Library    {MIR_CI_PATH}/robot/libraries/WaylandHid.py
+        """).strip("\n")
+
+        robot_test_case = dedent(f"""\
+            Source and Destination Match
+                Sleep    {STARTUP_TIME}
+                Move Pointer To Absolute    40    40
+                Sleep    {A_SHORT_TIME}
+                Press LEFT Button
+                Sleep    {A_SHORT_TIME}
+                Move Pointer To Absolute    120    70
+                Sleep    {A_SHORT_TIME}
+                Move Pointer To Absolute    200    100
+                Sleep    {A_SHORT_TIME}
+                Release LEFT Button
+        """).strip("\n")
 
         with tempfile.NamedTemporaryFile(mode="w+", suffix=".robot", buffering=1) as robot_file:
-            robot_file.write(ROBOT_TEMPLATE.format(library_path=ROBOT_LIBRARY_PATH, test_case=robot_test_case))
+            robot_file.write(ROBOT_TEMPLATE.format(settings=robot_settings, test_case=robot_test_case))
             robot = modern_server.program(apps.App(("robot", "-o", "NONE", "-r", "NONE", robot_file.name)))
 
             async with modern_server, program, robot:
@@ -78,24 +84,29 @@ class TestDragAndDrop:
         modern_server = DisplayServer(modern_server, add_extensions=VirtualPointer.required_extensions)
         program = modern_server.program(apps.App(app))
 
-        robot_test_case = f"""Source and Destination Mismatch
-            Sleep     {STARTUP_TIME}
-            Move Pointer To Absolute    40    40
-            Sleep     {A_SHORT_TIME}
-            Press LEFT Button
-            Sleep     {A_SHORT_TIME}
-            Move Pointer To Absolute    120    70
-            Sleep     {A_SHORT_TIME}
-            Move Pointer To Absolute    200    100
-            Sleep     {A_SHORT_TIME}
-            Release LEFT Button
-            Sleep     {A_SHORT_TIME}
-            Move Pointer To Absolute    220    120
-            Sleep     {A_SHORT_TIME}
-        """
+        robot_settings = dedent(f"""\
+            Library    {MIR_CI_PATH}/robot/libraries/WaylandHid.py
+        """).strip("\n")
+
+        robot_test_case = dedent(f"""\
+            Source and Destination Mismatch
+                Sleep    {STARTUP_TIME}
+                Move Pointer To Absolute    40    40
+                Sleep    {A_SHORT_TIME}
+                Press LEFT Button
+                Sleep    {A_SHORT_TIME}
+                Move Pointer To Absolute    120    70
+                Sleep    {A_SHORT_TIME}
+                Move Pointer To Absolute    200    100
+                Sleep    {A_SHORT_TIME}
+                Release LEFT Button
+                Sleep    {A_SHORT_TIME}
+                Move Pointer To Absolute    220    120
+                Sleep    {A_SHORT_TIME}
+        """).strip("\n")
 
         with tempfile.NamedTemporaryFile(mode="w+", suffix=".robot", buffering=1) as robot_file:
-            robot_file.write(ROBOT_TEMPLATE.format(library_path=ROBOT_LIBRARY_PATH, test_case=robot_test_case))
+            robot_file.write(ROBOT_TEMPLATE.format(settings=robot_settings, test_case=robot_test_case))
             robot = modern_server.program(apps.App(("robot", "-o", "NONE", "-r", "NONE", robot_file.name)))
 
             async with modern_server, program, robot:
