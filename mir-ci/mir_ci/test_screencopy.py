@@ -7,6 +7,7 @@ from mir_ci import SLOWDOWN, apps
 from mir_ci.display_server import DisplayServer
 from mir_ci.virtual_pointer import VirtualPointer
 from mir_ci.screencopy_tracker import ScreencopyTracker
+# from mir_ci.robot.libraries.Screencopy import Screencopy
 
 MIR_CI_PATH = Path(__file__).parent
 APP_PATH = MIR_CI_PATH / "clients/drag_and_drop_demo.py"
@@ -27,9 +28,9 @@ ROBOT_TEMPLATE = dedent("""\
     [
         apps.ubuntu_frame(),
         # apps.mir_kiosk(), we need servers based on Mir 2.14 or later
-        # apps.confined_shell(),
-        # apps.mir_test_tools(),
-        # apps.mir_demo_server(),
+        apps.confined_shell(),
+        apps.mir_test_tools(),
+        apps.mir_demo_server(),
     ],
 )
 class TestDragAndDrop:
@@ -38,6 +39,7 @@ class TestDragAndDrop:
         [
             # apps.snap("mir-kiosk-neverputt"),
             ("python3", APP_PATH, "--source", "pixbuf", "--target", "pixbuf", "--expect", "pixbuf"),
+            ("python3", APP_PATH, "--source", "text", "--target", "text", "--expect", "text"),
         ],
     )
     @pytest.mark.deps(debs=("libgtk-4-dev",), pip_pkgs=(("pygobject", "gi"),))
@@ -48,36 +50,68 @@ class TestDragAndDrop:
         program = server.program(apps.App(app))
 
         robot_settings = dedent(f"""\
-            Library    {MIR_CI_PATH}/robot/libraries/WaylandHid.py
-            Library    {MIR_CI_PATH}/robot/libraries/Screencopy.py
+            Library     {MIR_CI_PATH}/robot/libraries/WaylandHid.py
+            Resource    {MIR_CI_PATH}/robot/resources/screencopy.resource
         """).strip("\n")
+
+        # robot_test_case = dedent(f"""\
+        #     Screencopy Match
+        #         Sleep    {STARTUP_TIME}
+        #         Take Screenshot
+        #         # Record As Gif    temp.gif    1
+        #         # Record As Video    temp.avi    5
+        #         Move Pointer To Absolute    40    40
+        #         Sleep    {A_SHORT_TIME}
+        #         Take Screenshot
+        #         Press LEFT Button
+        #         Sleep    {A_SHORT_TIME}
+        #         Take Screenshot
+        #         Move Pointer To Absolute    120    70
+        #         Sleep    {A_SHORT_TIME}
+        #         Take Screenshot
+        #         Move Pointer To Absolute    200    100
+        #         Sleep    {A_SHORT_TIME}
+        #         Take Screenshot
+        #         Release LEFT Button
+        #         Sleep    {A_SHORT_TIME}
+        #         Take Screenshot
+        #         Sleep    {A_SHORT_TIME}
+        #         Take Screenshot
+        #         Create Video From Screenshots   temp.avi
+        #         Delete Screenshots
+        # """).strip("\n")
 
         robot_test_case = dedent(f"""\
             Screencopy Match
-                Sleep    {STARTUP_TIME}
-                # Record As Gif    temp.gif    1
-                Record As Video    temp.avi    5
-                Move Pointer To Absolute    40    40
+                Sleep     {STARTUP_TIME}
+                ${{regions}} =    Test Match    {MIR_CI_PATH / "robot/templates/drag_and_drop_src.png"}
+                Length Should Be    ${{regions}}    1
+                ${{center}} =    Get Center    ${{regions}}[0]
+                Move Pointer To Absolute    ${{center}}[x]    ${{center}}[y]
                 Sleep    {A_SHORT_TIME}
                 Press LEFT Button
                 Sleep    {A_SHORT_TIME}
-                Move Pointer To Absolute    120    70
-                Sleep    {A_SHORT_TIME}
-                Move Pointer To Absolute    200    100
+                ${{regions}} =    Wait Match    {MIR_CI_PATH / "robot/templates/drag_and_drop_dst.png"}
+                Length Should Be    ${{regions}}    1
+                ${{center}} =    Get Center    ${{regions}}[0]
+                Move Pointer To Absolute    ${{center}}[x]    ${{center}}[y]
                 Sleep    {A_SHORT_TIME}
                 Release LEFT Button
+                Sleep    {A_SHORT_TIME}
         """).strip("\n")
 
-        # robot_test_case = f"""Screencopy Match
-        #     Sleep     {STARTUP_TIME}
-        #     ${{regions}} =    Wait Match    {MIR_CI_PATH / "robot/templates/drag_and_drop_src.png"}
-        #     ${{length}} =    Get Length    ${{regions}}
-        #     LOG    Number of regions: ${{length}}
-        #     FOR    ${{region}}    IN    @{{regions}}
-        #         ${{center}} =    Get Center    ${{region}}
-        #         Log    ${{center}}
-        #     END
-        # """
+        # robot_test_case = dedent(f"""\
+        #     Screencopy Match
+        #         Sleep     {STARTUP_TIME}
+        #         ${{regions}} =    Wait Match    {MIR_CI_PATH / "robot/templates/drag_and_drop_src.png"}
+        #         ${{length}} =    Get Length    ${{regions}}
+        #         LOG    Number of regions: ${{length}}
+        #         FOR    ${{region}}    IN    @{{regions}}
+        #             Log    ${{region}}
+        #             ${{center}} =    Get Center    ${{region}}
+        #             Log    ${{center}}
+        #         END
+        # """).strip("\n")
 
         with tempfile.NamedTemporaryFile(mode="w+", suffix=".robot", buffering=1) as robot_file:
             robot_file.write(ROBOT_TEMPLATE.format(settings=robot_settings, test_case=robot_test_case))
@@ -87,3 +121,6 @@ class TestDragAndDrop:
             async with server, program, robot:
                 await robot.wait()
                 await program.kill()
+
+            # screencopy = Screencopy()
+            # create_video_from_screenshots("temp.mp4")
