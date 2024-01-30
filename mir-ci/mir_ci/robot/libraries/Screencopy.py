@@ -219,7 +219,7 @@ class Screencopy(ScreencopyTracker):
         any valid file name and "timestamp" is the timestamp of the screenshot
         in milliseconds.
 
-        :param output_filename: Path to the output file 
+        :param output_filename: Path to the output file
             (supported extensions: .avi, .mp4, .gif, .png).
         :param screenshots_dir: Path to the directory containing the screenshots.
             If None (default), the current working directory is used.
@@ -233,7 +233,8 @@ class Screencopy(ScreencopyTracker):
         if not image_names:
             return
 
-        image_names.sort()
+        image_names.sort(key=lambda name: int(name.split('_')[-1].split('.')[0])) # Sort by timestamp
+
         for name in image_names:
             timestamp_ms = int(name.split('_')[-1].split('.')[0])
             frames.append((name, timestamp_ms))
