@@ -1,5 +1,6 @@
 import tempfile
 from pathlib import Path
+from textwrap import dedent
 
 import pytest
 from mir_ci import SLOWDOWN, apps
@@ -9,18 +10,16 @@ from mir_ci.screencopy_tracker import ScreencopyTracker
 
 MIR_CI_PATH = Path(__file__).parent
 APP_PATH = MIR_CI_PATH / "clients/drag_and_drop_demo.py"
-ROBOT_LIBRARY_PATH = MIR_CI_PATH / "robot/libraries/WaylandHid.py"
-ROBOT_LIBRARY_PATH2 = MIR_CI_PATH / "robot/libraries/Screencopy.py"
 STARTUP_TIME = 1.5 * SLOWDOWN
 A_SHORT_TIME = 0.3
 
-ROBOT_TEMPLATE = """*** Settings ***
-Library    {library_path}
-Library    {library_path2}
+ROBOT_TEMPLATE = dedent("""\
+*** Settings ***
+{settings}
 
 *** Test Cases ***
 {test_case}
-"""
+""")
 
 
 @pytest.mark.parametrize(
@@ -48,20 +47,26 @@ class TestDragAndDrop:
         # program = server.program(app)
         program = server.program(apps.App(app))
 
-        robot_test_case = f"""Screencopy Match
-            Sleep     {STARTUP_TIME}
-            # Record As Gif    temp.gif    1
-            Record As Video    temp.avi    5
-            Move Pointer To Absolute    40    40
-            Sleep     {A_SHORT_TIME}
-            Press LEFT Button
-            Sleep     {A_SHORT_TIME}
-            Move Pointer To Absolute    120    70
-            Sleep     {A_SHORT_TIME}
-            Move Pointer To Absolute    200    100
-            Sleep     {A_SHORT_TIME}
-            Release LEFT Button
-        """
+        robot_settings = dedent(f"""\
+            Library    {MIR_CI_PATH}/robot/libraries/WaylandHid.py
+            Library    {MIR_CI_PATH}/robot/libraries/Screencopy.py
+        """).strip("\n")
+
+        robot_test_case = dedent(f"""\
+            Screencopy Match
+                Sleep    {STARTUP_TIME}
+                # Record As Gif    temp.gif    1
+                Record As Video    temp.avi    5
+                Move Pointer To Absolute    40    40
+                Sleep    {A_SHORT_TIME}
+                Press LEFT Button
+                Sleep    {A_SHORT_TIME}
+                Move Pointer To Absolute    120    70
+                Sleep    {A_SHORT_TIME}
+                Move Pointer To Absolute    200    100
+                Sleep    {A_SHORT_TIME}
+                Release LEFT Button
+        """).strip("\n")
 
         # robot_test_case = f"""Screencopy Match
         #     Sleep     {STARTUP_TIME}
@@ -75,7 +80,7 @@ class TestDragAndDrop:
         # """
 
         with tempfile.NamedTemporaryFile(mode="w+", suffix=".robot", buffering=1) as robot_file:
-            robot_file.write(ROBOT_TEMPLATE.format(library_path=ROBOT_LIBRARY_PATH, library_path2=ROBOT_LIBRARY_PATH2, test_case=robot_test_case))
+            robot_file.write(ROBOT_TEMPLATE.format(settings=robot_settings, test_case=robot_test_case))
             robot = server.program(apps.App(("robot", robot_file.name)))
             # robot = server.program(apps.App(("robot", "-o", "NONE", "-r", "NONE", robot_file.name)))
 
