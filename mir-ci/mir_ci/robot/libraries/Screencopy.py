@@ -4,10 +4,11 @@ import os
 import time
 
 from io import BytesIO
-from typing import List
+from typing import List, Optional
+from pathlib import Path
 
-import cv2
-import numpy as np
+# import cv2
+# import numpy as np
 
 from moviepy.editor import ImageClip, concatenate_videoclips
 from PIL import Image
@@ -176,95 +177,87 @@ class Screencopy(ScreencopyTracker):
     #         final_clip = concatenate_videoclips(clips_with_durations)
     #         final_clip.write_videofile(file_path, fps=fps, codec="png")
 
-    # @keyword
-    # async def save_frames(self):
-    #     await self.connect()
-    #     last_frame = 0
-    #     end_time = time.time() + duration
-    #     while time.time() < end_time:
-    #         if self.frame_count != last_frame:
-    #             last_frame = self.frame_count
-    #             screenshot = self.grab_screenshot()
-    #             # logger.info(f"frame_{self.frame_count}.png")
-    #             screenshot.save(f"frame_{self.frame_count}.png")
-    #         else:
-    #             await asyncio.sleep(0)
-
-    # @keyword
-    # async def start_recording(self):
-    #     self.frames = []
-    #     self.recording = True
-
-    # @keyword
-    # async def stop_recording(self):
-    #     self.recording = False
-
     @keyword
-    async def take_screenshot(self):
+    async def take_screenshot(self, name: str, output_path: Optional[Path] = None):
+        """
+        Capture a screenshot and save it with the specified name in the
+        provided directory. The screenshot will be saved in PNG format.
+
+        :param name: Filename to save the screenshot with.
+            The filename extension will be replaced with '.png'.
+        :param output_path: Optional path to the directory where the screenshot will
+            be saved. If not provided, the current working directory is used.
+        """
         await self.connect()
+
+        output_path = output_path or Path.cwd()
+        output_path.mkdir(parents=True, exist_ok=True)
+
         if self.frame_count != self.last_frame_count:
             screenshot = self.grab_screenshot()
             timestamp_ms = round((time.time() - self.start_time) * 1000)
-            # screenshot.save(f"frame_{self.frame_count - 1}_{timestamp}.png")
-            screenshot.save(f"frame_{timestamp_ms}.png")
+
+            screenshot_path = output_path / f"{name}_{self.frame_count - 1}_{timestamp_ms}.png"
+            screenshot.save(screenshot_path)
             self.last_frame_count = self.frame_count
 
     @keyword
-    async def create_video_from_screenshots(self, output_filename: str, screenshots_dir: str = None):
+    async def create_video_from_screenshots(self,
+                                            input_path: Optional[Path] = None,
+                                            output_path: Optional[Path] = None,
+                                            delete_screenshots: bool = False):
         """
-        Create a video or animated GIF/PNG from the screenshots found in the
+        Create a video or animated GIF/PNG from screenshots found in the
         given directory.
 
-        The screenshots must be named "name_timestamp.png", where "name" is
-        any valid file name and "timestamp" is the timestamp of the screenshot
-        in milliseconds.
+        The screenshots are assumed to be in PNG format and must be named 
+        '<name>_<timestamp>.png', where '<name>' is any valid file name and 
+        '<timestamp>' is the timestamp of the screenshot in milliseconds.
 
-        :param output_filename: Path to the output file
-            (supported extensions: .avi, .mp4, .gif, .png).
-        :param screenshots_dir: Path to the directory containing the screenshots.
-            If None (default), the current working directory is used.
+        :param input_path: Path to the directory containing the screenshots.
+            If omitted, the current working directory is used.
+        :param output_path: Path to the output file.
+            If omitted, 'input_path' is used, and the extension defaults to '.avi'.
+            The following extensions are supported: '.avi', '.mp4', '.gif', '.png'.
+        :param delete_screenshots: Whether to delete the screenshots 
+            after processing. Default is False.
         """
         await self.connect()
 
-        screenshots_dir = screenshots_dir or os.getcwd()
-
-        frames = []
-        image_names = [name for name in os.listdir(screenshots_dir) if name.endswith('.png')]
-        if not image_names:
+        input_path = input_path or Path.cwd()
+        image_paths = sorted((f for f in input_path.iterdir() if f.suffix == '.png'),
+                             key=lambda f: int(f.stem.split('_')[-1]))  # Sort by timestamp
+        if not image_paths:
             return
 
-        image_names.sort(key=lambda name: int(name.split('_')[-1].split('.')[0])) # Sort by timestamp
+        output_path = output_path or input_path / (image_paths[0].stem + '.avi')
 
-        for name in image_names:
-            timestamp_ms = int(name.split('_')[-1].split('.')[0])
-            frames.append((name, timestamp_ms))
-
-        durations = [frames[i+1][1] - frames[i][1] for i in range(len(frames) - 1)]
+        timestamps = [int(path.stem.split('_')[-1]) for path in image_paths]
+        durations = [j - i for i, j in zip(timestamps[:-1], timestamps[1:])]
         durations.append(500)  # Assuming 500 ms for the last frame
 
-        if output_filename.endswith(('.avi', '.mp4')):
-            clips = [ImageClip(frame[0]) for frame in frames]
-            clips_with_durations = [clip.set_duration(duration / 1000.0) for clip, duration in zip(clips, durations)]
+        if output_path.suffix in ('.avi', '.mp4'):
+            # Create video
+            clips = [ImageClip(str(path)) for path in image_paths]
+            clips_with_durations = [clip.set_duration(duration / 1000.0) 
+                                    for clip, duration in zip(clips, durations)]
             concatenated_clips = concatenate_videoclips(clips_with_durations, method="compose")
-            fps = round((len(frames) * 1000) / sum(durations))
+            fps = round(len(image_paths) * 1000.0 / sum(durations))
             clamped_fps = min(30, max(5, fps))
-            concatenated_clips.write_videofile(output_filename, fps=clamped_fps, codec="png")
-        elif output_filename.endswith(('.gif', '.png')):
-            images = [Image.open(frame[0]) for frame in frames]
+            concatenated_clips.write_videofile(str(output_path), fps=clamped_fps, codec="png")
+        elif output_path.suffix in ('.gif', '.png'):
+            # Create animated GIF or PNG
+            images = [Image.open(path) for path in image_paths]
             images[0].save(
-                output_filename,
+                output_path,
                 save_all=True,
                 append_images=images[1:],
                 loop=None, duration=durations
             )
 
-    @keyword
-    async def delete_screenshots(self, screenshots_dir: str = None):
-        await self.connect()
-        screenshots_dir = screenshots_dir or os.getcwd()
-        image_names = [name for name in os.listdir(screenshots_dir) if name.endswith('.png')]
-        for name in image_names:
-            os.remove(os.path.join(screenshots_dir, name))
+        if delete_screenshots:
+            for path in image_paths:
+                path.unlink()
 
     @keyword
     async def test_match(self, template: str):
@@ -274,6 +267,8 @@ class Screencopy(ScreencopyTracker):
         :param template: path to an image file to be used as template
         """
         await self.connect()
+        screenshot = None
+
         try:
             screenshot = self.grab_screenshot()
             regions = self._rpa_images.find_template_in_image(
@@ -287,7 +282,9 @@ class Screencopy(ScreencopyTracker):
                     "left": region.left,
                     "top": region.top,
                     "right": region.right,
-                    "bottom": region.bottom
+                    "bottom": region.bottom,
+                    "center_x": int((region.left + region.right) / 2),
+                    "center_y": int((region.top + region.bottom) / 2),
                 }
                 for region in regions
             ]
@@ -336,10 +333,12 @@ class Screencopy(ScreencopyTracker):
                 "left": region.left,
                 "top": region.top,
                 "right": region.right,
-                "bottom": region.bottom
+                "bottom": region.bottom,
+                "center_x": int((region.left + region.right) / 2),
+                "center_y": int((region.top + region.bottom) / 2),
             }
             for region in regions
-        ]
+        ]   
 
     def grab_screenshot(self) -> Image.Image:
         """Grab a screenshot from the latest captured frame."""
@@ -368,10 +367,6 @@ class Screencopy(ScreencopyTracker):
         if self.shm_data:
             await super().disconnect()
 
-    def _close(self):
-        """Listener method called when the library goes out of scope."""
-        asyncio.get_event_loop().run_until_complete(self.disconnect())
-
     @staticmethod
     def _to_base64(image: Image.Image) -> str:
         """Convert Pillow Image to b64"""
@@ -399,3 +394,13 @@ class Screencopy(ScreencopyTracker):
             template_string + image_string,
             html=True,
         )
+
+    # def _start_keyword(self, data, result):
+    #     logger.info("START_KEYWORD: " + data + " RESULT: " + result)
+
+    # def _end_user_keyword(self, data, result):
+    #     logger.info("START_KEYWORD: " + data + " RESULT: " + result)
+
+    def _close(self):
+        """Listener method called when the library goes out of scope."""
+        asyncio.get_event_loop().run_until_complete(self.disconnect())
