@@ -35,6 +35,8 @@ class Screencopy(ScreencopyTracker):
         self._rpa_images = Images()
         self.start_time = time.time()
         self.last_frame_count = 0
+        self.min_fps = 5
+        self.max_fps = 15
 
     @keyword
     async def save_frame(self):
@@ -183,12 +185,16 @@ class Screencopy(ScreencopyTracker):
         Capture a screenshot and save it with the specified name in the
         provided directory. The screenshot will be saved in PNG format.
 
-        :param name: Filename to save the screenshot with.
-            The filename extension will be replaced with '.png'.
+        :param name: Name of the screenshot. The screenshot filename will be 
+            saved as '<name>_<timestamp>.png' where '<timestamp>' is the timestamp 
+            of the screenshot in milliseconds.
         :param output_path: Optional path to the directory where the screenshot will
             be saved. If not provided, the current working directory is used.
         """
         await self.connect()
+
+        if self.frame_count == self.last_frame_count:
+            await asyncio.sleep(1 / self.max_fps)
 
         output_path = output_path or Path.cwd()
         output_path.mkdir(parents=True, exist_ok=True)
@@ -239,11 +245,11 @@ class Screencopy(ScreencopyTracker):
         if output_path.suffix in ('.avi', '.mp4'):
             # Create video
             clips = [ImageClip(str(path)) for path in image_paths]
-            clips_with_durations = [clip.set_duration(duration / 1000.0) 
+            clips_with_durations = [clip.set_duration(duration / 1000)
                                     for clip, duration in zip(clips, durations)]
             concatenated_clips = concatenate_videoclips(clips_with_durations, method="compose")
-            fps = round(len(image_paths) * 1000.0 / sum(durations))
-            clamped_fps = min(30, max(5, fps))
+            fps = round(len(image_paths) * 1000 / sum(durations))
+            clamped_fps = min(self.max_fps, max(self.min_fps, fps))
             concatenated_clips.write_videofile(str(output_path), fps=clamped_fps, codec="png")
         elif output_path.suffix in ('.gif', '.png'):
             # Create animated GIF or PNG
@@ -338,7 +344,7 @@ class Screencopy(ScreencopyTracker):
                 "center_y": int((region.top + region.bottom) / 2),
             }
             for region in regions
-        ]   
+        ]
 
     def grab_screenshot(self) -> Image.Image:
         """Grab a screenshot from the latest captured frame."""
@@ -394,12 +400,6 @@ class Screencopy(ScreencopyTracker):
             template_string + image_string,
             html=True,
         )
-
-    # def _start_keyword(self, data, result):
-    #     logger.info("START_KEYWORD: " + data + " RESULT: " + result)
-
-    # def _end_user_keyword(self, data, result):
-    #     logger.info("START_KEYWORD: " + data + " RESULT: " + result)
 
     def _close(self):
         """Listener method called when the library goes out of scope."""
