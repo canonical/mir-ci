@@ -5,21 +5,23 @@ from textwrap import dedent
 import pytest
 from mir_ci import SLOWDOWN, apps
 from mir_ci.display_server import DisplayServer
-from mir_ci.virtual_pointer import VirtualPointer
 from mir_ci.screencopy_tracker import ScreencopyTracker
+from mir_ci.virtual_pointer import VirtualPointer
 
 MIR_CI_PATH = Path(__file__).parent
 APP_PATH = MIR_CI_PATH / "clients/drag_and_drop_demo.py"
 STARTUP_TIME = 1.5 * SLOWDOWN
 A_SHORT_TIME = 0.3
 
-ROBOT_TEMPLATE = dedent("""\
+ROBOT_TEMPLATE = dedent(
+    """\
 *** Settings ***
 {settings}
 
 *** Test Cases ***
 {test_case}
-""")
+"""
+)
 
 
 @pytest.mark.parametrize(
@@ -46,13 +48,16 @@ class TestDragAndDrop:
         server_instance = DisplayServer(server, add_extensions=extensions)
         program = server_instance.program(apps.App(app))
 
-        robot_settings = dedent(f"""\
+        robot_settings = dedent(
+            f"""\
             Library    {MIR_CI_PATH}/robot/libraries/WaylandHid.py
             Library    {MIR_CI_PATH}/robot/libraries/Screencopy.py
             Resource   {MIR_CI_PATH}/robot/resources/screencopy.resource
-        """).strip("\n")
+        """
+        ).strip("\n")
 
-        robot_test_case = dedent(f"""\
+        robot_test_case = dedent(
+            f"""\
             Source and Destination Match
                 Sleep     {STARTUP_TIME}
                 ${{regions}} =    Test Match    {MIR_CI_PATH}/robot/templates/drag_and_drop_src.png
@@ -68,7 +73,8 @@ class TestDragAndDrop:
                 Move Pointer To Absolute    ${{center}}[x]    ${{center}}[y]
                 Sleep     {A_SHORT_TIME}
                 Release LEFT Button
-        """).strip("\n")
+        """
+        ).strip("\n")
 
         with tempfile.NamedTemporaryFile(mode="w+", suffix=".robot", buffering=1) as robot_file:
             robot_file.write(ROBOT_TEMPLATE.format(settings=robot_settings, test_case=robot_test_case))
@@ -93,13 +99,16 @@ class TestDragAndDrop:
         server_instance = DisplayServer(server, add_extensions=extensions)
         program = server_instance.program(apps.App(app))
 
-        robot_settings = dedent(f"""\
+        robot_settings = dedent(
+            f"""\
             Library    {MIR_CI_PATH}/robot/libraries/WaylandHid.py
             Library    {MIR_CI_PATH}/robot/libraries/Screencopy.py
             Resource   {MIR_CI_PATH}/robot/resources/screencopy.resource
-        """).strip("\n")
+        """
+        ).strip("\n")
 
-        robot_test_case = dedent(f"""\
+        robot_test_case = dedent(
+            f"""\
             Source and Destination Mismatch
                 Sleep    {STARTUP_TIME}
                 ${{regions}} =    Test Match    {MIR_CI_PATH}/robot/templates/drag_and_drop_src.png
@@ -120,7 +129,8 @@ class TestDragAndDrop:
                 ${{off_center}} =    Add Displacement    ${{center}}    20    20
                 Move Pointer To Absolute    ${{off_center}}[x]    ${{off_center}}[y]
                 Sleep    {A_SHORT_TIME}
-        """).strip("\n")
+        """
+        ).strip("\n")
 
         with tempfile.NamedTemporaryFile(mode="w+", suffix=".robot", buffering=1) as robot_file:
             robot_file.write(ROBOT_TEMPLATE.format(settings=robot_settings, test_case=robot_test_case))
