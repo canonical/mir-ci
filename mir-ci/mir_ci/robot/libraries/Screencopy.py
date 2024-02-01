@@ -2,23 +2,21 @@ import asyncio
 import base64
 import os
 import time
-
 from io import BytesIO
 from typing import List
 
-from PIL import Image
-from RPA.Images import Images
-from RPA.recognition.templates import ImageNotFoundError
-
 from mir_ci.screencopy_tracker import ScreencopyTracker
+from PIL import Image
 from robot.api import logger
 from robot.api.deco import keyword, library
+from RPA.Images import Images
+from RPA.recognition.templates import ImageNotFoundError
 
 
 @library(scope="GLOBAL")
 class Screencopy(ScreencopyTracker):
     """
-    A Robot Framework library for capturing screenshots from the 
+    A Robot Framework library for capturing screenshots from the
     Wayland display and performing image template matching.
 
     The client connects to the display upon entering the first keyword,
@@ -159,14 +157,8 @@ class Screencopy(ScreencopyTracker):
             return
 
         template_img = Image.open(template)
-        template_string = (
-            'Template was:<br><img src="data:image/png;base64,'
-            f'{self._to_base64(template_img)}" /><br>'
-        )
-        image_string = (
-            'Image was:<br><img src="data:image/png;base64,'
-            f'{self._to_base64(screenshot)}" />'
-        )
+        template_string = 'Template was:<br><img src="data:image/png;base64,' f'{self._to_base64(template_img)}" /><br>'
+        image_string = 'Image was:<br><img src="data:image/png;base64,' f'{self._to_base64(screenshot)}" />'
         logger.info(
             template_string + image_string,
             html=True,
