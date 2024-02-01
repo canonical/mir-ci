@@ -41,7 +41,7 @@ class TestDragAndDrop:
         ],
     )
     @pytest.mark.deps(debs=("libgtk-4-dev",), pip_pkgs=(("pygobject", "gi"),))
-    async def test_screencopy_match(self, server, app) -> None:
+    async def test_source_and_dest_match(self, server, app) -> None:
         extensions = VirtualPointer.required_extensions + ScreencopyTracker.required_extensions
         server_instance = DisplayServer(server, add_extensions=extensions)
         program = server_instance.program(apps.App(app))
@@ -53,18 +53,20 @@ class TestDragAndDrop:
         """).strip("\n")
 
         robot_test_case = dedent(f"""\
-            Screencopy Match
-                Sleep    {STARTUP_TIME}
+            Source and Destination Match
+                Sleep     {STARTUP_TIME}
                 ${{regions}} =    Test Match    {MIR_CI_PATH}/robot/templates/drag_and_drop_src.png
                 ${{center}} =    Get Center    ${{regions}}[0]
                 Move Pointer To Absolute    ${{center}}[x]    ${{center}}[y]
-                Sleep    {A_SHORT_TIME}
+                Sleep     {A_SHORT_TIME}
                 Press LEFT Button
-                Sleep    {A_SHORT_TIME}
+                ${{off_center}} =    Add Displacement    ${{center}}    20    20
+                Move Pointer To Absolute    ${{off_center}}[x]    ${{off_center}}[y]
+                Sleep     {A_SHORT_TIME}
                 ${{regions}} =    Test Match    {MIR_CI_PATH}/robot/templates/drag_and_drop_dst.png
                 ${{center}} =    Get Center    ${{regions}}[0]
                 Move Pointer To Absolute    ${{center}}[x]    ${{center}}[y]
-                Sleep    {A_SHORT_TIME}
+                Sleep     {A_SHORT_TIME}
                 Release LEFT Button
         """).strip("\n")
 
@@ -74,7 +76,7 @@ class TestDragAndDrop:
 
             async with server_instance, program, robot:
                 await robot.wait()
-                await program.kill()
+                await program.wait()
 
     @pytest.mark.parametrize(
         "app",
