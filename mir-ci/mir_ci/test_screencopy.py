@@ -28,9 +28,9 @@ ROBOT_TEMPLATE = dedent("""\
     [
         apps.ubuntu_frame(),
         # apps.mir_kiosk(), we need servers based on Mir 2.14 or later
-        # apps.confined_shell(),
-        # apps.mir_test_tools(),
-        # apps.mir_demo_server(),
+        apps.confined_shell(),
+        apps.mir_test_tools(),
+        apps.mir_demo_server(),
     ],
 )
 class TestDragAndDrop:
@@ -39,7 +39,7 @@ class TestDragAndDrop:
         [
             # apps.snap("mir-kiosk-neverputt"),
             ("python3", APP_PATH, "--source", "pixbuf", "--target", "pixbuf", "--expect", "pixbuf"),
-            # ("python3", APP_PATH, "--source", "text", "--target", "text", "--expect", "text"),
+            ("python3", APP_PATH, "--source", "text", "--target", "text", "--expect", "text"),
         ],
     )
     @pytest.mark.deps(debs=("libgtk-4-dev",), pip_pkgs=(("pygobject", "gi"),))
@@ -55,51 +55,51 @@ class TestDragAndDrop:
             Library     {MIR_CI_PATH}/robot/libraries/Screencopy.py
         """).strip("\n")
 
+        #         # Record As Gif    temp.gif    1
+        #         # Record As Video    temp.avi    5
+
+        # robot_test_case = dedent(f"""\
+        #     Screencopy Match
+        #         Sleep    {STARTUP_TIME}
+        #         Take Screenshot    {test_case_name}    {MIR_CI_PATH}/robot/log/{test_case_name}
+        #         Move Pointer To Absolute    40    40
+        #         Sleep    {A_SHORT_TIME}
+        #         Take Screenshot    {test_case_name}    {MIR_CI_PATH}/robot/log/{test_case_name}
+        #         Press LEFT Button
+        #         Sleep    {A_SHORT_TIME}
+        #         Take Screenshot    {test_case_name}    {MIR_CI_PATH}/robot/log/{test_case_name}
+        #         Move Pointer To Absolute    120    70
+        #         Sleep    {A_SHORT_TIME}
+        #         Take Screenshot    {test_case_name}    {MIR_CI_PATH}/robot/log/{test_case_name}
+        #         Move Pointer To Absolute    200    100
+        #         Sleep    {A_SHORT_TIME}
+        #         Take Screenshot    {test_case_name}    {MIR_CI_PATH}/robot/log/{test_case_name}
+        #         Release LEFT Button
+        #         Sleep    {A_SHORT_TIME}
+        #         Take Screenshot    {test_case_name}    {MIR_CI_PATH}/robot/log/{test_case_name}
+        #         Sleep    {A_SHORT_TIME}
+        #         Take Screenshot    {test_case_name}    {MIR_CI_PATH}/robot/log/{test_case_name}
+        #         Create Video From Screenshots    {MIR_CI_PATH}/robot/log/{test_case_name}    ${{None}}    True
+        # """).strip("\n")
+
         robot_test_case = dedent(f"""\
             Screencopy Match
-                Sleep    {STARTUP_TIME}
-                Take Screenshot    {test_case_name}    {MIR_CI_PATH}/robot/log/{test_case_name}
-                # Record As Gif    temp.gif    1
-                # Record As Video    temp.avi    5
-                Move Pointer To Absolute    40    40
+                Sleep     {STARTUP_TIME}
+                ${{regions}} =    Test Match    {MIR_CI_PATH}/robot/templates/drag_and_drop_src.png
+                Move Pointer To Absolute    ${{regions}}[0][center_x]    ${{regions}}[0][center_y]
                 Sleep    {A_SHORT_TIME}
-                Take Screenshot    {test_case_name}    {MIR_CI_PATH}/robot/log/{test_case_name}
                 Press LEFT Button
                 Sleep    {A_SHORT_TIME}
-                Take Screenshot    {test_case_name}    {MIR_CI_PATH}/robot/log/{test_case_name}
-                Move Pointer To Absolute    120    70
+                ${{regions}} =    Wait Match    {MIR_CI_PATH}/robot/templates/drag_and_drop_dst.png
+                Move Pointer To Absolute    ${{regions}}[0][center_x]    ${{regions}}[0][center_y]
                 Sleep    {A_SHORT_TIME}
-                Take Screenshot    {test_case_name}    {MIR_CI_PATH}/robot/log/{test_case_name}
-                Move Pointer To Absolute    200    100
-                Sleep    {A_SHORT_TIME}
-                Take Screenshot    {test_case_name}    {MIR_CI_PATH}/robot/log/{test_case_name}
                 Release LEFT Button
-                Sleep    {A_SHORT_TIME}
-                Take Screenshot    {test_case_name}    {MIR_CI_PATH}/robot/log/{test_case_name}
-                Sleep    {A_SHORT_TIME}
-                Take Screenshot    {test_case_name}    {MIR_CI_PATH}/robot/log/{test_case_name}
-                Create Video From Screenshots    {MIR_CI_PATH}/robot/log/{test_case_name}    ${{None}}    True
         """).strip("\n")
 
         # robot_test_case = dedent(f"""\
         #     Screencopy Match
         #         Sleep     {STARTUP_TIME}
-        #         ${{regions}} =    Test Match    {MIR_CI_PATH / "robot/templates/drag_and_drop_src.png"}
-        #         Move Pointer To Absolute    ${{regions}}[0][center_x]    ${{regions}}[0][center_y]
-        #         Sleep    {A_SHORT_TIME}
-        #         Press LEFT Button
-        #         Sleep    {A_SHORT_TIME}
-        #         ${{regions}} =    Wait Match    {MIR_CI_PATH / "robot/templates/drag_and_drop_dst.png"}
-        #         Move Pointer To Absolute    ${{regions}}[0][center_x]    ${{regions}}[0][center_y]
-        #         Sleep    {A_SHORT_TIME}
-        #         Release LEFT Button
-        #         Sleep    {A_SHORT_TIME}
-        # """).strip("\n")
-
-        # robot_test_case = dedent(f"""\
-        #     Screencopy Match
-        #         Sleep     {STARTUP_TIME}
-        #         ${{regions}} =    Wait Match    {MIR_CI_PATH / "robot/templates/drag_and_drop_src.png"}
+        #         ${{regions}} =    Wait Match    {MIR_CI_PATH}/robot/templates/drag_and_drop_src.png
         #         ${{length}} =    Get Length    ${{regions}}
         #         LOG    Number of regions: ${{length}}
         #         FOR    ${{region}}    IN    @{{regions}}
@@ -111,7 +111,12 @@ class TestDragAndDrop:
 
         with tempfile.NamedTemporaryFile(mode="w+", suffix=".robot", buffering=1) as robot_file:
             robot_file.write(ROBOT_TEMPLATE.format(settings=robot_settings, test_case=robot_test_case))
-            robot = server_instance.program(apps.App(("robot", "--listener", f"{MIR_CI_PATH}/robot/libraries/ScreencopyListener.py", robot_file.name)))
+
+            listener_path = f"{MIR_CI_PATH}/robot/libraries/ScreencopyListener.py"
+            screenshots_path = f"{MIR_CI_PATH}/robot/log/{test_case_name}"
+            delete_screenshots = True
+            robot_listener = f"{listener_path}:{test_case_name}:{screenshots_path}:{delete_screenshots}"
+            robot = server_instance.program(apps.App(("robot", "--listener", robot_listener, robot_file.name)))
             # robot = server_instance.program(apps.App(("robot", "-o", "NONE", "-r", "NONE", robot_file.name)))
 
             async with server_instance, program, robot:
