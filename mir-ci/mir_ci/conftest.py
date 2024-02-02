@@ -39,8 +39,16 @@ def _deps_skip(request: pytest.FixtureRequest) -> None:
     assert request.fixturename in DEP_FIXTURES, f"`{request.fixturename}` not in DEP_FIXTURES"
     assert request.scope == "function", "Dependency management only possible in `function` scope"
     if request.config.getoption("--deps", False):
+        if "alldepfixtures" not in request.keywords:
+            for name in DEP_FIXTURES:
+                try:
+                    next(request.node.iter_markers(name))
+                except StopIteration:
+                    pass
+                else:
+                    request.keywords.setdefault("alldepfixtures", set()).add(name)
         request.keywords.setdefault("depfixtures", set()).add(request.fixturename)
-        if request.keywords["depfixtures"] == DEP_FIXTURES.intersection(request.fixturenames):
+        if request.keywords["depfixtures"] == request.keywords["alldepfixtures"]:
             pytest.skip("dependency-only run")
 
 
