@@ -117,8 +117,6 @@ def _deps_install(request: pytest.FixtureRequest, spec: Union[str, Mapping[str, 
         if missing_pkgs:
             subprocess.check_call((*PIP, "install", *missing_pkgs))
 
-        _deps_skip(request)
-
     return apps.App(cmd, app_type)
 
 
@@ -153,7 +151,9 @@ def server(request: pytest.FixtureRequest) -> apps.App:
     """
     # Have to evaluate the param ourselves, because you can't mark fixtures and so
     # the `.deps(…)` mark never registers.
-    return _deps_install(request, request.param().marks[0].kwargs)
+    server = _deps_install(request, request.param().marks[0].kwargs)
+    _deps_skip(request)
+    return server
 
 
 @pytest.fixture(scope="function")
@@ -175,13 +175,15 @@ def deps(request: pytest.FixtureRequest) -> Optional[apps.App]:
     try:
         closest: pytest.Mark = next(marks)
     except StopIteration:
-        _deps_skip(request)
         return None
-
-    for mark in request.node.iter_markers("deps"):
-        _deps_install(request, mark.kwargs and dict({"cmd": mark.args}, **mark.kwargs) or mark.args[0])
-
-    return _deps_install(request, closest.kwargs and dict({"cmd": closest.args}, **closest.kwargs) or closest.args[0])
+    else:
+        for mark in marks:
+            _deps_install(request, mark.kwargs and dict({"cmd": mark.args}, **mark.kwargs) or mark.args[0])
+        return _deps_install(
+            request, closest.kwargs and dict({"cmd": closest.args}, **closest.kwargs) or closest.args[0]
+        )
+    finally:
+        _deps_skip(request)
 
 
 @pytest.fixture(scope="function")
