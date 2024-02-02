@@ -24,6 +24,7 @@ ROBOT_TEMPLATE = dedent(
 )
 
 
+@pytest.mark.xdg(XDG_CONFIG_HOME={"gtk-3.0/settings.ini": "[Settings]\ngtk-application-prefer-dark-theme = true\n"})
 @pytest.mark.parametrize(
     "server",
     [
