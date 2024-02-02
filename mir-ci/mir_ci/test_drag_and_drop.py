@@ -34,6 +34,15 @@ ROBOT_TEMPLATE = dedent(
         apps.mir_demo_server(),
     ],
 )
+@pytest.mark.deps(
+    debs=("libgtk-4-dev",),
+    pip_pkgs=(
+        ("pygobject", "gi"),
+        ("robotframework~=6.1.1", "robot"),
+        ("rpaframework", "rpa"),
+        ("rpaframework-recognition", "rpa-rec"),
+    ),
+)
 class TestDragAndDrop:
     @pytest.mark.parametrize(
         "app",
@@ -42,7 +51,6 @@ class TestDragAndDrop:
             ("python3", APP_PATH, "--source", "text", "--target", "text", "--expect", "text"),
         ],
     )
-    @pytest.mark.deps(debs=("libgtk-4-dev",), pip_pkgs=(("pygobject", "gi"),))
     async def test_source_and_dest_match(self, server, app) -> None:
         extensions = VirtualPointer.required_extensions + ScreencopyTracker.required_extensions
         server_instance = DisplayServer(server, add_extensions=extensions)
@@ -93,7 +101,6 @@ class TestDragAndDrop:
             ("python3", "-u", APP_PATH, "--source", "text", "--target", "pixbuf", "--expect", "pixbuf"),
         ],
     )
-    @pytest.mark.deps(debs=("libgtk-4-dev",), pip_pkgs=(("pygobject", "gi"),))
     async def test_source_and_dest_mismatch(self, server, app) -> None:
         extensions = VirtualPointer.required_extensions + ScreencopyTracker.required_extensions
         server_instance = DisplayServer(server, add_extensions=extensions)
