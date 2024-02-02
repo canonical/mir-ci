@@ -50,7 +50,7 @@ def _deps_skip(request: pytest.FixtureRequest) -> None:
                 else:
                     kw["alldepfixtures"].add(name)
         kw.setdefault("depfixtures", set()).add(request.fixturename)
-        if kw["depfixtures"] == kw["alldepfixtures"]:
+        if not kw["alldepfixtures"] or kw["depfixtures"] == kw["alldepfixtures"]:
             pytest.skip("dependency-only run")
 
 
