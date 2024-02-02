@@ -207,7 +207,11 @@ def xdg(request: pytest.FixtureRequest, tmp_path: pathlib.Path) -> Generator:
                     base_config = pathlib.Path(os.environ.get(var, "~/.config")).expanduser() / "fontconfig"
                     if base_config.exists():
                         shutil.copytree(
-                            str(base_config), str(var_path / "fontconfig"), symlinks=True, ignore_dangling_symlinks=True
+                            str(base_config),
+                            str(var_path / "fontconfig"),
+                            symlinks=True,
+                            ignore_dangling_symlinks=True,
+                            dirs_exist_ok=True,
                         )
 
                 for file, contents in files.items():
