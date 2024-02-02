@@ -8,7 +8,7 @@ from mir_ci.virtual_pointer import VirtualPointer
 
 MIR_CI_PATH = Path(__file__).parent
 APP_PATH = MIR_CI_PATH / "clients/drag_and_drop_demo.py"
-ROBOT_LIBRARY_PATH = MIR_CI_PATH / "robot/libraries/WaylandHid.py"
+ROBOT_LIBRARY_PATH = MIR_CI_PATH / "robot_libraries/WaylandHid.py"
 STARTUP_TIME = 1.5 * SLOWDOWN
 A_SHORT_TIME = 0.3
 
@@ -30,6 +30,7 @@ Library    {library_path}
         apps.mir_demo_server(),
     ],
 )
+@pytest.mark.deps(debs=("libgtk-4-dev",), pip_pkgs=(("pygobject", "gi"), ("robotframework~=6.1.1", "robot")))
 class TestDragAndDrop:
     @pytest.mark.parametrize(
         "app",
@@ -38,7 +39,6 @@ class TestDragAndDrop:
             ("python3", APP_PATH, "--source", "text", "--target", "text", "--expect", "text"),
         ],
     )
-    @pytest.mark.deps(debs=("libgtk-4-dev",), pip_pkgs=(("pygobject", "gi"),))
     async def test_source_and_dest_match(self, modern_server, app) -> None:
         modern_server = DisplayServer(modern_server, add_extensions=VirtualPointer.required_extensions)
         program = modern_server.program(apps.App(app))
@@ -73,7 +73,6 @@ class TestDragAndDrop:
             ("python3", "-u", APP_PATH, "--source", "text", "--target", "pixbuf", "--expect", "pixbuf"),
         ],
     )
-    @pytest.mark.deps(debs=("libgtk-4-dev",), pip_pkgs=(("pygobject", "gi"),))
     async def test_source_and_dest_mismatch(self, modern_server, app) -> None:
         modern_server = DisplayServer(modern_server, add_extensions=VirtualPointer.required_extensions)
         program = modern_server.program(apps.App(app))
