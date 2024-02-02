@@ -58,9 +58,9 @@ class TestDragAndDrop:
 
         robot_settings = dedent(
             f"""\
-            Library    {MIR_CI_PATH}/robot/libraries/WaylandHid.py
-            Library    {MIR_CI_PATH}/robot/libraries/Screencopy.py
-            Resource   {MIR_CI_PATH}/robot/resources/screencopy.resource
+            Library    {MIR_CI_PATH}/robot_libraries/WaylandHid.py
+            Library    {MIR_CI_PATH}/robot_libraries/Screencopy.py
+            Resource   {MIR_CI_PATH}/robot_resources/screencopy.resource
         """
         ).strip("\n")
 
@@ -68,7 +68,7 @@ class TestDragAndDrop:
             f"""\
             Source and Destination Match
                 Sleep     {STARTUP_TIME}
-                ${{regions}} =    Test Match    {MIR_CI_PATH}/robot/templates/drag_and_drop_src.png
+                ${{regions}} =    Test Match    {MIR_CI_PATH}/robot_templates/drag_and_drop_src.png
                 ${{center}} =    Get Center    ${{regions}}[0]
                 Move Pointer To Absolute    ${{center}}[x]    ${{center}}[y]
                 Sleep     {A_SHORT_TIME}
@@ -76,7 +76,7 @@ class TestDragAndDrop:
                 ${{off_center}} =    Add Displacement    ${{center}}    20    20
                 Move Pointer To Absolute    ${{off_center}}[x]    ${{off_center}}[y]
                 Sleep     {A_SHORT_TIME}
-                ${{regions}} =    Test Match    {MIR_CI_PATH}/robot/templates/drag_and_drop_dst.png
+                ${{regions}} =    Test Match    {MIR_CI_PATH}/robot_templates/drag_and_drop_dst.png
                 ${{center}} =    Get Center    ${{regions}}[0]
                 Move Pointer To Absolute    ${{center}}[x]    ${{center}}[y]
                 Sleep     {A_SHORT_TIME}
@@ -108,9 +108,9 @@ class TestDragAndDrop:
 
         robot_settings = dedent(
             f"""\
-            Library    {MIR_CI_PATH}/robot/libraries/WaylandHid.py
-            Library    {MIR_CI_PATH}/robot/libraries/Screencopy.py
-            Resource   {MIR_CI_PATH}/robot/resources/screencopy.resource
+            Library    {MIR_CI_PATH}/robot_libraries/WaylandHid.py
+            Library    {MIR_CI_PATH}/robot_libraries/Screencopy.py
+            Resource   {MIR_CI_PATH}/robot_resources/screencopy.resource
         """
         ).strip("\n")
 
@@ -118,7 +118,7 @@ class TestDragAndDrop:
             f"""\
             Source and Destination Mismatch
                 Sleep    {STARTUP_TIME}
-                ${{regions}} =    Test Match    {MIR_CI_PATH}/robot/templates/drag_and_drop_src.png
+                ${{regions}} =    Test Match    {MIR_CI_PATH}/robot_templates/drag_and_drop_src.png
                 ${{center}} =    Get Center    ${{regions}}[0]
                 Move Pointer To Absolute    ${{center}}[x]    ${{center}}[y]
                 Sleep    {A_SHORT_TIME}
@@ -127,7 +127,7 @@ class TestDragAndDrop:
                 ${{off_center}} =    Add Displacement    ${{center}}    20    20
                 Move Pointer To Absolute    ${{off_center}}[x]    ${{off_center}}[y]
                 Sleep    {A_SHORT_TIME}
-                ${{regions}} =    Test Match    {MIR_CI_PATH}/robot/templates/drag_and_drop_dst.png
+                ${{regions}} =    Test Match    {MIR_CI_PATH}/robot_templates/drag_and_drop_dst.png
                 ${{center}} =    Get Center    ${{regions}}[0]
                 Move Pointer To Absolute    ${{center}}[x]    ${{center}}[y]
                 Sleep    {A_SHORT_TIME}
