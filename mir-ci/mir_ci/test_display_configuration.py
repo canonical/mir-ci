@@ -55,8 +55,8 @@ class DisplayServerStaticFile:
         apps.mir_demo_server(),
     ],
 )
+@pytest.mark.deps(pip_pkgs=("pyyaml",))
 class TestDisplayConfiguration:
-    @pytest.mark.deps(pip_pkgs=("pyyaml",))
     async def test_can_update_scale(self, local_server) -> None:
         server = DisplayServerStaticFile(local_server)
         on_scale = Mock()
@@ -77,7 +77,6 @@ class TestDisplayConfiguration:
 
         on_scale.assert_called_with(ANY, 2)
 
-    @pytest.mark.deps(pip_pkgs=("pyyaml",))
     async def test_can_update_position(self, local_server) -> None:
         server = DisplayServerStaticFile(local_server)
         on_geometry = Mock()
