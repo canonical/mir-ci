@@ -41,7 +41,7 @@ def _deps_skip(request: pytest.FixtureRequest) -> None:
     kw = request.keywords
     if request.config.getoption("--deps", False):
         if "alldepfixtures" not in kw:
-            kw["alldepfixtures"] = {}
+            kw["alldepfixtures"] = set()
             for name in DEP_FIXTURES:
                 try:
                     next(request.node.iter_markers(name))
