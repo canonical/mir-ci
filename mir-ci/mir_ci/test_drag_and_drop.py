@@ -8,7 +8,7 @@ from mir_ci.virtual_pointer import VirtualPointer
 
 MIR_CI_PATH = Path(__file__).parent
 APP_PATH = MIR_CI_PATH / "clients/drag_and_drop_demo.py"
-ROBOT_LIBRARY_PATH = MIR_CI_PATH / "robot/libraries/WaylandHid.py"
+ROBOT_LIBRARY_PATH = MIR_CI_PATH / "robot_libraries/WaylandHid.py"
 STARTUP_TIME = 1.5 * SLOWDOWN
 A_SHORT_TIME = 0.3
 
