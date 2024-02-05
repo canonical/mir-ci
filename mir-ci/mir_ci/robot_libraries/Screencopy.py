@@ -43,11 +43,8 @@ class Screencopy(ScreencopyTracker):
         :return: list of matched regions
         :raises ImageNotFoundError: if no match is found
         """
-        await self.connect()
-        screenshot = None
-
+        screenshot = await self.grab_screenshot()
         try:
-            screenshot = self.grab_screenshot()
             regions = self._rpa_images.find_template_in_image(
                 screenshot,
                 template,
@@ -78,31 +75,29 @@ class Screencopy(ScreencopyTracker):
         :return: list of matched regions
         :raises ImageNotFoundError: if no match is found within the timeout
         """
-        await self.connect()
         regions = []
+        screenshot = await self.grab_screenshot()
         last_frame_count = 0
-        matched = False
-        screenshot = None
         end_time = time.time() + float(timeout)
-        while time.time() < end_time:
+        while time.time() <= end_time:
             if self.frame_count == last_frame_count:
                 await asyncio.sleep(0)
             else:
                 last_frame_count = self.frame_count
+                screenshot = await self.grab_screenshot()
                 try:
-                    screenshot = self.grab_screenshot()
                     regions = self._rpa_images.find_template_in_image(
                         screenshot,
                         template,
                         tolerance=self.TOLERANCE,
                     )
-                    matched = True
-                    break
                 except (RuntimeError, ValueError, ImageNotFoundError):
                     continue
-
-        if not matched:
-            self._log_failed_match(screenshot, template)
+                else:
+                    break
+        else:
+            if screenshot:
+                self._log_failed_match(screenshot, template)
             raise ImageNotFoundError
 
         return [
@@ -115,13 +110,18 @@ class Screencopy(ScreencopyTracker):
             for region in regions
         ]
 
-    def grab_screenshot(self) -> Image.Image:
+    async def grab_screenshot(self) -> Image.Image:
         """Grab the latest captured frame from the display."""
-        assert self.shm_data is not None, "No SHM data available"
+        await self.connect()
+        # Wait for the first frame to become ready
+        while self.frame_count == 0:
+            await asyncio.sleep(0)
 
+        assert self.shm_data is not None, "No SHM data available"
         self.shm_data.seek(0)
         data = self.shm_data.read()
         size = (self.buffer_width, self.buffer_height)
+        assert all(dim > 0 for dim in size), "Not enough image data"
         stride = self.buffer_stride
         image = Image.frombytes("RGBA", size, data, "raw", "RGBA", stride, -1)
         b, g, r, a, *_ = image.split()
@@ -133,9 +133,6 @@ class Screencopy(ScreencopyTracker):
         """Connect to the display."""
         if not self.shm_data:
             await super().connect()
-            # Wait for the first frame to become ready
-            while self.frame_count == 0:
-                await asyncio.sleep(0)
 
     async def disconnect(self):
         """Disconnect from the display."""
@@ -153,12 +150,11 @@ class Screencopy(ScreencopyTracker):
 
     def _log_failed_match(self, screenshot, template):
         """Log a failure with template matching."""
-        if not screenshot:
-            return
-
         template_img = Image.open(template)
-        template_string = 'Template was:<br><img src="data:image/png;base64,' f'{self._to_base64(template_img)}" /><br>'
-        image_string = 'Image was:<br><img src="data:image/png;base64,' f'{self._to_base64(screenshot)}" />'
+        template_string = (
+            'Template was:<br /><img src="data:image/png;base64,' f'{self._to_base64(template_img)}" /><br />'
+        )
+        image_string = 'Image was:<br /><img src="data:image/png;base64,' f'{self._to_base64(screenshot)}" />'
         logger.info(
             template_string + image_string,
             html=True,
