@@ -24,7 +24,7 @@ ROBOT_TEMPLATE = dedent(
 )
 
 
-@pytest.mark.xdg(XDG_CONFIG_HOME={"gtk-3.0/settings.ini": "[Settings]\ngtk-application-prefer-dark-theme=1\n"})
+@pytest.mark.xdg(XDG_CONFIG_HOME={"gtk-3.0/settings.ini": "[Settings]\ngtk-application-prefer-dark-theme=0\n"})
 @pytest.mark.parametrize(
     "server",
     [
@@ -87,8 +87,7 @@ class TestDragAndDrop:
 
         with tempfile.NamedTemporaryFile(mode="w+", suffix=".robot", buffering=1) as robot_file:
             robot_file.write(ROBOT_TEMPLATE.format(settings=robot_settings, test_case=robot_test_case))
-            robot = server_instance.program(apps.App(("robot", robot_file.name)))
-            # robot = server_instance.program(apps.App(("robot", "-o", "NONE", "-r", "NONE", robot_file.name)))
+            robot = server_instance.program(apps.App(("robot", "-d", f"{MIR_CI_PATH}/robot_log/", robot_file.name)))
 
             async with server_instance, program, robot:
                 await robot.wait()
@@ -143,8 +142,7 @@ class TestDragAndDrop:
 
         with tempfile.NamedTemporaryFile(mode="w+", suffix=".robot", buffering=1) as robot_file:
             robot_file.write(ROBOT_TEMPLATE.format(settings=robot_settings, test_case=robot_test_case))
-            robot = server_instance.program(apps.App(("robot", robot_file.name)))
-            # robot = server_instance.program(apps.App(("robot", "-o", "NONE", "-r", "NONE", robot_file.name)))
+            robot = server_instance.program(apps.App(("robot", "-d", f"{MIR_CI_PATH}/robot_log/", robot_file.name)))
 
             async with server_instance, program, robot:
                 await robot.wait()
