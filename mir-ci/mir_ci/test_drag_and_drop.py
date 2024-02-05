@@ -55,12 +55,10 @@ class TestDragAndDrop:
             ("python3", APP_PATH, "--source", "text", "--target", "text", "--expect", "text"),
         ],
     )
-    async def test_source_and_dest_match(self, modern_server, app, request) -> None:
+    async def test_source_and_dest_match(self, modern_server, app, tmp_path) -> None:
         extensions = VirtualPointer.required_extensions + ScreencopyTracker.required_extensions
         server_instance = DisplayServer(modern_server, add_extensions=extensions)
         program = server_instance.program(apps.App(app))
-        test_case_name = request.node.name
-        robot_output_path = f"{MIR_CI_PATH}/robot_log/{test_case_name}"
 
         robot_settings = dedent(
             f"""\
@@ -83,7 +81,7 @@ class TestDragAndDrop:
 
         with tempfile.NamedTemporaryFile(mode="w+", suffix=".robot", buffering=1) as robot_file:
             robot_file.write(ROBOT_TEMPLATE.format(settings=robot_settings, test_case=robot_test_case))
-            robot = server_instance.program(apps.App(("robot", "-d", robot_output_path, robot_file.name)))
+            robot = server_instance.program(apps.App(("robot", "-d", tmp_path, robot_file.name)))
 
             async with server_instance, program, robot:
                 await robot.wait()
@@ -98,12 +96,10 @@ class TestDragAndDrop:
             ("python3", "-u", APP_PATH, "--source", "text", "--target", "pixbuf", "--expect", "pixbuf"),
         ],
     )
-    async def test_source_and_dest_mismatch(self, modern_server, app, request) -> None:
+    async def test_source_and_dest_mismatch(self, modern_server, app, tmp_path) -> None:
         extensions = VirtualPointer.required_extensions + ScreencopyTracker.required_extensions
         server_instance = DisplayServer(modern_server, add_extensions=extensions)
         program = server_instance.program(apps.App(app))
-        test_case_name = request.node.name
-        robot_output_path = f"{MIR_CI_PATH}/robot_log/{test_case_name}"
 
         robot_settings = dedent(
             f"""\
@@ -128,7 +124,7 @@ class TestDragAndDrop:
 
         with tempfile.NamedTemporaryFile(mode="w+", suffix=".robot", buffering=1) as robot_file:
             robot_file.write(ROBOT_TEMPLATE.format(settings=robot_settings, test_case=robot_test_case))
-            robot = server_instance.program(apps.App(("robot", "-d", robot_output_path, robot_file.name)))
+            robot = server_instance.program(apps.App(("robot", "-d", tmp_path, robot_file.name)))
 
             async with server_instance, program, robot:
                 await robot.wait()
