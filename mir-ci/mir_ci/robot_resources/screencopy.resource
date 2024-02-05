@@ -1,3 +1,6 @@
+*** Settings ***
+Library    ../robot_libraries/Screencopy.py
+
 *** Keywords ***
 Get Center
     [Arguments]    ${region}
@@ -5,7 +8,14 @@ Get Center
     ...    {"x": int((${region}[left] + ${region}[right]) / 2), "y": int((${region}[top] + ${region}[bottom]) / 2)}
     RETURN    ${point}
 
-Add Displacement
+Displace
     [Arguments]    ${point}    ${displacement_x}    ${displacement_y}
     ${point}=    Evaluate    {"x": ${point}[x] + ${displacement_x}, "y": ${point}[y] + ${displacement_y}}
     RETURN    ${point}
+
+Move Pointer Above Template
+    [Arguments]    ${template}
+    ${regions} =    Wait Match    ${template}
+    ${center} =    Get Center    ${regions}[0]
+    Move Pointer To Absolute    ${center}[x]    ${center}[y]
+    RETURN    ${center}
