@@ -26,7 +26,7 @@ ROBOT_TEMPLATE = dedent(
 
 @pytest.mark.xdg(XDG_CONFIG_HOME={"gtk-3.0/settings.ini": "[Settings]\ngtk-application-prefer-dark-theme=0\n"})
 @pytest.mark.parametrize(
-    "server",
+    "modern_server",
     [
         apps.ubuntu_frame(),
         # apps.mir_kiosk(), we need servers based on Mir 2.14 or later
@@ -52,9 +52,9 @@ class TestDragAndDrop:
             ("python3", APP_PATH, "--source", "text", "--target", "text", "--expect", "text"),
         ],
     )
-    async def test_source_and_dest_match(self, server, app) -> None:
+    async def test_source_and_dest_match(self, modern_server, app) -> None:
         extensions = VirtualPointer.required_extensions + ScreencopyTracker.required_extensions
-        server_instance = DisplayServer(server, add_extensions=extensions)
+        server_instance = DisplayServer(modern_server, add_extensions=extensions)
         program = server_instance.program(apps.App(app))
 
         robot_settings = dedent(
@@ -102,9 +102,9 @@ class TestDragAndDrop:
             ("python3", "-u", APP_PATH, "--source", "text", "--target", "pixbuf", "--expect", "pixbuf"),
         ],
     )
-    async def test_source_and_dest_mismatch(self, server, app) -> None:
+    async def test_source_and_dest_mismatch(self, modern_server, app) -> None:
         extensions = VirtualPointer.required_extensions + ScreencopyTracker.required_extensions
-        server_instance = DisplayServer(server, add_extensions=extensions)
+        server_instance = DisplayServer(modern_server, add_extensions=extensions)
         program = server_instance.program(apps.App(app))
 
         robot_settings = dedent(
