@@ -1,7 +1,7 @@
 name: Snaps
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.number && format('pr{0}', github.event.number) || github.ref_name }}
   cancel-in-progress: true
 
 on:
@@ -10,6 +10,11 @@ on:
   workflow_dispatch:
   schedule:
   - cron: '0 * * * *'
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+    - .github/workflows/snaps.yml
+    - bin/process_snaps.py
 
 jobs:
   ProcessSnaps:

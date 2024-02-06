@@ -1,7 +1,7 @@
 name: Test
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.number && format('pr{0}', github.event.number) || github.ref_name }}
   cancel-in-progress: true
 
 on:
@@ -9,6 +9,9 @@ on:
     types: [checks_requested]
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+    - .github/workflows/test*yml
+    - mir-ci/**
 
 jobs:
   RunTests:
