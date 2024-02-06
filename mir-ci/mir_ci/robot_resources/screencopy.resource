@@ -14,7 +14,7 @@ Displace
     ${point}=    Evaluate    {"x": ${point}[x] + ${displacement_x}, "y": ${point}[y] + ${displacement_y}}
     RETURN    ${point}
 
-Move Pointer Above Template
+Move Pointer To Template
     [Arguments]    ${template}
     ${regions} =    Match    ${template}
     ${center} =    Get Center    ${regions}[0]
