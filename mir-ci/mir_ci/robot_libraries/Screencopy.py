@@ -79,18 +79,15 @@ class Screencopy(ScreencopyTracker):
 
     async def grab_screenshot(self):
         """
-        Grabs the next frame tracked by the screencopy tracker.
+        Grabs the current frame tracked by the screencopy tracker.
 
-        :return Pillow Image of the next frame, or of the current
-            frame if the next frame is not available yet.
+        :return Pillow Image of the frame
         """
         await self.connect()
 
         # Wait for the first frame
         while self.frame_count == 0:
             await asyncio.sleep(0)
-
-        image = self.screenshot
 
         assert self.shm_data is not None, "No SHM data available"
         self.shm_data.seek(0)
