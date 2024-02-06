@@ -1,3 +1,4 @@
+import functools
 import os
 import pathlib
 import shutil
@@ -8,6 +9,7 @@ from typing import Any, Generator, List, Mapping, Optional, Union
 
 import distro
 import pytest
+from deepmerge import conservative_merger
 from mir_ci import apps
 
 RELEASE_PPA = "mir-team/release"
@@ -200,25 +202,26 @@ def xdg(request: pytest.FixtureRequest, tmp_path: pathlib.Path) -> Generator:
         return
 
     with pytest.MonkeyPatch.context() as m:
-        for mark in request.node.iter_markers("xdg"):
-            for var, files in mark.kwargs.items():
-                var_path = tmp_path / var
-                var_path.mkdir(exist_ok=True)
-                # If mocking the config home, copy over any existing fontconfig
-                if var == "XDG_CONFIG_HOME":
-                    base_config = pathlib.Path(os.environ.get(var, "~/.config")).expanduser() / "fontconfig"
-                    if base_config.exists():
-                        shutil.copytree(
-                            str(base_config),
-                            str(var_path / "fontconfig"),
-                            symlinks=True,
-                            ignore_dangling_symlinks=True,
-                            dirs_exist_ok=True,
-                        )
+        vars: Mapping[str, Mapping[str, str]] = functools.reduce(
+            conservative_merger.merge, (mark.kwargs for mark in request.node.iter_markers("xdg")), {}
+        )
+        for var, files in vars.items():
+            var_path = tmp_path / var
+            var_path.mkdir()
+            # If mocking the config home, copy over any existing fontconfig
+            if var == "XDG_CONFIG_HOME":
+                base_config = pathlib.Path(os.environ.get(var, "~/.config")).expanduser() / "fontconfig"
+                if base_config.exists():
+                    shutil.copytree(
+                        str(base_config),
+                        str(var_path / "fontconfig"),
+                        symlinks=True,
+                        ignore_dangling_symlinks=True,
+                    )
 
-                for file, contents in files.items():
-                    (var_path / file).parent.mkdir(exist_ok=True, parents=True)
-                    with open(var_path / file, "w") as f:
-                        f.write(contents)
-                m.setenv(var, str(var_path))
+            for file, contents in files.items():
+                (var_path / file).parent.mkdir(exist_ok=True, parents=True)
+                with open(var_path / file, "w") as f:
+                    f.write(contents)
+            m.setenv(var, str(var_path))
         yield

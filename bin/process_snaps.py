@@ -36,6 +36,7 @@ SNAPS = {
     "graphics-test-tools": {
         "20/beta": {"recipe": "graphics-test-tools-20-beta"},
         "22/beta": {"recipe": "graphics-test-tools-22-beta"},
+        "24/edge": {"recipe": "graphics-test-tools-24-edge", "check-usns": False},
     },
     "mir-kiosk": {
         "edge": {"ppa": "dev", "recipe": "mir-kiosk-edge", "release": "focal"},
@@ -55,6 +56,7 @@ SNAPS = {
         "20/beta": {"ppa": "rc", "recipe": "mir-test-tools-20-beta", "release": "focal"},
         "22/edge": {"ppa": "dev", "recipe": "mir-test-tools-22-edge"},
         "22/beta": {"ppa": "rc", "recipe": "mir-test-tools-22-beta"},
+        "24/edge": {"ppa": "dev", "recipe": "mir-test-tools-24-edge", "release": "noble", "check-usns": False},
     },
     "miriway": {
         "edge": {"ppa": "dev", "recipe": "miriway-edge"},
@@ -81,6 +83,9 @@ SNAPS = {
     },
     "mesa-core22": {
         "beta": {"recipe": "mesa-core22-beta"},
+    },
+    "mesa-core24": {
+        "edge": {"recipe": "mesa-core24-edge", "check-usns": False},
     },
     "nvidia-core22": {
         "beta": {"recipe": "nvidia-core22-beta"},
@@ -302,7 +307,7 @@ if __name__ == '__main__':
                    or mir_version == SNAP_VERSION_RE.match(store_snap["version"]).group("mir")
                    for store_snap in store_snaps):
 
-                if check_notices:
+                if snap_map.get("check-usns", True) and check_notices:
                     snap_notices = check_snap_notices(store_snaps)[snap]
 
                     if any(snap_notices.values()):
