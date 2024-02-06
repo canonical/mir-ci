@@ -33,7 +33,6 @@ class Screencopy(ScreencopyTracker):
         display_name = os.environ.get("WAYLAND_DISPLAY", "wayland-0")
         super().__init__(display_name)
         self._rpa_images = Images()
-        self.screenshot = None
 
     @keyword
     async def match(self, template: str, timeout: int = 5) -> List[dict]:
@@ -49,13 +48,14 @@ class Screencopy(ScreencopyTracker):
         regions = []
         end_time = time.time() + float(timeout)
         last_checked_frame_count = 0
+        screenshot = None
         while time.time() <= end_time:
-            self.screenshot = await self.grab_screenshot()
+            screenshot = await asyncio.wait_for(self.grab_screenshot(), timeout)
             if last_checked_frame_count != self.frame_count:
                 last_checked_frame_count = self.frame_count
                 try:
                     regions = self._rpa_images.find_template_in_image(
-                        self.screenshot,
+                        screenshot,
                         template,
                         tolerance=self.TOLERANCE,
                     )
@@ -64,7 +64,8 @@ class Screencopy(ScreencopyTracker):
                 else:
                     break
         else:
-            self._log_failed_match(self.screenshot, template)
+            if screenshot:
+                self._log_failed_match(screenshot, template)
             raise ImageNotFoundError
 
         return [
