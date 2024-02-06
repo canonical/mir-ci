@@ -79,22 +79,17 @@ class Screencopy(ScreencopyTracker):
             for region in regions
         ]
 
-    async def grab_screenshot(self, timeout: float = 0.1) -> Image.Image | None:
+    async def grab_screenshot(self) -> Image.Image | None:
         """
-        Wait for the next frame tracked by the screencopy tracker.
+        Grabs the next frame tracked by the screencopy tracker.
 
-        :param timeout: timeout in seconds
         :return Pillow Image of the next frame;
-            None if the next frame is not available within the timeout
+            None if the next frame is not available yet
         """
         await self.connect()
         image = None
-        end_time = time.time() + timeout
-        while self.frame_count == self.last_frame_count:
-            await asyncio.sleep(0)
-            if time.time() > end_time:
-                break
-        else:
+
+        if self.frame_count != self.last_frame_count:
             assert self.shm_data is not None, "No SHM data available"
             self.last_frame_count = self.frame_count
             self.shm_data.seek(0)
@@ -105,6 +100,8 @@ class Screencopy(ScreencopyTracker):
             image = Image.frombytes("RGBA", size, data, "raw", "RGBA", stride, -1)
             b, g, r, a, *_ = image.split()
             image = Image.merge("RGBA", (r, g, b, a))
+        else:
+            await asyncio.sleep(0)
 
         return image
 
