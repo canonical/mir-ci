@@ -61,7 +61,7 @@ class TestDragAndDrop:
             robot = modern_server.program(apps.App(("robot", "-o", "NONE", "-r", "NONE", robot_file.name)))
 
             async with modern_server, program, robot:
-                await robot.wait()
+                await robot.wait(60)
                 await program.wait()
 
     @pytest.mark.parametrize(
@@ -98,7 +98,7 @@ class TestDragAndDrop:
             robot = modern_server.program(apps.App(("robot", "-o", "NONE", "-r", "NONE", robot_file.name)))
 
             async with modern_server, program, robot:
-                await robot.wait()
+                await robot.wait(60)
                 assert program.is_running()
                 await program.kill()
             assert "drag-begin\ndrag-failed\nenter-notify-event: dropbox" in program.output
