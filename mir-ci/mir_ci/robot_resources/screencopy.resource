@@ -1,6 +1,7 @@
 *** Settings ***
-Library    ../robot_libraries/Screencopy.py
-Library    ../robot_libraries/WaylandHid.py
+Library     ../robot_libraries/Screencopy.py
+Library     ../robot_libraries/WaylandHid.py
+
 
 *** Keywords ***
 Get Center
@@ -16,7 +17,7 @@ Displace
 
 Move Pointer To Template
     [Arguments]    ${template}
-    ${regions} =    Match    ${template}
-    ${center} =    Get Center    ${regions}[0]
+    ${regions}=    Match    ${template}
+    ${center}=    Get Center    ${regions}[0]
     Move Pointer To Absolute    ${center}[x]    ${center}[y]
     RETURN    ${center}

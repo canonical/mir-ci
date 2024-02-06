@@ -64,14 +64,14 @@ class TestDragAndDrop:
         robot_test_case = dedent(
             f"""\
             Source and Destination Match
-                ${{center}} =    Move Pointer To Template    {MIR_CI_PATH}/robot_templates/drag_and_drop_src.png
-                Sleep     {A_SHORT_TIME}
+                ${{center}}=    Move Pointer To Template    {MIR_CI_PATH}/robot_templates/drag_and_drop_src.png
+                Sleep    {A_SHORT_TIME}
                 Press LEFT Button
-                ${{off_center}} =    Displace    ${{center}}    20    20
+                ${{off_center}}=    Displace    ${{center}}    20    20
                 Move Pointer To Absolute    ${{off_center}}[x]    ${{off_center}}[y]
-                Sleep     {A_SHORT_TIME}
+                Sleep    {A_SHORT_TIME}
                 Move Pointer To Template    {MIR_CI_PATH}/robot_templates/drag_and_drop_dst.png
-                Sleep     {A_SHORT_TIME}
+                Sleep    {A_SHORT_TIME}
                 Release LEFT Button
         """
         )
@@ -101,20 +101,20 @@ class TestDragAndDrop:
         robot_test_case = dedent(
             f"""\
             Source and Destination Mismatch
-                ${{center}} =    Move Pointer To Template    {MIR_CI_PATH}/robot_templates/drag_and_drop_src.png
-                Sleep     {A_SHORT_TIME}
+                ${{center}}=    Move Pointer To Template    {MIR_CI_PATH}/robot_templates/drag_and_drop_src.png
+                Sleep    {A_SHORT_TIME}
                 Press LEFT Button
-                Sleep     {A_SHORT_TIME}
-                ${{off_center}} =    Displace    ${{center}}    20    20
+                Sleep    {A_SHORT_TIME}
+                ${{off_center}}=    Displace    ${{center}}    20    20
                 Move Pointer To Absolute    ${{off_center}}[x]    ${{off_center}}[y]
-                Sleep     {A_SHORT_TIME}
-                ${{center}} =    Move Pointer To Template    {MIR_CI_PATH}/robot_templates/drag_and_drop_dst.png
-                Sleep     {A_SHORT_TIME}
+                Sleep    {A_SHORT_TIME}
+                ${{center}}=    Move Pointer To Template    {MIR_CI_PATH}/robot_templates/drag_and_drop_dst.png
+                Sleep    {A_SHORT_TIME}
                 Release LEFT Button
-                Sleep     {A_SHORT_TIME}
-                ${{off_center}} =    Displace    ${{center}}    20    20
+                Sleep    {A_SHORT_TIME}
+                ${{off_center}}=    Displace    ${{center}}    20    20
                 Move Pointer To Absolute    ${{off_center}}[x]    ${{off_center}}[y]
-                Sleep     {A_SHORT_TIME}
+                Sleep    {A_SHORT_TIME}
         """
         )
 
