@@ -21,6 +21,7 @@ ROBOT_TEMPLATE = """\
 *** Test Cases ***
 {test_case}
 """
+ROBOT_SETTINGS = f"Resource   {MIR_CI_PATH}/robot_resources/screencopy.resource"
 
 
 @pytest.mark.xdg(XDG_CONFIG_HOME={"gtk-3.0/settings.ini": "[Settings]\ngtk-application-prefer-dark-theme=0\n"})
@@ -60,26 +61,23 @@ class TestDragAndDrop:
         server_instance = DisplayServer(modern_server, add_extensions=extensions)
         program = server_instance.program(apps.App(app))
 
-        robot_settings = f"Resource   {MIR_CI_PATH}/robot_resources/screencopy.resource"
-
         robot_test_case = dedent(
             f"""\
             Source and Destination Match
-                Sleep     {STARTUP_TIME}
-                ${{center}} =    Move Pointer Above Template    {MIR_CI_PATH}/robot_templates/drag_and_drop_src.png
+                ${{center}} =    Move Pointer To Template    {MIR_CI_PATH}/robot_templates/drag_and_drop_src.png
                 Sleep     {A_SHORT_TIME}
                 Press LEFT Button
                 ${{off_center}} =    Displace    ${{center}}    20    20
                 Move Pointer To Absolute    ${{off_center}}[x]    ${{off_center}}[y]
                 Sleep     {A_SHORT_TIME}
-                ${{center}} =    Move Pointer Above Template    {MIR_CI_PATH}/robot_templates/drag_and_drop_dst.png
+                Move Pointer To Template    {MIR_CI_PATH}/robot_templates/drag_and_drop_dst.png
                 Sleep     {A_SHORT_TIME}
                 Release LEFT Button
         """
         )
 
         with tempfile.NamedTemporaryFile(mode="w+", suffix=".robot", buffering=1) as robot_file:
-            robot_file.write(ROBOT_TEMPLATE.format(settings=robot_settings, test_case=robot_test_case))
+            robot_file.write(ROBOT_TEMPLATE.format(settings=ROBOT_SETTINGS, test_case=robot_test_case))
             robot = server_instance.program(apps.App(("robot", "-d", tmp_path, robot_file.name)))
 
             async with server_instance, program, robot:
@@ -100,20 +98,17 @@ class TestDragAndDrop:
         server_instance = DisplayServer(modern_server, add_extensions=extensions)
         program = server_instance.program(apps.App(app))
 
-        robot_settings = f"Resource   {MIR_CI_PATH}/robot_resources/screencopy.resource"
-
         robot_test_case = dedent(
             f"""\
             Source and Destination Mismatch
-                Sleep     {STARTUP_TIME}
-                ${{center}} =    Move Pointer Above Template    {MIR_CI_PATH}/robot_templates/drag_and_drop_src.png
+                ${{center}} =    Move Pointer To Template    {MIR_CI_PATH}/robot_templates/drag_and_drop_src.png
                 Sleep     {A_SHORT_TIME}
                 Press LEFT Button
                 Sleep     {A_SHORT_TIME}
                 ${{off_center}} =    Displace    ${{center}}    20    20
                 Move Pointer To Absolute    ${{off_center}}[x]    ${{off_center}}[y]
                 Sleep     {A_SHORT_TIME}
-                ${{center}} =    Move Pointer Above Template    {MIR_CI_PATH}/robot_templates/drag_and_drop_dst.png
+                ${{center}} =    Move Pointer To Template    {MIR_CI_PATH}/robot_templates/drag_and_drop_dst.png
                 Sleep     {A_SHORT_TIME}
                 Release LEFT Button
                 Sleep     {A_SHORT_TIME}
@@ -124,7 +119,7 @@ class TestDragAndDrop:
         )
 
         with tempfile.NamedTemporaryFile(mode="w+", suffix=".robot", buffering=1) as robot_file:
-            robot_file.write(ROBOT_TEMPLATE.format(settings=robot_settings, test_case=robot_test_case))
+            robot_file.write(ROBOT_TEMPLATE.format(settings=ROBOT_SETTINGS, test_case=robot_test_case))
             robot = server_instance.program(apps.App(("robot", "-d", tmp_path, robot_file.name)))
 
             async with server_instance, program, robot:
