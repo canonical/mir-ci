@@ -60,12 +60,7 @@ class TestDragAndDrop:
         server_instance = DisplayServer(modern_server, add_extensions=extensions)
         program = server_instance.program(apps.App(app))
 
-        robot_settings = dedent(
-            f"""\
-            Library    {MIR_CI_PATH}/robot_libraries/WaylandHid.py
-            Resource   {MIR_CI_PATH}/robot_resources/screencopy.resource
-        """
-        ).strip("\n")
+        robot_settings = f"Resource   {MIR_CI_PATH}/robot_resources/screencopy.resource"
 
         robot_test_case = dedent(
             f"""\
@@ -105,12 +100,7 @@ class TestDragAndDrop:
         server_instance = DisplayServer(modern_server, add_extensions=extensions)
         program = server_instance.program(apps.App(app))
 
-        robot_settings = dedent(
-            f"""\
-            Library    {MIR_CI_PATH}/robot_libraries/WaylandHid.py
-            Resource   {MIR_CI_PATH}/robot_resources/screencopy.resource
-        """
-        ).strip("\n")
+        robot_settings = f"Resource   {MIR_CI_PATH}/robot_resources/screencopy.resource"
 
         robot_test_case = dedent(
             f"""\
