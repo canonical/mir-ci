@@ -33,7 +33,6 @@ class Screencopy(ScreencopyTracker):
         display_name = os.environ.get("WAYLAND_DISPLAY", "wayland-0")
         super().__init__(display_name)
         self._rpa_images = Images()
-        self.last_frame_count = 0
         self.screenshot = None
 
     @keyword
@@ -93,19 +92,15 @@ class Screencopy(ScreencopyTracker):
 
         image = self.screenshot
 
-        if self.frame_count != self.last_frame_count:
-            assert self.shm_data is not None, "No SHM data available"
-            self.shm_data.seek(0)
-            data = self.shm_data.read()
-            size = (self.buffer_width, self.buffer_height)
-            assert all(dim > 0 for dim in size), "Not enough image data"
-            stride = self.buffer_stride
-            image = Image.frombytes("RGBA", size, data, "raw", "RGBA", stride, -1)
-            b, g, r, a, *_ = image.split()
-            image = Image.merge("RGBA", (r, g, b, a))
-            self.last_frame_count = self.frame_count
-        else:
-            await asyncio.sleep(0)
+        assert self.shm_data is not None, "No SHM data available"
+        self.shm_data.seek(0)
+        data = self.shm_data.read()
+        size = (self.buffer_width, self.buffer_height)
+        assert all(dim > 0 for dim in size), "Not enough image data"
+        stride = self.buffer_stride
+        image = Image.frombytes("RGBA", size, data, "raw", "RGBA", stride, -1)
+        b, g, r, a, *_ = image.split()
+        image = Image.merge("RGBA", (r, g, b, a))
 
         return image
 
