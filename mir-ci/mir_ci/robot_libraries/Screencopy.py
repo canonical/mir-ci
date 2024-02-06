@@ -34,6 +34,7 @@ class Screencopy(ScreencopyTracker):
         super().__init__(display_name)
         self._rpa_images = Images()
         self.last_frame_count = 0
+        self.screenshot = None
 
     @keyword
     async def match(self, template: str, timeout: int = 5) -> List[dict]:
@@ -47,26 +48,24 @@ class Screencopy(ScreencopyTracker):
         :raises ImageNotFoundError: if no match is found within the timeout
         """
         regions = []
-        last_valid_screenshot = None
         end_time = time.time() + float(timeout)
+        last_checked_frame_count = 0
         while time.time() <= end_time:
-            screenshot = await self.grab_screenshot()
-            if not screenshot:
-                continue
-            try:
-                last_valid_screenshot = screenshot
-                regions = self._rpa_images.find_template_in_image(
-                    last_valid_screenshot,
-                    template,
-                    tolerance=self.TOLERANCE,
-                )
-            except (RuntimeError, ValueError, ImageNotFoundError):
-                continue
-            else:
-                break
+            self.screenshot = await self.grab_screenshot()
+            if last_checked_frame_count != self.frame_count:
+                last_checked_frame_count = self.frame_count
+                try:
+                    regions = self._rpa_images.find_template_in_image(
+                        self.screenshot,
+                        template,
+                        tolerance=self.TOLERANCE,
+                    )
+                except (RuntimeError, ValueError, ImageNotFoundError):
+                    continue
+                else:
+                    break
         else:
-            if last_valid_screenshot:
-                self._log_failed_match(last_valid_screenshot, template)
+            self._log_failed_match(self.screenshot, template)
             raise ImageNotFoundError
 
         return [
@@ -79,19 +78,23 @@ class Screencopy(ScreencopyTracker):
             for region in regions
         ]
 
-    async def grab_screenshot(self) -> Image.Image | None:
+    async def grab_screenshot(self):
         """
         Grabs the next frame tracked by the screencopy tracker.
 
-        :return Pillow Image of the next frame;
-            None if the next frame is not available yet
+        :return Pillow Image of the next frame, or of the current
+            frame if the next frame is not available yet.
         """
         await self.connect()
-        image = None
+
+        # Wait for the first frame
+        while self.frame_count == 0:
+            await asyncio.sleep(0)
+
+        image = self.screenshot
 
         if self.frame_count != self.last_frame_count:
             assert self.shm_data is not None, "No SHM data available"
-            self.last_frame_count = self.frame_count
             self.shm_data.seek(0)
             data = self.shm_data.read()
             size = (self.buffer_width, self.buffer_height)
@@ -100,6 +103,7 @@ class Screencopy(ScreencopyTracker):
             image = Image.frombytes("RGBA", size, data, "raw", "RGBA", stride, -1)
             b, g, r, a, *_ = image.split()
             image = Image.merge("RGBA", (r, g, b, a))
+            self.last_frame_count = self.frame_count
         else:
             await asyncio.sleep(0)
 
