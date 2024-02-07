@@ -24,7 +24,23 @@ ROBOT_TEMPLATE = """\
 ROBOT_SETTINGS = f"Resource   {MIR_CI_PATH}/robot_resources/screencopy.resource"
 
 
-@pytest.mark.xdg(XDG_CONFIG_HOME={"gtk-3.0/settings.ini": "[Settings]\ngtk-application-prefer-dark-theme=0\n"})
+@pytest.mark.xdg(
+    XDG_CONFIG_HOME={
+        "glib-2.0/settings/keyfile": dedent(
+            """\
+            [org/gnome/desktop/interface]
+            color-scheme='prefer-light'
+            gtk-theme='Adwaita'
+            icon-theme='Adwaita'
+            font-name='Ubuntu 11'
+            cursor-theme='Adwaita'
+            cursor-size=24
+            font-antialiasing='grayscale'
+        """
+        ),
+    },
+)
+@pytest.mark.env(GSETTINGS_BACKEND="keyfile")
 @pytest.mark.parametrize(
     "modern_server",
     [
