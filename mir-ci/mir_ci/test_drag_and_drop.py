@@ -56,6 +56,7 @@ ROBOT_SETTINGS = f"Resource   {MIR_CI_PATH}/robot_resources/screencopy.resource"
         "libgtk-4-dev",
         "fonts-ubuntu",
         "adwaita-icon-theme",
+        "adwaita-icon-theme-full",
     ),
     pip_pkgs=(
         ("pygobject", "gi"),
