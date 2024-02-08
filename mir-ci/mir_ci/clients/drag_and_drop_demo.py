@@ -22,14 +22,6 @@ class ExchangeType(str, Enum):
 
 DRAG_ACTION = Gdk.DragAction.COPY
 
-GTK_THEME_NAME = "Adwaita"
-GTK_ICON_THEME_NAME = "Adwaita"
-GTK_FONT_NAME = "Ubuntu 11"
-GTK_CURSOR_THEME_NAME = "Adwaita"
-GTK_CURSOR_THEME_SIZE = 24
-GTK_XFT_ANTIALIAS = 1
-GTK_XFT_RGBA = None
-
 
 class DragDropWindow(Gtk.Window):
     expect = ExchangeType.NONE
@@ -40,15 +32,6 @@ class DragDropWindow(Gtk.Window):
         self.expect = expect
         self.fullscreen()
         self.add_events(Gdk.EventMask.ENTER_NOTIFY_MASK)
-
-        settings = Gtk.Settings.get_default()
-        settings.set_property("gtk-theme-name", GTK_THEME_NAME)
-        settings.set_property("gtk-icon-theme-name", GTK_ICON_THEME_NAME)
-        settings.set_property("gtk-font-name", GTK_FONT_NAME)
-        settings.set_property("gtk-cursor-theme-name", GTK_CURSOR_THEME_NAME)
-        settings.set_property("gtk-cursor-theme-size", GTK_CURSOR_THEME_SIZE)
-        settings.set_property("gtk-xft-antialias", GTK_XFT_ANTIALIAS)
-        settings.set_property("gtk-xft-rgba", GTK_XFT_RGBA)
 
         drop_area = DropArea(target_mode, self.result_callback)
         iconview = DragSourceIconView(source_mode)
@@ -149,13 +132,14 @@ class DragSourceIconView(Gtk.IconView):
     def add_item(self, text, icon_name):
         icon_theme = Gtk.IconTheme.get_default()
         icon_info = icon_theme.lookup_icon(icon_name, 16, 0)
+        icon_theme_name = Gtk.Settings.get_default().get_property("gtk-icon-theme-name")
 
         regular_flag = Gtk.IconLookupFlags.FORCE_REGULAR
         symbolic_flag = Gtk.IconLookupFlags.FORCE_SYMBOLIC
 
         primary_flag, fallback_flag = (
             (regular_flag, symbolic_flag)
-            if icon_info and icon_info.get_filename() and GTK_ICON_THEME_NAME in icon_info.get_filename()
+            if icon_info and icon_info.get_filename() and icon_theme_name in icon_info.get_filename()
             else (symbolic_flag, regular_flag)
         )
 
@@ -251,6 +235,7 @@ if __name__ == "__main__":
     except Exception as e:
         logger.error("Argument error:", str(e))
         exit(1)
+
     win = DragDropWindow(source_mode=source_mode, target_mode=target_mode, expect=expect)
     win.connect("destroy", Gtk.main_quit)
     win.show_all()
