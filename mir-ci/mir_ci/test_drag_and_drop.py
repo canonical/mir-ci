@@ -89,9 +89,8 @@ class TestDragAndDrop:
             """\
             Source and Destination Match
                 ${pos}=    Move Pointer To Template    ${SRC_TEMPLATE}
-                Sleep    ${A_SHORT_TIME}
                 Press LEFT Button
-                Walk Pointer From ${pos} To Template    ${DST_TEMPLATE}    ${STEPS}    ${A_SHORT_TIME}
+                Walk Pointer From ${pos} To Template    ${DST_TEMPLATE}
                 Release LEFT Button
         """
         )
@@ -124,11 +123,10 @@ class TestDragAndDrop:
             """\
             Source and Destination Mismatch
                 ${pos}=    Move Pointer To Template    ${SRC_TEMPLATE}
-                Sleep    ${A_SHORT_TIME}
                 Press LEFT Button
-                ${pos}=    Walk Pointer From ${pos} To Template    ${DST_TEMPLATE}    ${STEPS}    ${A_SHORT_TIME}
+                ${pos}=    Walk Pointer From ${pos} To Template    ${DST_TEMPLATE}
                 Release LEFT Button
-                Walk Pointer From ${pos} To Template    ${END_TEMPLATE}    ${STEPS}    ${A_SHORT_TIME}
+                Walk Pointer From ${pos} To Template    ${END_TEMPLATE}
         """
         )
 
