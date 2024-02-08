@@ -174,18 +174,24 @@ def deps(request: pytest.FixtureRequest) -> Optional[apps.App]:
     ```
     """
     marks: Iterator[pytest.Mark] = request.node.iter_markers("deps")
+    error: bool = False
     try:
         closest: pytest.Mark = next(marks)
     except StopIteration:
         return None
     else:
-        for mark in marks:
-            _deps_install(request, mark.kwargs and dict({"cmd": mark.args}, **mark.kwargs) or mark.args[0])
-        return _deps_install(
-            request, closest.kwargs and dict({"cmd": closest.args}, **closest.kwargs) or closest.args[0]
-        )
+        try:
+            for mark in marks:
+                _deps_install(request, mark.kwargs and dict({"cmd": mark.args}, **mark.kwargs) or mark.args[0])
+            return _deps_install(
+                request, closest.kwargs and dict({"cmd": closest.args}, **closest.kwargs) or closest.args[0]
+            )
+        except Exception:
+            error = True
+            raise
     finally:
-        _deps_skip(request)
+        if not error:
+            _deps_skip(request)
 
 
 @pytest.fixture(scope="function")
