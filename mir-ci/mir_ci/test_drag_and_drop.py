@@ -3,7 +3,7 @@ from pathlib import Path
 from textwrap import dedent
 
 import pytest
-from mir_ci import SLOWDOWN, apps
+from mir_ci import apps
 from mir_ci.display_server import DisplayServer
 from mir_ci.screencopy_tracker import ScreencopyTracker
 from mir_ci.virtual_pointer import VirtualPointer
@@ -11,17 +11,24 @@ from mir_ci.virtual_pointer import VirtualPointer
 MIR_CI_PATH = Path(__file__).parent
 APP_PATH = MIR_CI_PATH / "clients/drag_and_drop_demo.py"
 
-STARTUP_TIME = 1.5 * SLOWDOWN
-A_SHORT_TIME = 0.3
-
 ROBOT_TEMPLATE = """\
 *** Settings ***
 {settings}
+
+*** Variables ***
+{variables}
 
 *** Test Cases ***
 {test_case}
 """
 ROBOT_SETTINGS = f"Resource   {MIR_CI_PATH}/robot_resources/screencopy.resource"
+ROBOT_VARIABLES = f"""\
+${{A_SHORT_TIME}}    0.3
+${{STEPS}}           3
+${{SRC_TEMPLATE}}    {MIR_CI_PATH}/robot_templates/drag_and_drop_src.png
+${{DST_TEMPLATE}}    {MIR_CI_PATH}/robot_templates/drag_and_drop_dst.png
+${{END_TEMPLATE}}    {MIR_CI_PATH}/robot_templates/drag_and_drop_end.png
+"""
 
 
 @pytest.mark.xdg(
@@ -79,22 +86,20 @@ class TestDragAndDrop:
         program = server_instance.program(apps.App(app))
 
         robot_test_case = dedent(
-            f"""\
+            """\
             Source and Destination Match
-                ${{center}}=    Move Pointer To Template    {MIR_CI_PATH}/robot_templates/drag_and_drop_src.png
-                Sleep    {A_SHORT_TIME}
+                ${pos}=    Move Pointer To Template    ${SRC_TEMPLATE}
+                Sleep    ${A_SHORT_TIME}
                 Press LEFT Button
-                ${{off_center}}=    Displace    ${{center}}    20    20
-                Move Pointer To Absolute    ${{off_center}}[x]    ${{off_center}}[y]
-                Sleep    {A_SHORT_TIME}
-                Move Pointer To Template    {MIR_CI_PATH}/robot_templates/drag_and_drop_dst.png
-                Sleep    {A_SHORT_TIME}
+                Walk Pointer From ${pos} To Template    ${DST_TEMPLATE}    ${STEPS}    ${A_SHORT_TIME}
                 Release LEFT Button
         """
         )
 
         with tempfile.NamedTemporaryFile(mode="w+", suffix=".robot", buffering=1) as robot_file:
-            robot_file.write(ROBOT_TEMPLATE.format(settings=ROBOT_SETTINGS, test_case=robot_test_case))
+            robot_file.write(
+                ROBOT_TEMPLATE.format(settings=ROBOT_SETTINGS, variables=ROBOT_VARIABLES, test_case=robot_test_case)
+            )
             robot = server_instance.program(apps.App(("robot", "-d", tmp_path, robot_file.name)))
 
             async with server_instance, program, robot:
@@ -116,27 +121,21 @@ class TestDragAndDrop:
         program = server_instance.program(apps.App(app))
 
         robot_test_case = dedent(
-            f"""\
+            """\
             Source and Destination Mismatch
-                ${{center}}=    Move Pointer To Template    {MIR_CI_PATH}/robot_templates/drag_and_drop_src.png
-                Sleep    {A_SHORT_TIME}
+                ${pos}=    Move Pointer To Template    ${SRC_TEMPLATE}
+                Sleep    ${A_SHORT_TIME}
                 Press LEFT Button
-                Sleep    {A_SHORT_TIME}
-                ${{off_center}}=    Displace    ${{center}}    20    20
-                Move Pointer To Absolute    ${{off_center}}[x]    ${{off_center}}[y]
-                Sleep    {A_SHORT_TIME}
-                ${{center}}=    Move Pointer To Template    {MIR_CI_PATH}/robot_templates/drag_and_drop_dst.png
-                Sleep    {A_SHORT_TIME}
+                ${pos}=    Walk Pointer From ${pos} To Template    ${DST_TEMPLATE}    ${STEPS}    ${A_SHORT_TIME}
                 Release LEFT Button
-                Sleep    {A_SHORT_TIME}
-                ${{off_center}}=    Displace    ${{center}}    20    20
-                Move Pointer To Absolute    ${{off_center}}[x]    ${{off_center}}[y]
-                Sleep    {A_SHORT_TIME}
+                Walk Pointer From ${pos} To Template    ${END_TEMPLATE}    ${STEPS}    ${A_SHORT_TIME}
         """
         )
 
         with tempfile.NamedTemporaryFile(mode="w+", suffix=".robot", buffering=1) as robot_file:
-            robot_file.write(ROBOT_TEMPLATE.format(settings=ROBOT_SETTINGS, test_case=robot_test_case))
+            robot_file.write(
+                ROBOT_TEMPLATE.format(settings=ROBOT_SETTINGS, variables=ROBOT_VARIABLES, test_case=robot_test_case)
+            )
             robot = server_instance.program(apps.App(("robot", "-d", tmp_path, robot_file.name)))
 
             async with server_instance, program, robot:
