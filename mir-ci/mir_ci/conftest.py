@@ -235,13 +235,9 @@ def env(request: pytest.FixtureRequest) -> Generator:
     Use the `env` mark to provide data, e.g.:
     @pytest.mark.env(ENV_VARIABLE='value')
     """
-    if request.config.getoption("--deps"):
-        yield
-        return
-
     with pytest.MonkeyPatch.context() as m:
         marks: Iterator[pytest.Mark] = request.node.iter_markers("env")
-        for mark in marks:
+        for mark in reversed(list(marks)):
             for var, value in mark.kwargs.items():
                 m.setenv(var, value)
         yield
