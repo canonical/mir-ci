@@ -53,7 +53,8 @@ ROBOT_SETTINGS = f"Resource   {MIR_CI_PATH}/robot_resources/screencopy.resource"
 )
 @pytest.mark.deps(
     debs=(
-        "libgtk-4-dev",
+        "libgirepository1.0-dev",
+        "libgtk-3-dev",
         "fonts-ubuntu",
         "adwaita-icon-theme",
         "adwaita-icon-theme-full",
