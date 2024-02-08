@@ -225,3 +225,19 @@ def xdg(request: pytest.FixtureRequest, tmp_path: pathlib.Path) -> Generator:
                     f.write(contents)
             m.setenv(var, str(var_path))
         yield
+
+
+@pytest.fixture(scope="function")
+def env(request: pytest.FixtureRequest) -> Generator:
+    """
+    Set environment variables.
+
+    Use the `env` mark to provide data, e.g.:
+    @pytest.mark.env(ENV_VARIABLE='value')
+    """
+    with pytest.MonkeyPatch.context() as m:
+        marks: Iterator[pytest.Mark] = request.node.iter_markers("env")
+        for mark in reversed(list(marks)):
+            for var, value in mark.kwargs.items():
+                m.setenv(var, value)
+        yield
