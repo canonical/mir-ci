@@ -22,15 +22,15 @@ jobs:
 
     steps:
     - name: Check out code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.11'
 
     - name: Install Python dependencies
-      uses: BSFishy/pip-action@v1
+      uses: insightengineering/pip-action@v2
       with:
         requirements: requirements.txt
 
@@ -39,7 +39,7 @@ jobs:
         sudo snap install review-tools --edge
 
     - name: Set up Launchpad credentials
-      uses: DamianReeves/write-file-action@v1.0
+      uses: DamianReeves/write-file-action@v1.3
       with:
         path: lp_credentials
         contents: ${{ secrets.LAUNCHPAD_CREDENTIALS }}
