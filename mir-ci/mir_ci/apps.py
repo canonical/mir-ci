@@ -1,8 +1,9 @@
+from textwrap import dedent
 from typing import Any, Collection, Literal, Optional, Union
 
 import pytest
 
-AppType = Literal["snap", "deb", "pip"]
+AppType = Optional[Literal["snap", "deb", "pip"]]
 
 
 class App:
@@ -16,7 +17,7 @@ class App:
 
 def _dependency(
     cmd: Collection[str],
-    app_type: AppType,
+    app_type: AppType = None,
     snap: Optional[str] = None,
     channel: str = "latest/stable",
     debs: Collection[str] = (),
@@ -61,6 +62,30 @@ def pip(pkg: str, *args: str, cmd: Collection[str] = (), id: Optional[str] = Non
 def qterminal(*args: str, debs: Collection[str] = ("qterminal", "qtwayland5"), marks=(), **kwargs):
     marks = (pytest.mark.xdg(XDG_CONFIG_HOME={"qterminal.org/qterminal.ini": "[General]\nAskOnExit=false"}), *marks)
     return deb("qterminal", *args, debs=debs, marks=marks, **kwargs)
+
+
+def gtkapp(*cmd, marks=(), **kwargs):
+    marks = (
+        pytest.mark.xdg(
+            XDG_CONFIG_HOME={
+                "glib-2.0/settings/keyfile": dedent(
+                    """\
+            [org/gnome/desktop/interface]
+            color-scheme='prefer-light'
+            gtk-theme='Adwaita'
+            icon-theme='Adwaita'
+            font-name='Ubuntu 11'
+            cursor-theme='Adwaita'
+            cursor-size=24
+            font-antialiasing='grayscale'
+        """
+                ),
+            },
+        ),
+        pytest.mark.env(GSETTINGS_BACKEND="keyfile"),
+        *marks,
+    )
+    return _dependency(cmd=cmd, marks=marks, **kwargs)
 
 
 def pluma(*args: str, **kwargs):
