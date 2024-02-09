@@ -23,8 +23,6 @@ ROBOT_TEMPLATE = """\
 """
 ROBOT_SETTINGS = f"Resource   {MIR_CI_PATH}/robot_resources/screencopy.resource"
 ROBOT_VARIABLES = f"""\
-${{A_SHORT_TIME}}    0.3
-${{STEPS}}           3
 ${{SRC_TEMPLATE}}    {MIR_CI_PATH}/robot_templates/drag_and_drop_src.png
 ${{DST_TEMPLATE}}    {MIR_CI_PATH}/robot_templates/drag_and_drop_dst.png
 ${{END_TEMPLATE}}    {MIR_CI_PATH}/robot_templates/drag_and_drop_end.png
