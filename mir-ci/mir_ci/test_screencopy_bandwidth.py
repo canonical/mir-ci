@@ -86,11 +86,13 @@ class TestScreencopyBandwidth:
             apps.mir_demo_server(),
         ],
     )
-    async def test_app_dragged_around(self, record_property, local_server, request) -> None:
+    @pytest.mark.parametrize(
+        "client",
+        [apps.gtkapp("python3", Path(__file__).parent / "clients" / "maximizing_gtk_app.py")],
+    )
+    async def test_app_dragged_around(self, record_property, local_server, client, request) -> None:
         extensions = ScreencopyTracker.required_extensions + WaylandRobot.required_extensions
-        app_path = Path(__file__).parent / "clients" / "maximizing_gtk_app.py"
         server = DisplayServer(local_server, add_extensions=extensions)
-        app = server.program(apps.App(("dbus-run-session", "--", "python3", str(app_path))))
         tracker = ScreencopyTracker(server.display_name)
 
         robot_test_case = dedent(
@@ -111,6 +113,6 @@ class TestScreencopyBandwidth:
 
         robot = server.program(WaylandRobot(request, robot_test_case))
 
-        async with server, tracker, app, robot:
+        async with server, tracker, server.program(client), robot:
             await robot.wait()
         _record_properties(record_property, server, tracker, 16)
