@@ -58,9 +58,9 @@ ${{END_TEMPLATE}}    {MIR_CI_PATH}/robot_templates/drag_and_drop_end.png
 )
 @pytest.mark.deps(
     debs=(
-        "libgtk-4-dev",
+        "libgirepository1.0-dev",
+        "libgtk-3-dev",
         "fonts-ubuntu",
-        "adwaita-icon-theme",
         "adwaita-icon-theme-full",
     ),
     pip_pkgs=(
