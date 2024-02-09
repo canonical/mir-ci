@@ -35,7 +35,7 @@ jobs:
       with:
         python-version: "3.10"
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - id: pytest-args
       name: Determine pytest arguments
