@@ -1,12 +1,14 @@
 import asyncio
 import os
 from pathlib import Path
+from textwrap import dedent
 
 import pytest
 from mir_ci import SLOWDOWN, apps
 from mir_ci.display_server import DisplayServer
 from mir_ci.screencopy_tracker import ScreencopyTracker
-from mir_ci.virtual_pointer import Button, VirtualPointer
+from mir_ci.test_drag_and_drop import MIR_CI_PATH, ROBOT_SETTINGS, ROBOT_TEMPLATE
+from mir_ci.virtual_pointer import VirtualPointer
 
 long_wait_time = 10
 
@@ -68,7 +70,15 @@ class TestScreencopyBandwidth:
             await asyncio.sleep(long_wait_time)
         _record_properties(record_property, server, tracker, 2)
 
-    @pytest.mark.deps(debs=("libgtk-4-dev",), pip_pkgs=(("pygobject", "gi"),))
+    @pytest.mark.deps(
+        debs=("libgtk-4-dev",),
+        pip_pkgs=(
+            ("pygobject", "gi"),
+            ("robotframework~=6.1.1", "robot"),
+            ("rpaframework", "RPA"),
+            ("rpaframework-recognition", "RPA.recognition"),
+        ),
+    )
     @pytest.mark.parametrize(
         "local_server",
         [
@@ -77,24 +87,43 @@ class TestScreencopyBandwidth:
             apps.mir_demo_server(),
         ],
     )
-    async def test_app_dragged_around(self, record_property, local_server) -> None:
-        async def pause():
-            await asyncio.sleep(0.2)
-
+    async def test_app_dragged_around(self, record_property, local_server, tmp_path) -> None:
         extensions = ScreencopyTracker.required_extensions + VirtualPointer.required_extensions
         app_path = Path(__file__).parent / "clients" / "maximizing_gtk_app.py"
         server = DisplayServer(local_server, add_extensions=extensions)
-        app = server.program(apps.App(("python3", str(app_path))))
+        app = server.program(apps.App(("dbus-run-session", "--", "python3", str(app_path))))
         tracker = ScreencopyTracker(server.display_name)
-        pointer = VirtualPointer(server.display_name)
-        async with server, tracker, app, pointer:
-            await asyncio.sleep(2 * SLOWDOWN)  # TODO: detect when the window is drawn instead
-            pointer.move_to_absolute(pointer.output_width / 2, 10)
-            await pause()
-            pointer.button(Button.LEFT, True)
-            await pause()
-            for y in range(4):
-                for x in range(4):
-                    pointer.move_to_proportional((x + 0.5) / 4, (y + 0.5) / 4)
-                    await pause()
+
+        robot_test_case = dedent(
+            """\
+            Drag app
+                ${pos}=    Move Pointer To Template    ${titlebar}
+                Press LEFT Button
+                FOR     ${y}    IN RANGE    4
+                    FOR     ${x}    IN RANGE    4
+                        ${px}   evaluate    ($x + 0.5) / 4
+                        ${py}   evaluate    ($y + 0.5) / 4
+                        Move Pointer To Proportional    ${px}   ${py}
+                        Sleep   0.2
+                    END
+                END
+        """
+        )
+
+        robot_variables = dedent(
+            f"""
+            ${{titlebar}}=  {MIR_CI_PATH}/robot_templates/dragged_app_titlebar.png
+        """
+        )
+
+        procedure = tmp_path / Path(__file__).with_suffix(".robot")
+
+        with open(procedure, mode="w") as robot_file:
+            robot_file.write(
+                ROBOT_TEMPLATE.format(settings=ROBOT_SETTINGS, variables=robot_variables, test_case=robot_test_case)
+            )
+        robot = server.program(apps.App(("robot", "-d", tmp_path, procedure)))
+
+        async with server, tracker, app, robot:
+            await robot.wait()
         _record_properties(record_property, server, tracker, 16)
