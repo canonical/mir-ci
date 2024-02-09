@@ -1,5 +1,6 @@
 import asyncio
 import os
+from typing import Dict
 
 from mir_ci.virtual_pointer import Button, VirtualPointer
 from robot.api.deco import keyword, library
@@ -46,6 +47,12 @@ class WaylandHid(VirtualPointer):
         """Release a button (LEFT|RIGHT|MIDDLE) on the virtual pointer."""
         await self.connect()
         self.button(Button[button], False)
+
+    @keyword
+    async def get_absolute_from_proportional(self, x: float, y: float) -> Dict[str, float]:
+        """Get the absolute position for the given output size proportions."""
+        await self.connect()
+        return {"x": x * self.output_width, "y": y * self.output_height}
 
     async def connect(self):
         """Connect to the display."""
