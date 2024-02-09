@@ -11,23 +11,6 @@ from mir_ci.virtual_pointer import VirtualPointer
 APP_PATH = Path(__file__).parent / "clients/drag_and_drop_demo.py"
 
 
-@pytest.mark.xdg(
-    XDG_CONFIG_HOME={
-        "glib-2.0/settings/keyfile": dedent(
-            """\
-            [org/gnome/desktop/interface]
-            color-scheme='prefer-light'
-            gtk-theme='Adwaita'
-            icon-theme='Adwaita'
-            font-name='Ubuntu 11'
-            cursor-theme='Adwaita'
-            cursor-size=24
-            font-antialiasing='grayscale'
-        """
-        ),
-    },
-)
-@pytest.mark.env(GSETTINGS_BACKEND="keyfile")
 @pytest.mark.parametrize(
     "modern_server",
     [
@@ -56,14 +39,14 @@ class TestDragAndDrop:
     @pytest.mark.parametrize(
         "app",
         [
-            ("python3", APP_PATH, "--source", "pixbuf", "--target", "pixbuf", "--expect", "pixbuf"),
-            ("python3", APP_PATH, "--source", "text", "--target", "text", "--expect", "text"),
+            apps.gtkapp("python3", APP_PATH, "--source", "pixbuf", "--target", "pixbuf", "--expect", "pixbuf"),
+            apps.gtkapp("python3", APP_PATH, "--source", "text", "--target", "text", "--expect", "text"),
         ],
     )
     async def test_source_and_dest_match(self, modern_server, app, request) -> None:
         extensions = VirtualPointer.required_extensions + ScreencopyTracker.required_extensions
         server_instance = DisplayServer(modern_server, add_extensions=extensions)
-        program = server_instance.program(apps.App(app))
+        program = server_instance.program(app)
 
         robot_test_case = dedent(
             """\
@@ -84,16 +67,16 @@ class TestDragAndDrop:
     @pytest.mark.parametrize(
         "app",
         [
-            ("python3", "-u", APP_PATH, "--source", "pixbuf", "--target", "text", "--expect", "pixbuf"),
-            ("python3", "-u", APP_PATH, "--source", "text", "--target", "pixbuf", "--expect", "text"),
-            ("python3", "-u", APP_PATH, "--source", "pixbuf", "--target", "text", "--expect", "text"),
-            ("python3", "-u", APP_PATH, "--source", "text", "--target", "pixbuf", "--expect", "pixbuf"),
+            apps.gtkapp("python3", "-u", APP_PATH, "--source", "pixbuf", "--target", "text", "--expect", "pixbuf"),
+            apps.gtkapp("python3", "-u", APP_PATH, "--source", "text", "--target", "pixbuf", "--expect", "text"),
+            apps.gtkapp("python3", "-u", APP_PATH, "--source", "pixbuf", "--target", "text", "--expect", "text"),
+            apps.gtkapp("python3", "-u", APP_PATH, "--source", "text", "--target", "pixbuf", "--expect", "pixbuf"),
         ],
     )
     async def test_source_and_dest_mismatch(self, modern_server, app, request) -> None:
         extensions = VirtualPointer.required_extensions + ScreencopyTracker.required_extensions
         server_instance = DisplayServer(modern_server, add_extensions=extensions)
-        program = server_instance.program(apps.App(app))
+        program = server_instance.program(app)
 
         robot_test_case = dedent(
             """\
