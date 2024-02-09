@@ -6,9 +6,8 @@ from textwrap import dedent
 import pytest
 from mir_ci import SLOWDOWN, apps
 from mir_ci.display_server import DisplayServer
+from mir_ci.robot_wrapper import WaylandRobot
 from mir_ci.screencopy_tracker import ScreencopyTracker
-from mir_ci.test_drag_and_drop import MIR_CI_PATH, ROBOT_SETTINGS, ROBOT_TEMPLATE
-from mir_ci.virtual_pointer import VirtualPointer
 
 long_wait_time = 10
 
@@ -87,8 +86,8 @@ class TestScreencopyBandwidth:
             apps.mir_demo_server(),
         ],
     )
-    async def test_app_dragged_around(self, record_property, local_server, tmp_path) -> None:
-        extensions = ScreencopyTracker.required_extensions + VirtualPointer.required_extensions
+    async def test_app_dragged_around(self, record_property, local_server, request) -> None:
+        extensions = ScreencopyTracker.required_extensions + WaylandRobot.required_extensions
         app_path = Path(__file__).parent / "clients" / "maximizing_gtk_app.py"
         server = DisplayServer(local_server, add_extensions=extensions)
         app = server.program(apps.App(("dbus-run-session", "--", "python3", str(app_path))))
@@ -97,7 +96,7 @@ class TestScreencopyBandwidth:
         robot_test_case = dedent(
             """\
             Drag app
-                ${pos}=    Move Pointer To Template    ${titlebar}
+                ${pos}=    Move Pointer To Template    ${template_path}/dragged_app_titlebar.png
                 Press LEFT Button
                 FOR     ${y}    IN RANGE    4
                     FOR     ${x}    IN RANGE    4
@@ -110,19 +109,7 @@ class TestScreencopyBandwidth:
         """
         )
 
-        robot_variables = dedent(
-            f"""
-            ${{titlebar}}=  {MIR_CI_PATH}/robot_templates/dragged_app_titlebar.png
-        """
-        )
-
-        procedure = tmp_path / Path(__file__).with_suffix(".robot")
-
-        with open(procedure, mode="w") as robot_file:
-            robot_file.write(
-                ROBOT_TEMPLATE.format(settings=ROBOT_SETTINGS, variables=robot_variables, test_case=robot_test_case)
-            )
-        robot = server.program(apps.App(("robot", "-d", tmp_path, procedure)))
+        robot = server.program(WaylandRobot(request, robot_test_case))
 
         async with server, tracker, app, robot:
             await robot.wait()
