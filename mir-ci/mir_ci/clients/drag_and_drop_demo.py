@@ -45,7 +45,7 @@ class DragDropWindow(Gtk.Window):
         if target_mode == ExchangeType.NONE:
             dropbox.pack_start(drop_area.buttons(), False, False, 0)
         dropbox.pack_start(drop_area, True, True, 0)
-        dropbox.pack_start(drop_area.feedback, False, True, 0)
+        dropbox.pack_start(drop_area.feedback, True, True, 0)
 
         evbox = Gtk.EventBox()
         evbox.add(dropbox)
