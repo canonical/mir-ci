@@ -29,8 +29,8 @@ class VirtualPointer(WaylandClient):
         self.output_manager: Optional[ZxdgOutputManagerV1Proxy] = None
         self.wl_outputs: List[WlOutputProxy] = []
         self.xdg_outputs: List[ZxdgOutputV1Proxy] = []
-        self.output_width = 1000
-        self.output_height = 1000
+        self.output_width = 0
+        self.output_height = 0
 
     def registry_global(self, registry, id_num: int, iface_name: str, version: int) -> None:
         if iface_name == ZwlrVirtualPointerManagerV1.name:
@@ -60,6 +60,8 @@ class VirtualPointer(WaylandClient):
             self.output_height = height
 
     def move_to_absolute(self, x: float, y: float) -> None:
+        assert self.output_width > 0, "Output width must be greater than 0"
+        assert self.output_height > 0, "Output height must be greater than 0"
         assert x >= 0 and x <= self.output_width, "x not in range 0-" + str(self.output_width)
         assert y >= 0 and y <= self.output_height, "y not in range 0-" + str(self.output_height)
         assert self.pointer is not None, "No pointer"
