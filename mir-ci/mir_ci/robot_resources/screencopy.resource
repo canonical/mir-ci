@@ -20,8 +20,8 @@ Displace ${point} By ${displacement_x} And ${displacement_y}
 Move Pointer To ${destination}
     [Documentation]    Move the pointer to a position or image template.
     ...
-    ...    If ${destination} is an image template, the corresponding position
-    ...    will be that of the center of the first matching template region.
+    ...    When ${destination} is the path of an image template file, the pointer
+    ...    will move to the center of the first matching template region.
     ...
     ...    The return value is the pointer position after the move.
     IF    ${{isinstance($destination, str)}}
@@ -37,7 +37,11 @@ Move Pointer To Proportional ${position}
     [Documentation]    Move the pointer to a position given as proportions to
     ...    the size of the display output.
     ...
-    ...    The return value is the pointer position after the move.
+    ...    ${position} must be a point represented by floating-point x and y
+    ...    values in the range 0..1.
+    ...
+    ...    The return value is the pointer position after the move,
+    ...    in absolute coordinates.
     WaylandHid.Move Pointer To Proportional    ${position}[x]    ${position}[y]
     RETURN    ${position}
 
@@ -45,18 +49,18 @@ Walk Pointer From ${start_position} To ${destination}
     [Documentation]    Move the pointer in incremental steps from a start
     ...    position to a destination position or image template.
     ...
-    ...    If an image template is given as ${destination}, the corresponding
-    ...    position will be that of the center of the first matching template
-    ...    region.
+    ...    When ${destination} is the path of an image template file, the
+    ...    corresponding position will be that of the center of the first
+    ...    matching template region.
     ...
     ...    Optional arguments:
     ...    ${steps}: number of steps. If <= 0, the pointer is moved in
     ...    increments of 16 pixels. Default is 0.
-    ...    ${step_sleep}: time to sleep after each step, in seconds.
+    ...    ${delay}: time to sleep after each step, in seconds.
     ...    Default is 0.
     ...
     ...    The return value is the pointer position after the walk.
-    [Arguments]    ${steps}=0    ${step_sleep}=0
+    [Arguments]    ${steps}=0    ${delay}=0
     IF    ${{isinstance($destination, str)}}
         ${regions}=    Screencopy.Match    ${destination}
         ${end_position}=    Get Center Of ${regions}[0]
@@ -72,16 +76,16 @@ Walk Pointer From ${start_position} To ${destination}
         ${t}=    Evaluate    ${step}/${steps}
         ${position}=    Lerp Between ${start_position} And ${end_position} With Parameter ${t}
         WaylandHid.Move Pointer To Absolute    ${position}[x]    ${position}[y]
-        Sleep    ${step_sleep}
+        Sleep    ${delay}
     END
     RETURN    ${end_position}
 
 Walk Pointer From ${start_position} To Proportional ${end_position}
     [Documentation]    Same as `Walk Pointer From ... To ...`,
     ...    but with a proportional position as destination.
-    [Arguments]    ${steps}=0    ${step_sleep}=0
+    [Arguments]    ${steps}=0    ${delay}=0
     ${end_position}=    WaylandHid.Get Absolute From Proportional    ${end_position}[x]    ${end_position}[y]
-    ${end_position}=    Walk Pointer From ${start_position} To ${end_position}    ${steps}    ${step_sleep}
+    ${end_position}=    Walk Pointer From ${start_position} To ${end_position}    ${steps}    ${delay}
     RETURN    ${end_position}
 
 Distance From ${point_a} To ${point_b}
