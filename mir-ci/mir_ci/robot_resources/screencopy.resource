@@ -12,9 +12,9 @@ Get Center Of ${region}
     ...    {"x": (${region}[left] + ${region}[right]) / 2, "y": (${region}[top] + ${region}[bottom]) / 2}
     RETURN    ${point}
 
-Displace ${point} By ${displacement_x} And ${displacement_y}
+Displace ${point} By (${x}, ${y})
     [Documentation]    Shift a point by the specified displacements along the x and y axes.
-    ${point}=    Evaluate    {"x": ${point}[x] + ${displacement_x}, "y": ${point}[y] + ${displacement_y}}
+    ${point}=    Evaluate    {"x": ${point}[x] + ${x}, "y": ${point}[y] + ${y}}
     RETURN    ${point}
 
 Move Pointer To ${destination}
