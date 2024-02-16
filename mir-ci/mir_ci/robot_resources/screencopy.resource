@@ -6,36 +6,67 @@ Library             ../robot_libraries/WaylandHid.py
 
 
 *** Keywords ***
-Get Center
+Get Center Of ${region}
     [Documentation]    Get the center point of a region.
-    [Arguments]    ${region}
     ${point}=    Evaluate
-    ...    {"x": int((${region}[left] + ${region}[right]) / 2), "y": int((${region}[top] + ${region}[bottom]) / 2)}
+    ...    {"x": (${region}[left] + ${region}[right]) / 2, "y": (${region}[top] + ${region}[bottom]) / 2}
     RETURN    ${point}
 
-Displace
+Displace ${point} By (${x}, ${y})
     [Documentation]    Shift a point by the specified displacements along the x and y axes.
-    [Arguments]    ${point}    ${displacement_x}    ${displacement_y}
-    ${point}=    Evaluate    {"x": ${point}[x] + ${displacement_x}, "y": ${point}[y] + ${displacement_y}}
+    ${point}=    Evaluate    {"x": ${point}[x] + ${x}, "y": ${point}[y] + ${y}}
     RETURN    ${point}
 
-Move Pointer To Template
-    [Documentation]    Move the pointer to the center of the first matching image template.
-    [Arguments]    ${template}
-    ${regions}=    Match    ${template}
-    ${center}=    Get Center    ${regions}[0]
-    Move Pointer To Absolute    ${center}[x]    ${center}[y]
-    RETURN    ${center}
+Move Pointer To ${destination}
+    [Documentation]    Move the pointer to a position or image template.
+    ...
+    ...    When ${destination} is the path of an image template file, the pointer
+    ...    will move to the center of the first matching template region.
+    ...
+    ...    The return value is the pointer position after the move.
+    IF    ${{isinstance($destination, str)}}
+        ${regions}=    Screencopy.Match    ${destination}
+        ${position}=    Get Center Of ${regions}[0]
+    ELSE
+        ${position}=    Set Variable    ${destination}
+    END
+    WaylandHid.Move Pointer To Absolute    ${position}[x]    ${position}[y]
+    RETURN    ${position}
 
-Walk Pointer From ${start_position} To Template
-    [Documentation]    Move the pointer in incremental steps from a start position
-    ...    to the center of the first matching image template.
-    ...    If ${steps} <= 0, the pointer is moved in increments of 16 pixels.
-    ...    ${step_sleep} is the time to sleep after each step, in seconds.
+Move Pointer To Proportional ${position}
+    [Documentation]    Move the pointer to a position given as proportions to
+    ...    the size of the display output.
+    ...
+    ...    ${position} must be a point represented by floating-point x and y
+    ...    values in the range 0..1.
+    ...
+    ...    The return value is the pointer position after the move,
+    ...    in absolute coordinates.
+    WaylandHid.Move Pointer To Proportional    ${position}[x]    ${position}[y]
+    RETURN    ${position}
+
+Walk Pointer From ${start_position} To ${destination}
+    [Documentation]    Move the pointer in incremental steps from a start
+    ...    position to a destination position or image template.
+    ...
+    ...    When ${destination} is the path of an image template file, the
+    ...    corresponding position will be that of the center of the first
+    ...    matching template region.
+    ...
+    ...    Optional arguments:
+    ...    ${steps}: number of steps. If <= 0, the pointer is moved in
+    ...    increments of 16 pixels. Default is 0.
+    ...    ${delay}: time to sleep after each step, in seconds.
+    ...    Default is 0.
+    ...
     ...    The return value is the pointer position after the walk.
-    [Arguments]    ${template}    ${steps}=0    ${step_sleep}=0
-    ${regions}=    Match    ${template}
-    ${end_position}=    Get Center    ${regions}[0]
+    [Arguments]    ${steps}=0    ${delay}=0
+    IF    ${{isinstance($destination, str)}}
+        ${regions}=    Screencopy.Match    ${destination}
+        ${end_position}=    Get Center Of ${regions}[0]
+    ELSE
+        ${end_position}=    Set Variable    ${destination}
+    END
     IF    ${steps} <= 0
         ${distance}=    Distance From ${start_position} To ${end_position}
         ${step_in_pixels}=    Evaluate    16
@@ -43,10 +74,18 @@ Walk Pointer From ${start_position} To Template
     END
     FOR    ${step}    IN RANGE    0    ${{${steps} + 1}}
         ${t}=    Evaluate    ${step}/${steps}
-        ${point}=    Lerp Between ${start_position} And ${end_position} With Parameter ${t}
-        Move Pointer To Absolute    ${point}[x]    ${point}[y]
-        Sleep    ${step_sleep}
+        ${position}=    Lerp Between ${start_position} And ${end_position} With Parameter ${t}
+        WaylandHid.Move Pointer To Absolute    ${position}[x]    ${position}[y]
+        Sleep    ${delay}
     END
+    RETURN    ${end_position}
+
+Walk Pointer From ${start_position} To Proportional ${end_position}
+    [Documentation]    Same as `Walk Pointer From ... To ...`,
+    ...    but with a proportional position as destination.
+    [Arguments]    ${steps}=0    ${delay}=0
+    ${end_position}=    WaylandHid.Get Absolute From Proportional    ${end_position}[x]    ${end_position}[y]
+    ${end_position}=    Walk Pointer From ${start_position} To ${end_position}    ${steps}    ${delay}
     RETURN    ${end_position}
 
 Distance From ${point_a} To ${point_b}
