@@ -86,9 +86,9 @@ class TestDragAndDrop:
         robot_test_case = dedent(
             """\
             Source and Destination Match
-                ${pos}=    Move Pointer To Template    ${SRC_TEMPLATE}
+                ${pos}=    Move Pointer To ${SRC_TEMPLATE}
                 Press LEFT Button
-                Walk Pointer From ${pos} To Template    ${DST_TEMPLATE}
+                Walk Pointer From ${pos} To ${DST_TEMPLATE}
                 Release LEFT Button
         """
         )
@@ -120,11 +120,11 @@ class TestDragAndDrop:
         robot_test_case = dedent(
             """\
             Source and Destination Mismatch
-                ${pos}=    Move Pointer To Template    ${SRC_TEMPLATE}
+                ${pos}=    Move Pointer To ${SRC_TEMPLATE}
                 Press LEFT Button
-                ${pos}=    Walk Pointer From ${pos} To Template    ${DST_TEMPLATE}
+                ${pos}=    Walk Pointer From ${pos} To ${DST_TEMPLATE}
                 Release LEFT Button
-                Walk Pointer From ${pos} To Template    ${END_TEMPLATE}
+                Walk Pointer From ${pos} To ${END_TEMPLATE}
         """
         )
 
