@@ -43,11 +43,16 @@ jobs:
       uses: actions/checkout@v4
       with:
         repository: MirServer/checkbox-mir
+        fetch-depth: 0
 
     - name: Use the current mir-ci commit
       uses: mikefarah/yq@master
       with:
         cmd: yq -i '.parts.mir-ci.source-commit="${{ github.sha }}"' snap/snapcraft.yaml
+
+    - name: Disable LFS for remote-build pushes
+      run: |
+        git lfs uninstall
 
     - name: Build and publish the snap
       uses: canonical/actions/build-snap@release
