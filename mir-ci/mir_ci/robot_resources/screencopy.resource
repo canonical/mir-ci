@@ -18,10 +18,12 @@ Displace ${point} By (${x}, ${y})
     RETURN    ${point}
 
 Move Pointer To ${destination}
-    [Documentation]    Move the pointer to a position or image template.
+    [Documentation]    Move the pointer to an absolute position or image
+    ...    template.
     ...
-    ...    When ${destination} is the path of an image template file, the pointer
-    ...    will move to the center of the first matching template region.
+    ...    When ${destination} is the path of an image template file, the
+    ...    pointer will move to the center of the first matching template
+    ...    region.
     ...
     ...    The return value is the pointer position after the move.
     IF    ${{isinstance($destination, str)}}
@@ -45,9 +47,28 @@ Move Pointer To Proportional ${position}
     WaylandHid.Move Pointer To Proportional    ${position}[x]    ${position}[y]
     RETURN    ${position}
 
+Walk Pointer To ${destination}
+    [Documentation]    Same as `Walk Pointer From ... To ...`, but using the
+    ...    current virtual pointer position as start position.
+    [Arguments]    ${steps}=0    ${delay}=0
+    ${start_position}=    Get Pointer Position
+    ${end_position}=    Walk Pointer From ${start_position} To ${destination}    ${steps}    ${delay}
+    RETURN    ${end_position}
+
+Walk Pointer To Proportional ${end_position}
+    [Documentation]    Same as `Walk Pointer From ... To ...`, but using the
+    ...    current virtual pointer position as start position, and a
+    ...    proportional position as destination.
+    [Arguments]    ${steps}=0    ${delay}=0
+    ${start_position}=    Get Pointer Position
+    ${end_position}=    WaylandHid.Get Absolute From Proportional    ${end_position}[x]    ${end_position}[y]
+    ${end_position}=    Walk Pointer From ${start_position} To ${end_position}    ${steps}    ${delay}
+    RETURN    ${end_position}
+
 Walk Pointer From ${start_position} To ${destination}
     [Documentation]    Move the pointer in incremental steps from a start
-    ...    position to a destination position or image template.
+    ...    absolute position to a destination absolute position or image
+    ...    template.
     ...
     ...    When ${destination} is the path of an image template file, the
     ...    corresponding position will be that of the center of the first
@@ -59,7 +80,8 @@ Walk Pointer From ${start_position} To ${destination}
     ...    ${delay}: time to sleep after each step, in seconds.
     ...    Default is 0.
     ...
-    ...    The return value is the pointer position after the walk.
+    ...    The return value is the pointer position after the walk,
+    ...    in absolute coordinates.
     [Arguments]    ${steps}=0    ${delay}=0
     IF    ${{isinstance($destination, str)}}
         ${regions}=    Screencopy.Match    ${destination}
