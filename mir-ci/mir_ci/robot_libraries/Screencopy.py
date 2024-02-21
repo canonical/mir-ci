@@ -125,9 +125,13 @@ class Screencopy(ScreencopyTracker):
         """Log a failure with template matching."""
         template_img = Image.open(template)
         template_string = (
-            'Template was:<br /><img src="data:image/png;base64,' f'{self._to_base64(template_img)}" /><br />'
+            'Template was:<br /><img style="max-width: 100%" src="data:image/png;base64,'
+            f'{self._to_base64(template_img)}" /><br />'
         )
-        image_string = 'Image was:<br /><img src="data:image/png;base64,' f'{self._to_base64(screenshot)}" />'
+        image_string = (
+            'Image was:<br /><img style="max-width: 100%" src="data:image/png;base64,'
+            f'{self._to_base64(screenshot)}" />'
+        )
         logger.info(
             template_string + image_string,
             html=True,
