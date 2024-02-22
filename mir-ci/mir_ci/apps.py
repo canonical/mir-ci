@@ -80,12 +80,22 @@ def mir_kiosk():
 
 
 def confined_shell():
-    return snap("confined-shell", channel="edge", id="confined_shell")
+    return snap("confined-shell", channel="edge", cmd=("confined-shell", "--display-config=clone"), id="confined_shell")
 
 
 def mir_test_tools():
-    return snap("mir-test-tools", channel="22/beta", cmd=("mir-test-tools.demo-server",), id="mir_test_tools")
+    return snap(
+        "mir-test-tools",
+        channel="22/beta",
+        cmd=("mir-test-tools.demo-server", "--display-config=clone"),
+        id="mir_test_tools",
+    )
 
 
 def mir_demo_server():
-    return deb("mir_demo_server", debs=("mir-test-tools", "mir-graphics-drivers-desktop"), id="mir_demo_server")
+    return deb(
+        "mir_demo_server",
+        cmd=("mir_demo_server", "--display-config=clone"),
+        debs=("mir-test-tools", "mir-graphics-drivers-desktop"),
+        id="mir_demo_server",
+    )
