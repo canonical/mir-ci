@@ -1,6 +1,7 @@
 import asyncio
 import math
 import os
+from typing import Optional, Tuple
 
 from mir_ci.virtual_pointer import Button, VirtualPointer
 from robot.api.deco import keyword, library
@@ -28,8 +29,7 @@ class WaylandHid(VirtualPointer):
               number of steps is passed to walk_pointer_*. Default is 16.
         """
         self.ROBOT_LIBRARY_LISTENER = self
-        self._pointer_position = (0, 0)
-        self._tracking_pointer = False
+        self._pointer_position: Optional[Tuple[int, int]] = None
         self._pixel_step = pixel_step
         display_name = os.environ.get("WAYLAND_DISPLAY", "wayland-0")
         super().__init__(display_name)
@@ -46,10 +46,9 @@ class WaylandHid(VirtualPointer):
         await self.connect()
         self.move_to_absolute(x, y)
         self._pointer_position = (x, y)
-        self._tracking_pointer = True
 
     @keyword("Move Pointer To Proportional (${x}, ${y})")
-    async def move_pointer_to_proportional(self, x: float, y: float) -> tuple[int, int]:
+    async def move_pointer_to_proportional(self, x: float, y: float) -> tuple[int, int] | None:
         """
         Move the virtual pointer to a position proportional to the size of
         the output.
@@ -70,7 +69,6 @@ class WaylandHid(VirtualPointer):
         self.move_to_proportional(x, y)
         absolute_position = self.get_absolute_from_proportional(x, y)
         self._pointer_position = absolute_position
-        self._tracking_pointer = True
         return self._pointer_position
 
     @keyword("Press ${button} Button")
@@ -116,7 +114,7 @@ class WaylandHid(VirtualPointer):
             - delay: Time to sleep after each step, in seconds.
         """
         await self.connect()
-        assert self._tracking_pointer, "Cannot walk without moving the pointer at least once"
+        assert self._pointer_position is not None, "Cannot walk without moving the pointer at least once"
         assert self._pixel_step > 0, "pixel_step must be greater than 0"
         if steps <= 0:
             distance = ((self._pointer_position[0] - x) ** 2 + (self._pointer_position[1] - y) ** 2) ** 0.5
@@ -130,7 +128,6 @@ class WaylandHid(VirtualPointer):
             await asyncio.sleep(delay)
 
         self._pointer_position = (int(walk_x), int(walk_y))
-        self._tracking_pointer = True
 
     @keyword
     async def walk_pointer_to_proportional(self, x: float, y: float, steps: int, delay: float) -> None:
