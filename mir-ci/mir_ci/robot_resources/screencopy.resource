@@ -10,7 +10,12 @@ Library             ../robot_libraries/WaylandHid.py
 Get Center Of ${region}
     [Documentation]    Get the center point of a region.
     ...
-    ...    The return value is a tuple (x, y) of integers.
+    ...    Arguments:
+    ...    - ${region}: Rectangular region represented by a dictionary
+    ...      of integer values for "left", "right", "top", and "bottom" keys.
+    ...
+    ...    Return:
+    ...    Center of the region, as a tuple (x, y) of integers.
     ${point}=    Evaluate
     ...    (int((${region}[left] + ${region}[right]) / 2), int((${region}[top] + ${region}[bottom]) / 2))
     RETURN    ${point}
@@ -19,43 +24,76 @@ Displace ${point} By (${x}, ${y})
     [Documentation]    Shift a point by the specified displacements along
     ...    the x and y axes.
     ...
-    ...    ${point} must be a tuple (x, y).
+    ...    Arguments:
+    ...    - ${point}: Point to be displaced, as a tuple (x, y).
+    ...    - ${x}: Displacement along the x-axis.
+    ...    - ${y}: Displacement along the y-axis.
     ...
-    ...    The return value is the displaced point, represented as a tuple
-    ...    (x, y) of integers.
+    ...    Return:
+    ...    Displaced point, as a tuple (x, y) of integers.
     ${point}=    Evaluate    (int(${point}[0] + ${x}), int(${point}[1] + ${y}))
     RETURN    ${point}
+
+Move Pointer To (${x}, ${y})
+    [Documentation]    Move the pointer to an absolute position.
+    ...
+    ...    Arguments:
+    ...    - ${x}: Integer absolute x-coordinate to move the pointer to.
+    ...    - ${y}: Integer absolute y-coordinate to move the pointer to.
+    WaylandHid.Move Pointer To Absolute    ${x}    ${y}
 
 Move Pointer To ${destination:^\(?!\(.+,.+\)\).+}
     [Documentation]    Move the pointer to an absolute position or image
     ...    template.
     ...
-    ...    If ${destination} is a tuple (x, y), the pointer will move to
-    ...    the corresponding absolute position. Otherwise,
-    ...    if ${destination} is the path of an image template file, the
-    ...    pointer will move to the center of the first matching template
-    ...    region.
+    ...    Arguments:
+    ...    - ${destination}: Where to move the pointer to. If ${destination}
+    ...      is a tuple (x, y) of integers, the pointer will move to the
+    ...      absolute position given by the tuple. Otherwise, if
+    ...      ${destination} is the path of an image template file, the pointer
+    ...      will move to the center of the first matching template region.
     ...
-    ...    The return value is the absolute position of the pointer after
-    ...    the move, represented as a tuple (x, y) of integers.
+    ...    Return:
+    ...    Absolute position of the pointer after the move, as  a tuple (x, y)
+    ...    of integers.
     IF    ${{isinstance($destination, str)}}
         ${regions}=    Screencopy.Match    ${destination}
         ${position}=    Get Center Of ${regions}[0]
     ELSE
         ${position}=    Set Variable    ${destination}
     END
-    WaylandHid.Move Pointer To (${position}[0], ${position}[1])
+    WaylandHid.Move Pointer To Absolute    ${position}[0]    ${position}[1]
+    RETURN    ${position}
+
+Move Pointer To Proportional (${x}, ${y})
+    [Documentation]    Move the pointer to a destination position given as
+    ...    proportions to the size of the display output.
+    ...
+    ...    Arguments:
+    ...    - ${x}: Relative x-coordinate to move the pointer to. It must be in
+    ...      the range 0..1, where 0 represents the left edge, and 1 represents
+    ...      the right edge of the output.
+    ...    - ${y}: Relative y-coordinate to move the pointer to. It must be in
+    ...      the range 0..1, where 0 represents the top edge, and 1 represents
+    ...      the bottom edge of the output.
+    ...
+    ...    Return:
+    ...    Absolute position of the pointer after the move, as a tuple (x, y)
+    ...    of integers.
+    ${position}=    WaylandHid.Move Pointer To Proportional    ${x}    ${y}
     RETURN    ${position}
 
 Walk Pointer To (${x}, ${y})
     [Documentation]    Move the pointer in incremental steps from the
     ...    current pointer position to an absolute position.
     ...
-    ...    Optional arguments:
-    ...    ${steps}: number of steps. If <= 0, the pointer is moved in
-    ...    increments of 16 pixels. Default is 0.
-    ...    ${delay}: time to sleep after each step, in seconds.
-    ...    Default is 0.01.
+    ...    Arguments:
+    ...    - ${x}: Integer absolute x-coordinate to walk the pointer to.
+    ...    - ${y}: Integer absolute y-coordinate to walk the pointer to.
+    ...    - ${steps} (optional): number of steps. If <= 0, the pointer is
+    ...      moved in increments of 16 pixels. Default is 0.
+    ...    - ${delay} (optional): time to sleep after each step, in seconds.
+    ...      Default is 0.01.
     [Arguments]    ${steps}=0    ${delay}=0.01
     WaylandHid.Walk Pointer To Absolute    ${x}    ${y}    ${steps}    ${delay}
 
@@ -64,20 +102,20 @@ Walk Pointer To ${destination:^\(?!\(.+,.+\)\).+}
     ...    current pointer position to an absolute position or image
     ...    template.
     ...
-    ...    If ${destination} is a tuple (x, y), the pointer will move to
-    ...    the corresponding absolute position. Otherwise,
-    ...    if ${destination} is the path of an image template file, the
-    ...    pointer will move to the center of the first matching template
-    ...    region.
+    ...    Arguments:
+    ...    - ${destination}: Where to walk the pointer to. If ${destination}
+    ...      is a tuple (x, y) of integers, the pointer will walk to the
+    ...      absolute position given by the tuple. Otherwise, if
+    ...      ${destination} is the path of an image template file, the pointer
+    ...      will walk to the center of the first matching template region.
+    ...    - ${steps} (optional): number of steps. If <= 0, the pointer is
+    ...      moved in increments of 16 pixels. Default is 0.
+    ...    - ${delay} (optional): time to sleep after each step, in seconds.
+    ...      Default is 0.01.
     ...
-    ...    Optional arguments:
-    ...    ${steps}: number of steps. If <= 0, the pointer is moved in
-    ...    increments of 16 pixels. Default is 0.
-    ...    ${delay}: time to sleep after each step, in seconds.
-    ...    Default is 0.01.
-    ...
-    ...    The return value is the absolute position of the pointer after
-    ...    the walk, represented as a tuple (x, y) of integers.
+    ...    Return:
+    ...    Absolute position of the pointer after the walk, as a tuple (x, y)
+    ...    of integers.
     [Arguments]    ${steps}=0    ${delay}=0.01
     IF    ${{isinstance($destination, str)}}
         ${regions}=    Screencopy.Match    ${destination}
@@ -91,18 +129,41 @@ Walk Pointer To ${destination:^\(?!\(.+,.+\)\).+}
 Walk Pointer To Proportional (${x}, ${y})
     [Documentation]    Move the pointer in incremental steps from the
     ...    current pointer position to a destination position given as
-    ...    proportions to the size of the display output. The proportions
-    ...    must be in the range 0..1.
+    ...    proportions to the size of the display output.
     ...
-    ...    Optional arguments:
-    ...    ${steps}: number of steps. If <= 0, the pointer is moved in
-    ...    increments of 16 pixels. Default is 0.
-    ...    ${delay}: time to sleep after each step, in seconds.
-    ...    Default is 0.01.
+    ...    Arguments:
+    ...    - ${x}: Relative x-coordinate to walk the pointer to. It must be in
+    ...      the range 0..1, where 0 represents the left edge, and 1 represents
+    ...      the right edge of the output.
+    ...    - ${y}: Relative y-coordinate to walk the pointer to. It must be in
+    ...      the range 0..1, where 0 represents the top edge, and 1 represents
+    ...      the bottom edge of the output.
+    ...    - ${steps} (optional): number of steps. If <= 0, the pointer is
+    ...      moved in increments of 16 pixels. Default is 0.
+    ...    - ${delay} (optional): time to sleep after each step, in seconds.
+    ...      Default is 0.01.
     ...
-    ...    The return value is the absolute position of the pointer after
-    ...    the walk, represented as a tuple (x, y) of integers.
+    ...    Return:
+    ...    Absolute position of the pointer after the walk, as a tuple (x, y)
+    ...    of integers.
     [Arguments]    ${steps}=0    ${delay}=0.01
-    WaylandHid.Walk Pointer To Proportional    ${x}    ${y}    ${steps}    ${delay}
-    ${position}=    WaylandHid.Get Absolute From Proportional    ${x}    ${y}
+    ${position}=    WaylandHid.Walk Pointer To Proportional    ${x}    ${y}    ${steps}    ${delay}
     RETURN    ${position}
+
+Press ${button} Button
+    [Documentation]    Press a button on the virtual pointer.
+    ...
+    ...    Arguments:
+    ...    - ${button}: Button to press (LEFT|RIGHT|MIDDLE).
+    WaylandHid.Press Pointer Button    ${button}
+
+Release ${button} Button
+    [Documentation]    Release a button on the virtual pointer.
+    ...
+    ...    Arguments:
+    ...    - ${button}: Button to release (LEFT|RIGHT|MIDDLE).
+    WaylandHid.Release Pointer Button    ${button}
+
+Release Buttons
+    [Documentation]    Release all buttons on the virtual pointer.
+    WaylandHid.Release Buttons
