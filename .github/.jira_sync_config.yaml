@@ -7,6 +7,6 @@ settings:
     opened: Triaged
     closed: Done
   components:
-  - Mir
+  - Testing
   label_mapping:
     enhancement: Story
