@@ -3,7 +3,7 @@ Documentation       Keyword definitions for specialised functionality
 ...                 of the Screencopy library.
 
 Library             ../robot_libraries/Screencopy.py
-Library             ../robot_libraries/WaylandHid.py
+Library             ../robot_libraries/WaylandHid.py    AS    HID
 
 
 *** Keywords ***
@@ -40,7 +40,7 @@ Move Pointer To (${x}, ${y})
     ...    Arguments:
     ...    - ${x}: Integer absolute x-coordinate to move the pointer to.
     ...    - ${y}: Integer absolute y-coordinate to move the pointer to.
-    WaylandHid.Move Pointer To Absolute    ${x}    ${y}
+    HID.Move Pointer To Absolute    ${x}    ${y}
 
 Move Pointer To ${destination:^\(?!\(.+,.+\)\).+}
     [Documentation]    Move the pointer to an absolute position or image
@@ -62,7 +62,7 @@ Move Pointer To ${destination:^\(?!\(.+,.+\)\).+}
     ELSE
         ${position}=    Set Variable    ${destination}
     END
-    WaylandHid.Move Pointer To Absolute    ${position}[0]    ${position}[1]
+    HID.Move Pointer To Absolute    ${position}[0]    ${position}[1]
     RETURN    ${position}
 
 Move Pointer To Proportional (${x}, ${y})
@@ -70,34 +70,35 @@ Move Pointer To Proportional (${x}, ${y})
     ...    proportions to the size of the display output.
     ...
     ...    Arguments:
-    ...    - ${x}: Relative x-coordinate to move the pointer to. It must be in
-    ...      the range 0..1, where 0 represents the left edge, and 1 represents
-    ...      the right edge of the output.
-    ...    - ${y}: Relative y-coordinate to move the pointer to. It must be in
-    ...      the range 0..1, where 0 represents the top edge, and 1 represents
-    ...      the bottom edge of the output.
+    ...    - ${x}: Output-relative x-coordinate to move the pointer to.
+    ...      It must be in the range 0..1, where 0 represents the left edge,
+    ...      and 1 represents the right edge of the output.
+    ...    - ${y}: Output-relative y-coordinate to move the pointer to.
+    ...      It must be in the range 0..1, where 0 represents the top edge,
+    ...      and 1 represents the bottom edge of the output.
     ...
     ...    Return:
     ...    Absolute position of the pointer after the move, as a tuple (x, y)
     ...    of integers.
-    ${position}=    WaylandHid.Move Pointer To Proportional    ${x}    ${y}
+    ${position}=    HID.Move Pointer To Proportional    ${x}    ${y}
     RETURN    ${position}
 
 Walk Pointer To (${x}, ${y})
+    [Arguments]    ${step_distance}=16    ${delay}=0.01
     [Documentation]    Move the pointer in incremental steps from the
     ...    current pointer position to an absolute position.
     ...
     ...    Arguments:
     ...    - ${x}: Integer absolute x-coordinate to walk the pointer to.
     ...    - ${y}: Integer absolute y-coordinate to walk the pointer to.
-    ...    - ${steps} (optional): number of steps. If <= 0, the pointer is
-    ...      moved in increments of 16 pixels. Default is 0.
-    ...    - ${delay} (optional): time to sleep after each step, in seconds.
+    ...    - ${step_distance} (optional): Size of each step, in pixels.
+    ...      Default is 16.
+    ...    - ${delay} (optional): Time to sleep after each step, in seconds.
     ...      Default is 0.01.
-    [Arguments]    ${steps}=0    ${delay}=0.01
-    WaylandHid.Walk Pointer To Absolute    ${x}    ${y}    ${steps}    ${delay}
+    HID.Walk Pointer To Absolute    ${x}    ${y}    ${step_distance}    ${delay}
 
 Walk Pointer To ${destination:^\(?!\(.+,.+\)\).+}
+    [Arguments]    ${step_distance}=16    ${delay}=0.01
     [Documentation]    Moves the pointer in incremental steps from the
     ...    current pointer position to an absolute position or image
     ...    template.
@@ -108,46 +109,45 @@ Walk Pointer To ${destination:^\(?!\(.+,.+\)\).+}
     ...      absolute position given by the tuple. Otherwise, if
     ...      ${destination} is the path of an image template file, the pointer
     ...      will walk to the center of the first matching template region.
-    ...    - ${steps} (optional): number of steps. If <= 0, the pointer is
-    ...      moved in increments of 16 pixels. Default is 0.
-    ...    - ${delay} (optional): time to sleep after each step, in seconds.
+    ...    - ${step_distance} (optional): Size of each step, in pixels.
+    ...      Default is 16.
+    ...    - ${delay} (optional): Time to sleep after each step, in seconds.
     ...      Default is 0.01.
     ...
     ...    Return:
     ...    Absolute position of the pointer after the walk, as a tuple (x, y)
     ...    of integers.
-    [Arguments]    ${steps}=0    ${delay}=0.01
     IF    ${{isinstance($destination, str)}}
         ${regions}=    Screencopy.Match    ${destination}
         ${position}=    Get Center Of ${regions}[0]
     ELSE
         ${position}=    Set Variable    ${destination}
     END
-    WaylandHid.Walk Pointer To Absolute    ${position}[0]    ${position}[1]    ${steps}    ${delay}
+    HID.Walk Pointer To Absolute    ${position}[0]    ${position}[1]    ${step_distance}    ${delay}
     RETURN    ${position}
 
 Walk Pointer To Proportional (${x}, ${y})
+    [Arguments]    ${step_distance}=16    ${delay}=0.01
     [Documentation]    Move the pointer in incremental steps from the
     ...    current pointer position to a destination position given as
     ...    proportions to the size of the display output.
     ...
     ...    Arguments:
-    ...    - ${x}: Relative x-coordinate to walk the pointer to. It must be in
-    ...      the range 0..1, where 0 represents the left edge, and 1 represents
-    ...      the right edge of the output.
-    ...    - ${y}: Relative y-coordinate to walk the pointer to. It must be in
-    ...      the range 0..1, where 0 represents the top edge, and 1 represents
-    ...      the bottom edge of the output.
-    ...    - ${steps} (optional): number of steps. If <= 0, the pointer is
-    ...      moved in increments of 16 pixels. Default is 0.
-    ...    - ${delay} (optional): time to sleep after each step, in seconds.
+    ...    - ${x}: Output-relative x-coordinate to move the pointer to.
+    ...      It must be in the range 0..1, where 0 represents the left edge,
+    ...      and 1 represents the right edge of the output.
+    ...    - ${y}: Output-relative y-coordinate to move the pointer to.
+    ...      It must be in the range 0..1, where 0 represents the top edge,
+    ...      and 1 represents the bottom edge of the output.
+    ...    - ${step_distance} (optional): Size of each step, in pixels.
+    ...      Default is 16.
+    ...    - ${delay} (optional): Time to sleep after each step, in seconds.
     ...      Default is 0.01.
     ...
     ...    Return:
     ...    Absolute position of the pointer after the walk, as a tuple (x, y)
     ...    of integers.
-    [Arguments]    ${steps}=0    ${delay}=0.01
-    ${position}=    WaylandHid.Walk Pointer To Proportional    ${x}    ${y}    ${steps}    ${delay}
+    ${position}=    HID.Walk Pointer To Proportional    ${x}    ${y}    ${step_distance}    ${delay}
     RETURN    ${position}
 
 Press ${button} Button
@@ -155,15 +155,15 @@ Press ${button} Button
     ...
     ...    Arguments:
     ...    - ${button}: Button to press (LEFT|RIGHT|MIDDLE).
-    WaylandHid.Press Pointer Button    ${button}
+    HID.Press Pointer Button    ${button}
 
 Release ${button} Button
     [Documentation]    Release a button on the virtual pointer.
     ...
     ...    Arguments:
     ...    - ${button}: Button to release (LEFT|RIGHT|MIDDLE).
-    WaylandHid.Release Pointer Button    ${button}
+    HID.Release Pointer Button    ${button}
 
 Release Buttons
     [Documentation]    Release all buttons on the virtual pointer.
-    WaylandHid.Release Buttons
+    HID.Release Buttons

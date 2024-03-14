@@ -20,17 +20,9 @@ class WaylandHid(VirtualPointer):
 
     ROBOT_LISTENER_API_VERSION = 3
 
-    def __init__(self, pixel_step=16) -> None:
-        """
-        Initialize the WaylandHid instance.
-
-        :param pixel_step: Step size in pixels to be used when a nonpositive
-                           number of steps is passed to walk_pointer_*.
-                           Default is 16.
-        """
+    def __init__(self) -> None:
         self.ROBOT_LIBRARY_LISTENER = self
         self._pointer_position: Optional[Tuple[int, int]] = None
-        self._pixel_step = pixel_step
         display_name = os.environ.get("WAYLAND_DISPLAY", "wayland-0")
         super().__init__(display_name)
 
@@ -49,13 +41,13 @@ class WaylandHid(VirtualPointer):
         return absolute_position
 
     @keyword
-    async def walk_pointer_to_absolute(self, x: int, y: int, steps: int, delay: float) -> None:
+    async def walk_pointer_to_absolute(self, x: int, y: int, step_distance: int, delay: float) -> None:
         await self.connect()
         assert self._pointer_position is not None, "Cannot walk without moving the pointer at least once"
-        assert self._pixel_step > 0, "pixel_step must be greater than 0"
-        if steps <= 0:
-            distance = ((self._pointer_position[0] - x) ** 2 + (self._pointer_position[1] - y) ** 2) ** 0.5
-            steps = math.ceil(distance / self._pixel_step)
+        assert step_distance > 0, "Step distance must be positive"
+
+        distance = ((self._pointer_position[0] - x) ** 2 + (self._pointer_position[1] - y) ** 2) ** 0.5
+        steps = math.ceil(distance / step_distance)
 
         for step in range(0, steps + 1):
             t = step / steps
@@ -67,10 +59,12 @@ class WaylandHid(VirtualPointer):
         self._pointer_position = (x, y)
 
     @keyword
-    async def walk_pointer_to_proportional(self, x: float, y: float, steps: int, delay: float) -> tuple[int, int]:
+    async def walk_pointer_to_proportional(
+        self, x: float, y: float, step_distance: int, delay: float
+    ) -> tuple[int, int]:
         await self.connect()
         absolute_position = self.get_absolute_from_proportional(x, y)
-        await self.walk_pointer_to_absolute(absolute_position[0], absolute_position[1], steps, delay)
+        await self.walk_pointer_to_absolute(absolute_position[0], absolute_position[1], step_distance, delay)
         return absolute_position
 
     @keyword
@@ -93,9 +87,11 @@ class WaylandHid(VirtualPointer):
         """
         Get the absolute position for the given output size proportions.
 
-        :param x: relative x-coordinate in the range 0..1, where 0 represents
-                  the left edge, and 1 represents the right edge of the output.
-        :param y: relative y-coordinate in the range 0..1, where 0 represents
+        :param x: Output-relative x-coordinate in the range 0..1, where 0
+                  represents the left edge, and 1 represents the right edge of
+                  the output.
+        :param y: Output-relative y-coordinate in the range 0..1, where 0
+                  represents
                   the top edge, and 1 represents the bottom edge of the output.
         :return tuple containing the corresponding absolute x and y coordinates.
         """
