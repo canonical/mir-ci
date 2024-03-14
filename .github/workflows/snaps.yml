@@ -30,9 +30,7 @@ jobs:
         python-version: '3.11'
 
     - name: Install Python dependencies
-      uses: insightengineering/pip-action@v2
-      with:
-        requirements: requirements.txt
+      uses: py-actions/py-dependency-install@v4
 
     - name: Install Snap dependencies
       run: |
