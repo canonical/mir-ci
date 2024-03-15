@@ -4,8 +4,8 @@ import warnings
 from contextlib import suppress
 from typing import Callable, Dict, List, Optional
 
-from mir_ci.interfaces.benchmarkable import Benchmarkable
-from mir_ci.interfaces.benchmarker_backend import BenchmarkBackend
+from ..interfaces.benchmarkable import Benchmarkable
+from ..interfaces.benchmarker_backend import BenchmarkBackend
 
 logger = logging.getLogger(__name__)
 

@@ -2,8 +2,8 @@
 Documentation       Keyword definitions for specialised functionality
 ...                 of the Screencopy library.
 
-Library             ../robot_libraries/Screencopy.py
-Library             ../robot_libraries/WaylandHid.py    AS    HID
+Library             ../libraries/Screencopy.py
+Library             ../libraries/WaylandHid.py    AS    HID
 
 
 *** Keywords ***
