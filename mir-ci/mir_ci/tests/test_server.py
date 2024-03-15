@@ -1,5 +1,5 @@
 import pytest
-from mir_ci.display_server import DisplayServer
+from mir_ci.program.display_server import DisplayServer
 
 
 class TestServerCanRun:

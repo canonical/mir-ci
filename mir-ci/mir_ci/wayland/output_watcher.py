@@ -1,8 +1,8 @@
 from typing import Callable, List, Optional
 
-from mir_ci.protocols import WlOutput
-from mir_ci.protocols.wayland.wl_output import WlOutputProxy
-from mir_ci.wayland_client import WaylandClient
+from .protocols import WlOutput
+from .protocols.wayland.wl_output import WlOutputProxy
+from .wayland_client import WaylandClient
 
 
 class OutputWatcher(WaylandClient):

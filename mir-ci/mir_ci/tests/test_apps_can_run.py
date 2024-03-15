@@ -2,9 +2,10 @@ import asyncio
 from collections import OrderedDict
 
 import pytest
-from mir_ci import SLOWDOWN, apps
-from mir_ci.benchmarker import Benchmarker
-from mir_ci.display_server import DisplayServer
+from mir_ci import SLOWDOWN
+from mir_ci.fixtures import apps
+from mir_ci.lib.benchmarker import Benchmarker
+from mir_ci.program.display_server import DisplayServer
 
 short_wait_time = 3 * SLOWDOWN
 
