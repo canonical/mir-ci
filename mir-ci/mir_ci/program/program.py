@@ -6,9 +6,10 @@ import uuid
 from pathlib import Path
 from typing import Awaitable, Dict, List, Optional, Tuple, Union
 
-from mir_ci.apps import App
-from mir_ci.cgroups import Cgroup
 from mir_ci.interfaces.benchmarkable import Benchmarkable
+from mir_ci.lib.cgroups import Cgroup
+
+from .app import App
 
 logger = logging.getLogger(__name__)
 

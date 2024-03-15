@@ -5,7 +5,8 @@ from typing import Optional
 
 import pywayland
 import pywayland.client
-from mir_ci.protocols.wayland.wl_registry import WlRegistryProxy
+
+from .protocols.wayland.wl_registry import WlRegistryProxy
 
 
 class WaylandClient:

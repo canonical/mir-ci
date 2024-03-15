@@ -5,7 +5,7 @@ import time
 from io import BytesIO
 from typing import List
 
-from mir_ci.screencopy_tracker import ScreencopyTracker
+from mir_ci.wayland.screencopy_tracker import ScreencopyTracker
 from PIL import Image
 from robot.api import logger
 from robot.api.deco import keyword, library

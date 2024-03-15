@@ -3,7 +3,7 @@ import math
 import os
 from typing import Optional, Tuple
 
-from mir_ci.virtual_pointer import Button, VirtualPointer
+from mir_ci.wayland.virtual_pointer import Button, VirtualPointer
 from robot.api.deco import keyword, library
 
 

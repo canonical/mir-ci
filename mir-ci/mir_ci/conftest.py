@@ -10,7 +10,7 @@ from typing import Any, Generator, List, Mapping, Optional, Union
 import distro
 import pytest
 from deepmerge import conservative_merger
-from mir_ci import apps
+from mir_ci.fixtures import apps
 
 RELEASE_PPA = "mir-team/release"
 RELEASE_PPA_ENTRY = f"https://ppa.launchpadcontent.net/{RELEASE_PPA}/ubuntu {distro.codename()}/main"
