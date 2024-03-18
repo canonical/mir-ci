@@ -6,9 +6,10 @@ from typing import Any
 from unittest.mock import ANY, Mock
 
 import pytest
-from mir_ci import SLOWDOWN, apps
-from mir_ci.display_server import DisplayServer
-from mir_ci.output_watcher import OutputWatcher
+from mir_ci import SLOWDOWN
+from mir_ci.fixtures import apps
+from mir_ci.program.display_server import DisplayServer
+from mir_ci.wayland.output_watcher import OutputWatcher
 
 short_wait_time = 1 * SLOWDOWN
 

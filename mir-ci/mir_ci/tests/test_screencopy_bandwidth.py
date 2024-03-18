@@ -3,10 +3,11 @@ import os
 from pathlib import Path
 
 import pytest
-from mir_ci import SLOWDOWN, apps
-from mir_ci.display_server import DisplayServer
-from mir_ci.screencopy_tracker import ScreencopyTracker
-from mir_ci.virtual_pointer import Button, VirtualPointer
+from mir_ci import SLOWDOWN
+from mir_ci.fixtures import apps
+from mir_ci.program.display_server import DisplayServer
+from mir_ci.wayland.screencopy_tracker import ScreencopyTracker
+from mir_ci.wayland.virtual_pointer import Button, VirtualPointer
 
 long_wait_time = 10
 
