@@ -1,12 +1,13 @@
 from pathlib import Path
 from typing import Dict
 
-import pywayland
-import pywayland.scanner
 from hatchling.builders.hooks.plugin.interface import BuildHookInterface
 
 
 def generate_protocol(path: Path, name: str, imports: Dict[str, str]) -> Dict[str, str]:
+    import pywayland
+    import pywayland.scanner
+
     input_path = path / "data" / f"{name}.xml"
     proto = pywayland.scanner.Protocol.parse_file(str(input_path))
     proto_imports = {iface.name: proto.name for iface in proto.interface}
