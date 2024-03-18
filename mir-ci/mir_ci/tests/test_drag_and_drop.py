@@ -3,13 +3,13 @@ from pathlib import Path
 from textwrap import dedent
 
 import pytest
-from mir_ci import apps
-from mir_ci.display_server import DisplayServer
-from mir_ci.screencopy_tracker import ScreencopyTracker
-from mir_ci.virtual_pointer import VirtualPointer
+from mir_ci.fixtures import apps
+from mir_ci.program.display_server import DisplayServer
+from mir_ci.wayland.screencopy_tracker import ScreencopyTracker
+from mir_ci.wayland.virtual_pointer import VirtualPointer
 
-MIR_CI_PATH = Path(__file__).parent
-APP_PATH = MIR_CI_PATH / "clients/drag_and_drop_demo.py"
+TESTS_PATH = Path(__file__).parent
+APP_PATH = TESTS_PATH / "clients" / "drag_and_drop_demo.py"
 
 ROBOT_TEMPLATE = """\
 *** Settings ***
@@ -21,11 +21,11 @@ ROBOT_TEMPLATE = """\
 *** Test Cases ***
 {test_case}
 """
-ROBOT_SETTINGS = f"Resource   {MIR_CI_PATH}/robot_resources/screencopy.resource"
+ROBOT_SETTINGS = f"Resource   {TESTS_PATH}/robot/resources/KVM.resource"
 ROBOT_VARIABLES = f"""\
-${{SRC_TEMPLATE}}    {MIR_CI_PATH}/robot_templates/drag_and_drop_src.png
-${{DST_TEMPLATE}}    {MIR_CI_PATH}/robot_templates/drag_and_drop_dst.png
-${{END_TEMPLATE}}    {MIR_CI_PATH}/robot_templates/drag_and_drop_end.png
+${{SRC_TEMPLATE}}    {TESTS_PATH}/robot/templates/drag_and_drop_src.png
+${{DST_TEMPLATE}}    {TESTS_PATH}/robot/templates/drag_and_drop_dst.png
+${{END_TEMPLATE}}    {TESTS_PATH}/robot/templates/drag_and_drop_end.png
 """
 
 

@@ -1,17 +1,8 @@
-from typing import Any, Collection, Literal, Optional, Union
+from typing import Any, Collection, Optional, Union
 
 import pytest
 
-AppType = Literal["snap", "deb", "pip"]
-
-
-class App:
-    command: Collection[str]
-    app_type: Optional[AppType]
-
-    def __init__(self, command: Collection[str], app_type: Optional[AppType] = None) -> None:
-        self.command = command
-        self.app_type = app_type
+from ..program.app import App, AppType
 
 
 def _dependency(
