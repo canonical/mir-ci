@@ -5,10 +5,11 @@ import time
 from typing import Dict, Optional, Tuple
 
 import inotify.adapters
-from mir_ci.apps import App
-from mir_ci.cgroups import Cgroup
-from mir_ci.interfaces.benchmarkable import Benchmarkable
-from mir_ci.program import Program
+
+from ..interfaces.benchmarkable import Benchmarkable
+from ..lib.cgroups import Cgroup
+from ..program.app import App
+from ..program.program import Program
 
 display_appear_timeout = 10
 min_mir_run_time = 0.1

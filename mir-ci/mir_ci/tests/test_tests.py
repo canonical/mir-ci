@@ -8,13 +8,13 @@ from unittest import IsolatedAsyncioTestCase
 from unittest.mock import MagicMock, Mock, call, mock_open, patch
 
 import pytest
-from mir_ci.apps import App
-from mir_ci.benchmarker import Benchmarker, CgroupsBackend
-from mir_ci.cgroups import Cgroup
-from mir_ci.display_server import DisplayServer
-from mir_ci.output_watcher import OutputWatcher
-from mir_ci.program import Program
-from mir_ci.protocols import WlOutput
+from mir_ci.lib.benchmarker import Benchmarker, CgroupsBackend
+from mir_ci.lib.cgroups import Cgroup
+from mir_ci.program.app import App
+from mir_ci.program.display_server import DisplayServer
+from mir_ci.program.program import Program
+from mir_ci.wayland.output_watcher import OutputWatcher
+from mir_ci.wayland.protocols import WlOutput
 
 
 def _async_return(mock=None):
@@ -76,8 +76,8 @@ class TestProgram:
             assert cgroup is not None
             await p.kill(2)
 
-    @patch("mir_ci.program.Path")
-    @patch("mir_ci.cgroups.Cgroup.create")
+    @patch("mir_ci.program.program.Path")
+    @patch("mir_ci.lib.cgroups.Cgroup.create")
     async def test_passes_when_cgroup_not_got(self, mock_create, mock_path) -> None:
         mock_path.return_value.exists.return_value = False
         mock_create.side_effect = FileNotFoundError
@@ -86,7 +86,7 @@ class TestProgram:
         async with p:
             await p.kill(2)
 
-    @patch("mir_ci.program.Path")
+    @patch("mir_ci.program.program.Path")
     async def test_get_cgroup_asserts_without_cgroupv2(self, mock_path) -> None:
         mock_path.return_value.exists.return_value = False
 
