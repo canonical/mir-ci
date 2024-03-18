@@ -13,7 +13,7 @@ dependencies = [
     "inotify",
     "pytest",
     "pytest-asyncio",
-    "pywayland @ git+https://github.com/flacjacket/pywayland.git",
+    "pywayland",
 ]
 
 [project.urls]
@@ -31,5 +31,5 @@ exclude = [
 
 [tool.hatch.build.hooks.custom]
 dependencies = [
-    "pywayland @ git+https://github.com/Saviq/pywayland.git@patch-1",
+    "pywayland",
 ]
