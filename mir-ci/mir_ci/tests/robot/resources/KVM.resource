@@ -176,6 +176,14 @@ Release ${button} Button
     ...    - ${button}: Button to release (LEFT|RIGHT|MIDDLE).
     HID.Release Pointer Button                      ${button}
 
+Click ${button} Button
+    [Documentation]    Click a button on the virtual pointer.
+    ...
+    ...    Arguments:
+    ...    - ${button}: Button to click (LEFT|RIGHT|MIDDLE).
+    HID.Press Pointer Button                        ${button}
+    HID.Release Pointer Button                      ${button}
+
 Release Buttons
     [Documentation]    Release all buttons on the virtual pointer.
     HID.Release Buttons
