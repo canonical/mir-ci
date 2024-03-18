@@ -1,6 +1,6 @@
 *** Settings ***
 Documentation       Keyword definitions for specialised functionality
-...                 of the Screencopy library.
+...                 for Keyboard, Mouse and Video-based manipulation.
 
 Library             ../libraries/Screencopy.py
 Library             ../libraries/WaylandHid.py    AS    HID

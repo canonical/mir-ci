@@ -21,7 +21,7 @@ ROBOT_TEMPLATE = """\
 *** Test Cases ***
 {test_case}
 """
-ROBOT_SETTINGS = f"Resource   {TESTS_PATH}/robot/resources/screencopy.resource"
+ROBOT_SETTINGS = f"Resource   {TESTS_PATH}/robot/resources/KVM.resource"
 ROBOT_VARIABLES = f"""\
 ${{SRC_TEMPLATE}}    {TESTS_PATH}/robot/templates/drag_and_drop_src.png
 ${{DST_TEMPLATE}}    {TESTS_PATH}/robot/templates/drag_and_drop_dst.png
