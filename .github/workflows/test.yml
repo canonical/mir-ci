@@ -100,7 +100,7 @@ jobs:
         if-no-files-found: ignore
 
     - if: ${{ failure() && runner.debug }}
-      name: Setup upterm session
-      uses: lhotari/action-upterm@v1
+      name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
       with:
         limit-access-to-actor: true
