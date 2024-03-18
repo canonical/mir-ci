@@ -42,7 +42,7 @@ Move Pointer To (${x}, ${y})
     ...    - ${y}: Integer absolute y-coordinate to move the pointer to.
     HID.Move Pointer To Absolute                    ${x}                    ${y}
 
-Move Pointer To ${destination:^\(?!\(.+,.+\)\).+}
+Move Pointer To ${destination}
     [Documentation]    Move the pointer to an absolute position or image
     ...    template.
     ...
@@ -101,7 +101,7 @@ Walk Pointer To (${x}, ${y})
     ...                     ${step_distance}
     ...                     ${delay}
 
-Walk Pointer To ${destination:^\(?!\(.+,.+\)\).+}
+Walk Pointer To ${destination}
     [Documentation]    Moves the pointer in incremental steps from the
     ...    current pointer position to an absolute position or image
     ...    template.
