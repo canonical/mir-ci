@@ -30,3 +30,22 @@ repos:
   rev: v1.6.1
   hooks:
   - id: mypy
+- repo: https://github.com/MarketSquare/robotframework-tidy
+  rev: 4.10.0
+  hooks:
+  - id: robotidy
+    args:
+    - --configure
+    - RenameTestCases:enabled=true
+    - --configure
+    - RenameKeywords:enabled=true
+    - --configure
+    - RenameVariables:enabled=true
+    - --configure
+    - IndentNestedKeywords:enabled=true
+    - --configure
+    - AlignKeywordsSection:enabled=true
+    - --configure
+    - AlignTestCasesSection:enabled=true
+    - --configure
+    - AlignTemplatedTestCases:enabled=true
