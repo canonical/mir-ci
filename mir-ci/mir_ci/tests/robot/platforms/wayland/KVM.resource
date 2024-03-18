@@ -2,8 +2,8 @@
 Documentation       Keyword definitions for specialised functionality
 ...                 for Keyboard, Mouse and Video-based manipulation.
 
-Library             ../libraries/Screencopy.py
-Library             ../libraries/WaylandHid.py    AS    HID
+Library             ${CURDIR}/Screencopy.py    AS    VIDEO
+Library             ${CURDIR}/WaylandHid.py    AS    HID
 
 
 *** Keywords ***
@@ -57,7 +57,7 @@ Move Pointer To ${destination}
     ...    Absolute position of the pointer after the move, as a tuple (x, y)
     ...    of integers.
     IF    ${{isinstance($destination, str)}}
-        ${regions}=             Screencopy.Match        ${destination}
+        ${regions}=             VIDEO.Match             ${destination}
         ${position}=            Get Center Of ${regions}[0]
     ELSE
         ${position}=            Set Variable            ${destination}
@@ -122,7 +122,7 @@ Walk Pointer To ${destination}
     ...    of integers.
     [Arguments]             ${step_distance}=16     ${delay}=0.01
     IF    ${{isinstance($destination, str)}}
-        ${regions}=             Screencopy.Match        ${destination}
+        ${regions}=             VIDEO.Match             ${destination}
         ${position}=            Get Center Of ${regions}[0]
     ELSE
         ${position}=            Set Variable            ${destination}
