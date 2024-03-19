@@ -24,6 +24,7 @@ jobs:
         - confined_shell
         - mir_test_tools
         - mir_demo_server
+        - gnome_shell
         include:
         - server: null
           mark: self
@@ -61,14 +62,7 @@ jobs:
         ulimit -c unlimited
         echo "/tmp/corefile-%e-%p-%t" | sudo tee /proc/sys/kernel/core_pattern
 
-        sudo adduser $USER video
-        sudo adduser $USER input
-
-        sg video "
-          sg input '
-            python -m pytest ${{ steps.pytest-args.outputs.args }} --junitxml=junit-${{ matrix.server || matrix.mark }}-${{ matrix.python }}.xml
-          '
-        "
+        sudo systemd-run --uid 1001 -p Environment=XDG_SESSION_TYPE=wayland -p PAMName=login -p TTYPath=/dev/tty1 -- tail -f /dev/null
 
     - name: Upload junit report
       uses: actions/upload-artifact@v3
