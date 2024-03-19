@@ -14,3 +14,8 @@ def pluma(*args: str, **kwargs):
 
 def wpe(*args: str, cmd=(), **kwargs):
     return snap("wpe-webkit-mir-kiosk", cmd=cmd or ("wpe-webkit-mir-kiosk.cog", *args), **kwargs)
+
+
+def ubuntu_frame_osk():
+    marks = (pytest.mark.xdg(XDG_CONFIG_HOME={}),)
+    return snap("ubuntu-frame-osk", channel="22/stable", marks=marks)
