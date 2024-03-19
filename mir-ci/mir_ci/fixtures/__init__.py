@@ -16,6 +16,7 @@ def _dependency(
     marks: Union[pytest.MarkDecorator, Collection[Union[pytest.MarkDecorator, pytest.Mark]]] = (),
     id: Optional[str] = None,
     extra: Any = None,
+    extensions: Collection[str] = (),
 ):
     if isinstance(marks, pytest.Mark):
         marks = (marks,)
@@ -25,7 +26,7 @@ def _dependency(
         ret = (ret, extra)
 
     return pytest.param(
-        App(ret, app_type),
+        App(ret, app_type, extensions),
         marks=(  # type: ignore
             pytest.mark.deps(
                 cmd=cmd, snap=snap, debs=debs, pip_pkgs=pip_pkgs, channel=channel, classic=classic, app_type=app_type
