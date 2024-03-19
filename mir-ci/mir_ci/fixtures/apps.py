@@ -3,6 +3,7 @@ from typing import Any, Collection, Optional, Union
 import pytest
 
 from ..program.app import App, AppType
+from ..program.display_server import DisplayServer
 
 
 def _dependency(
@@ -80,3 +81,15 @@ def mir_test_tools():
 
 def mir_demo_server():
     return deb("mir_demo_server", debs=("mir-test-tools", "mir-graphics-drivers-desktop"), id="mir_demo_server")
+
+
+def gnome_shell():
+    return deb(
+        "gnome-shell",
+        "--wayland",
+        "--no-x11",
+        "--wayland-display",
+        DisplayServer.get_wayland_display(),
+        debs=("gnome-shell",),
+        id="gnome_shell",
+    )

@@ -23,8 +23,8 @@ class TestAppsCanRun:
             apps.qterminal(),
         ],
     )
-    async def test_app_can_run(self, server, app, record_property) -> None:
-        server_instance = DisplayServer(server)
+    async def test_app_can_run(self, mir_and_nonmir_server, app, record_property) -> None:
+        server_instance = DisplayServer(mir_and_nonmir_server)
         program = server_instance.program(app)
         benchmarker = Benchmarker(OrderedDict(compositor=server_instance, client=program), poll_time_seconds=0.1)
         async with benchmarker:

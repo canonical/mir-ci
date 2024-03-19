@@ -311,8 +311,8 @@ class TestCgroup:
 
 @pytest.mark.self
 class TestDisplayServer:
-    async def test_can_get_cgroup(self, server):
-        server_instance = DisplayServer(server)
+    async def test_can_get_cgroup(self, mir_server):
+        server_instance = DisplayServer(mir_server)
         async with server_instance:
             cgroup = await server_instance.get_cgroup()
             assert cgroup is not None
