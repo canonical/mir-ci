@@ -49,7 +49,7 @@ class DisplayServer(Benchmarkable):
         # Snaps require the display to be in the form "waland-<number>". The 00 prefix lets us
         # easily identify displays created by this test suit and remove them in bulk if a bunch
         # don't get cleaned up properly.
-        self.display_name = "wayland-00" + str(os.getpid())
+        self.display_name = self.get_wayland_display()
         self.env: Dict[str, str] = env
         self.env["WAYLAND_DISPLAY"] = self.display_name
         self.env["MIR_SERVER_ADD_WAYLAND_EXTENSIONS"] = ":".join(add_extensions)
@@ -90,3 +90,7 @@ class DisplayServer(Benchmarkable):
             await asyncio.sleep(sleep_time)
         assert self.server
         await self.server.kill()
+
+    @staticmethod
+    def get_wayland_display() -> str:
+        return "wayland-00" + str(os.getpid())

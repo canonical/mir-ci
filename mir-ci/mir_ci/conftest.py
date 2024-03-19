@@ -16,7 +16,11 @@ RELEASE_PPA = "mir-team/release"
 RELEASE_PPA_ENTRY = f"https://ppa.launchpadcontent.net/{RELEASE_PPA}/ubuntu {distro.codename()}/main"
 APT_INSTALL = ("sudo", "DEBIAN_FRONTEND=noninteractive", "apt-get", "install", "--yes")
 PIP = ("python3", "-m", "pip")
-DEP_FIXTURES = {"server", "deps"}  # these are all the fixtures changing their behavior on `--deps`
+DEP_FIXTURES = {
+    "mir_server",
+    "deps",
+    "mir_and_nonmir_server",
+}  # these are all the fixtures changing their behavior on `--deps`
 
 
 def pytest_addoption(parser):
@@ -146,7 +150,7 @@ def ppa() -> None:
         apps.mir_demo_server,
     ),
 )
-def server(request: pytest.FixtureRequest) -> apps.App:
+def mir_server(request: pytest.FixtureRequest) -> apps.App:
     """
     Parameterizes the servers (ubuntu-frame, mir-kiosk, confined-shell, mir_demo_server),
     or installs them if `--deps` is given on the command line.
@@ -156,6 +160,29 @@ def server(request: pytest.FixtureRequest) -> apps.App:
     server = _deps_install(request, request.param().marks[0].kwargs)
     _deps_skip(request)
     return server
+
+
+@pytest.fixture(
+    scope="function",
+    params=(
+        apps.ubuntu_frame,
+        apps.mir_kiosk,
+        apps.confined_shell,
+        apps.mir_test_tools,
+        apps.mir_demo_server,
+        apps.gnome_shell,
+    ),
+)
+def mir_and_nonmir_server(request: pytest.FixtureRequest) -> apps.App:
+    """
+    Parameterizes the servers (ubuntu-frame, mir-kiosk, confined-shell, mir_demo_server,
+    gnome-shell), or installs them if `--deps` is given on the command line.
+    """
+    # Have to evaluate the param ourselves, because you can't mark fixtures and so
+    # the `.deps(…)` mark never registers.
+    mir_and_nonmir_server = _deps_install(request, request.param().marks[0].kwargs)
+    _deps_skip(request)
+    return mir_and_nonmir_server
 
 
 @pytest.fixture(scope="function")
