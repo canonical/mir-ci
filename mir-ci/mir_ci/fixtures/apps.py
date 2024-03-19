@@ -66,6 +66,11 @@ def ubuntu_frame():
     return snap("ubuntu-frame", channel="22/stable", id="ubuntu_frame")
 
 
+def ubuntu_frame_osk():
+    marks = (pytest.mark.xdg(XDG_CONFIG_HOME={}),)
+    return snap("ubuntu-frame-osk", channel="22/stable", marks=marks)
+
+
 def mir_kiosk():
     return snap("mir-kiosk", id="mir_kiosk")
 
