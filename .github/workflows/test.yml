@@ -66,7 +66,7 @@ jobs:
 
         sg video "
           sg input '
-            python -m pytest ${{ steps.pytest-args.outputs.args }} --junitxml=junit-${{ matrix.server || matrix.mark }}-${{ matrix.python }}.xml
+            python -m pytest ${{ steps.pytest-args.outputs.args }} --basetemp=pytest-temp --junitxml=junit-${{ matrix.server || matrix.mark }}-${{ matrix.python }}.xml
           '
         "
 
@@ -75,7 +75,9 @@ jobs:
       if: success() || failure()
       with:
         name: test-results-${{ matrix.server || matrix.mark }}
-        path: mir-ci/mir_ci/junit-*.xml
+        path: |
+          mir-ci/mir_ci/junit-*.xml
+          mir-ci/mir_ci/pytest-temp/**/log.html
 
     - if: ${{ matrix.mark == 'self' }}
       name: Upload coverage data
