@@ -58,6 +58,8 @@ jobs:
 
     - name: Run the tests
       working-directory: mir-ci/mir_ci
+      env:
+        MIR_CI_VARIANT: 1024
       run: |
         # set up coredumps
         ulimit -c unlimited
