@@ -38,8 +38,6 @@ repos:
     - --configure
     - RenameTestCases:enabled=true
     - --configure
-    - RenameKeywords:enabled=true
-    - --configure
     - RenameVariables:enabled=true
     - --configure
     - IndentNestedKeywords:enabled=true
