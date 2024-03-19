@@ -5,7 +5,10 @@ from typing import Collection
 import pytest
 from mir_ci import VARIANT
 from mir_ci.fixtures import apps
+from mir_ci.fixtures.servers import ServerCap, servers
+from mir_ci.program.app import App
 from mir_ci.program.display_server import DisplayServer
+from mir_ci.program.program import ProgramError
 from mir_ci.wayland.screencopy_tracker import ScreencopyTracker
 from mir_ci.wayland.virtual_pointer import VirtualPointer
 
@@ -38,31 +41,31 @@ def collect_assets(platform: str, resources: Collection[str], suite: str, varian
         ("rpaframework-recognition", "RPA.recognition"),
     ),
 )
-@pytest.mark.parametrize(
-    "modern_server",
-    (
-        apps.mir_demo_server(),
-        apps.mir_test_tools(),
-        apps.ubuntu_frame(),
-    ),
-)
+@pytest.mark.parametrize("server", servers(ServerCap.INPUT_METHOD))
 @pytest.mark.parametrize("osk", (apps.ubuntu_frame_osk(),))
 @pytest.mark.parametrize("app", (apps.pluma(),))
 class TestOSK:
-    async def test_osk_typing(self, modern_server, osk, app, tmp_path):
-        extensions = VirtualPointer.required_extensions + ScreencopyTracker.required_extensions
+    async def test_osk_typing(self, server, osk, app, tmp_path):
+        extensions = VirtualPointer.required_extensions + ScreencopyTracker.required_extensions + osk.extensions
         server_instance = DisplayServer(
-            modern_server,
+            server,
             add_extensions=extensions,
         )
 
-        robot = server_instance.program(apps.App(("robot", "-d", tmp_path, tmp_path)))
+        robot = server_instance.program(App(("robot", "-d", tmp_path, tmp_path)))
 
         assets = collect_assets("wayland", ("osk",), "osk")
 
         tuple((tmp_path / k).symlink_to(v) for k, v in assets.items())
 
-        async with server_instance, server_instance.program(app) as app, server_instance.program(osk) as osk, robot:
-            await robot.wait(120)
+        async with server_instance, server_instance.program(app) as app, server_instance.program(osk) as osk:
+            try:
+                async with robot:
+                    await robot.wait(120)
+            except ProgramError:
+                if server.command[0] in ("confined-shell", "miriway"):
+                    pytest.xfail("OSK not activating")
+                else:
+                    raise
             await osk.kill()
             await app.kill()
