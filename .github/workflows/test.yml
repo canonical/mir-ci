@@ -70,11 +70,11 @@ jobs:
           '
         "
 
-    - name: Upload junit report
-      uses: actions/upload-artifact@v3
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
       if: success() || failure()
       with:
-        name: test-results
+        name: test-results-${{ matrix.server || matrix.mark }}
         path: mir-ci/mir_ci/junit-*.xml
 
     - if: ${{ matrix.mark == 'self' }}
@@ -95,7 +95,7 @@ jobs:
       name: Upload any core dumps
       uses: actions/upload-artifact@v4
       with:
-        name: core-dumps
+        name: core-dumps-${{ matrix.server || matrix.mark }}
         path: corefile-*
         if-no-files-found: ignore
 
@@ -104,3 +104,16 @@ jobs:
       uses: mxschmitt/action-tmate@v3
       with:
         limit-access-to-actor: true
+
+  MergeArtifacts:
+    runs-on: ubuntu-latest
+    needs: RunTests
+    if: ${{ success() || failure() }}
+    steps:
+      - name: Merge junit reports
+        uses: actions/upload-artifact/merge@v4
+        with:
+          name: test-results
+          pattern: test-results-*
+          separate-directories: true
+          delete-merged: true
