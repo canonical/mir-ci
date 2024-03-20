@@ -2,8 +2,8 @@
 Documentation       Keyword definitions for specialised functionality
 ...                 for Keyboard, Mouse and Video-based manipulation.
 
-Library             ../libraries/Screencopy.py
-Library             ../libraries/WaylandHid.py    AS    HID
+Library             ${CURDIR}/Screencopy.py    AS    VIDEO
+Library             ${CURDIR}/WaylandHid.py    AS    HID
 
 
 *** Keywords ***
@@ -42,7 +42,7 @@ Move Pointer To (${x}, ${y})
     ...    - ${y}: Integer absolute y-coordinate to move the pointer to.
     HID.Move Pointer To Absolute                    ${x}                    ${y}
 
-Move Pointer To ${destination:^\(?!\(.+,.+\)\).+}
+Move Pointer To ${destination}
     [Documentation]    Move the pointer to an absolute position or image
     ...    template.
     ...
@@ -57,7 +57,7 @@ Move Pointer To ${destination:^\(?!\(.+,.+\)\).+}
     ...    Absolute position of the pointer after the move, as a tuple (x, y)
     ...    of integers.
     IF    ${{isinstance($destination, str)}}
-        ${regions}=             Screencopy.Match        ${destination}
+        ${regions}=             VIDEO.Match             ${destination}
         ${position}=            Get Center Of ${regions}[0]
     ELSE
         ${position}=            Set Variable            ${destination}
@@ -101,7 +101,7 @@ Walk Pointer To (${x}, ${y})
     ...                     ${step_distance}
     ...                     ${delay}
 
-Walk Pointer To ${destination:^\(?!\(.+,.+\)\).+}
+Walk Pointer To ${destination}
     [Documentation]    Moves the pointer in incremental steps from the
     ...    current pointer position to an absolute position or image
     ...    template.
@@ -122,7 +122,7 @@ Walk Pointer To ${destination:^\(?!\(.+,.+\)\).+}
     ...    of integers.
     [Arguments]             ${step_distance}=16     ${delay}=0.01
     IF    ${{isinstance($destination, str)}}
-        ${regions}=             Screencopy.Match        ${destination}
+        ${regions}=             VIDEO.Match             ${destination}
         ${position}=            Get Center Of ${regions}[0]
     ELSE
         ${position}=            Set Variable            ${destination}
@@ -174,6 +174,14 @@ Release ${button} Button
     ...
     ...    Arguments:
     ...    - ${button}: Button to release (LEFT|RIGHT|MIDDLE).
+    HID.Release Pointer Button                      ${button}
+
+Click ${button} Button
+    [Documentation]    Click a button on the virtual pointer.
+    ...
+    ...    Arguments:
+    ...    - ${button}: Button to click (LEFT|RIGHT|MIDDLE).
+    HID.Press Pointer Button                        ${button}
     HID.Release Pointer Button                      ${button}
 
 Release Buttons
