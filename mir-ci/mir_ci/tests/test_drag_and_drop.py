@@ -3,7 +3,7 @@ from pathlib import Path
 from textwrap import dedent
 
 import pytest
-from mir_ci.fixtures import servers
+from mir_ci.fixtures.servers import ServerCap, servers
 from mir_ci.program.app import App
 from mir_ci.program.display_server import DisplayServer
 from mir_ci.wayland.screencopy_tracker import ScreencopyTracker
@@ -47,16 +47,7 @@ ${{END_TEMPLATE}}    {TESTS_PATH}/robot/templates/drag_and_drop_end.png
     },
 )
 @pytest.mark.env(GSETTINGS_BACKEND="keyfile")
-@pytest.mark.parametrize(
-    "modern_server",
-    [
-        servers.ubuntu_frame(),
-        # servers.mir_kiosk(), we need servers based on Mir 2.14 or later
-        servers.confined_shell(),
-        servers.mir_test_tools(),
-        servers.mir_demo_server(),
-    ],
-)
+@pytest.mark.parametrize("server", servers(ServerCap.DRAG_AND_DROP))
 @pytest.mark.deps(
     debs=(
         "libgirepository1.0-dev",
@@ -79,9 +70,9 @@ class TestDragAndDrop:
             ("python3", APP_PATH, "--source", "text", "--target", "text", "--expect", "text"),
         ],
     )
-    async def test_source_and_dest_match(self, modern_server, app, tmp_path) -> None:
+    async def test_source_and_dest_match(self, server, app, tmp_path) -> None:
         extensions = VirtualPointer.required_extensions + ScreencopyTracker.required_extensions
-        server_instance = DisplayServer(modern_server, add_extensions=extensions)
+        server_instance = DisplayServer(server, add_extensions=extensions)
         program = server_instance.program(App(app))
 
         robot_test_case = dedent(
@@ -113,9 +104,9 @@ class TestDragAndDrop:
             ("python3", "-u", APP_PATH, "--source", "text", "--target", "pixbuf", "--expect", "pixbuf"),
         ],
     )
-    async def test_source_and_dest_mismatch(self, modern_server, app, tmp_path) -> None:
+    async def test_source_and_dest_mismatch(self, server, app, tmp_path) -> None:
         extensions = VirtualPointer.required_extensions + ScreencopyTracker.required_extensions
-        server_instance = DisplayServer(modern_server, add_extensions=extensions)
+        server_instance = DisplayServer(server, add_extensions=extensions)
         program = server_instance.program(App(app))
 
         robot_test_case = dedent(
