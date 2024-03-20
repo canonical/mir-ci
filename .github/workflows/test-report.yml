@@ -10,10 +10,15 @@ jobs:
   TestReport:
     runs-on: ubuntu-latest
     steps:
+    - name: Download the test results
+      uses: actions/download-artifact@v4
+      with:
+        run-id: ${{ github.event.workflow_run.id }}
+        name: test-results
+
     - name: Report test results
       uses: dorny/test-reporter@v1
       with:
-        artifact: test-results
         name: Test results
-        path: '*.xml'
+        path: 'test-results/**/junit-*.xml'
         reporter: java-junit
