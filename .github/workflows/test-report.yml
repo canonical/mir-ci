@@ -1,0 +1,19 @@
+name: Test Report
+
+on:
+  workflow_run:
+    workflows: [Test]
+    types:
+      - completed
+
+jobs:
+  TestReport:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Report test results
+      uses: dorny/test-reporter@v1
+      with:
+        artifact: test-results
+        name: Test results
+        path: '*.xml'
+        reporter: java-junit
