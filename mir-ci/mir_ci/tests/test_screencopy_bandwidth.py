@@ -25,7 +25,7 @@ def _record_properties(fixture, server, tracker, min_frames):
 
 @pytest.mark.performance
 class TestScreencopyBandwidth:
-    @pytest.mark.parametrize("server", servers.servers(servers.ServerCap.SCREENCOPY_BANDWIDTH))
+    @pytest.mark.parametrize("server", servers.servers(servers.ServerCap.SCREENCOPY))
     @pytest.mark.parametrize(
         "app",
         [
@@ -49,7 +49,7 @@ class TestScreencopyBandwidth:
                 await asyncio.sleep(long_wait_time)
         _record_properties(record_property, server, tracker, 10)
 
-    @pytest.mark.parametrize("server", servers.servers(servers.ServerCap.SCREENCOPY_BANDWIDTH))
+    @pytest.mark.parametrize("server", servers.servers(servers.ServerCap.SCREENCOPY))
     async def test_compositor_alone(self, record_property, server) -> None:
         server = DisplayServer(server, add_extensions=ScreencopyTracker.required_extensions)
         tracker = ScreencopyTracker(server.display_name)
@@ -57,7 +57,7 @@ class TestScreencopyBandwidth:
             await asyncio.sleep(long_wait_time)
         _record_properties(record_property, server, tracker, 1)
 
-    @pytest.mark.parametrize("server", servers.servers(servers.ServerCap.SCREENCOPY_BANDWIDTH))
+    @pytest.mark.parametrize("server", servers.servers(servers.ServerCap.SCREENCOPY))
     @pytest.mark.parametrize(
         "app",
         [
