@@ -7,7 +7,7 @@ from unittest.mock import ANY, Mock
 
 import pytest
 from mir_ci import SLOWDOWN
-from mir_ci.fixtures import apps
+from mir_ci.fixtures import servers
 from mir_ci.program.display_server import DisplayServer
 from mir_ci.wayland.output_watcher import OutputWatcher
 
@@ -53,7 +53,7 @@ class DisplayServerStaticFile:
         # TODO: Test other servers. Frame-based servers use
         # a configuration file that is within the snap, so it
         # is unclear how to read/modify that file from the outside
-        apps.mir_demo_server(),
+        servers.mir_demo_server(),
     ],
 )
 @pytest.mark.deps(pip_pkgs=("pyyaml",))
