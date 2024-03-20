@@ -24,8 +24,8 @@ def _record_properties(fixture, server, tracker, min_frames):
 
 
 @pytest.mark.performance
+@pytest.mark.parametrize("server", servers.servers(servers.ServerCap.SCREENCOPY))
 class TestScreencopyBandwidth:
-    @pytest.mark.parametrize("server", servers.servers(servers.ServerCap.SCREENCOPY))
     @pytest.mark.parametrize(
         "app",
         [
@@ -49,7 +49,6 @@ class TestScreencopyBandwidth:
                 await asyncio.sleep(long_wait_time)
         _record_properties(record_property, server, tracker, 10)
 
-    @pytest.mark.parametrize("server", servers.servers(servers.ServerCap.SCREENCOPY))
     async def test_compositor_alone(self, record_property, server) -> None:
         server = DisplayServer(server, add_extensions=ScreencopyTracker.required_extensions)
         tracker = ScreencopyTracker(server.display_name)
@@ -57,7 +56,6 @@ class TestScreencopyBandwidth:
             await asyncio.sleep(long_wait_time)
         _record_properties(record_property, server, tracker, 1)
 
-    @pytest.mark.parametrize("server", servers.servers(servers.ServerCap.SCREENCOPY))
     @pytest.mark.parametrize(
         "app",
         [
@@ -75,20 +73,15 @@ class TestScreencopyBandwidth:
 
     @pytest.mark.deps(debs=("libgtk-4-dev",), pip_pkgs=(("pygobject", "gi"),))
     @pytest.mark.parametrize(
-        "local_server",
-        [
-            servers.confined_shell(),
-            servers.mir_test_tools(),
-            servers.mir_demo_server(),
-        ],
+        "server", servers.servers(servers.ServerCap.SCREENCOPY | servers.ServerCap.FLOATING_WINDOWS)
     )
-    async def test_app_dragged_around(self, record_property, local_server) -> None:
+    async def test_app_dragged_around(self, record_property, server) -> None:
         async def pause():
             await asyncio.sleep(0.2)
 
         extensions = ScreencopyTracker.required_extensions + VirtualPointer.required_extensions
         app_path = Path(__file__).parent / "clients" / "maximizing_gtk_app.py"
-        server = DisplayServer(local_server, add_extensions=extensions)
+        server = DisplayServer(server, add_extensions=extensions)
         app = server.program(App(("python3", str(app_path))))
         tracker = ScreencopyTracker(server.display_name)
         pointer = VirtualPointer(server.display_name)
