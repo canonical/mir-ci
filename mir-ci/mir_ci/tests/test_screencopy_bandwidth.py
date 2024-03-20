@@ -4,7 +4,8 @@ from pathlib import Path
 
 import pytest
 from mir_ci import SLOWDOWN
-from mir_ci.fixtures import apps
+from mir_ci.fixtures import apps, servers
+from mir_ci.program.app import App
 from mir_ci.program.display_server import DisplayServer
 from mir_ci.wayland.screencopy_tracker import ScreencopyTracker
 from mir_ci.wayland.virtual_pointer import Button, VirtualPointer
@@ -37,22 +38,22 @@ class TestScreencopyBandwidth:
             apps.snap("mir-kiosk-neverputt", extra=False),
         ],
     )
-    async def test_active_app(self, record_property, server, app) -> None:
-        server = DisplayServer(server, add_extensions=ScreencopyTracker.required_extensions)
-        tracker = ScreencopyTracker(server.display_name)
-        async with server as s, tracker, s.program(apps.App(app.command[0], app.app_type)) as p:
+    async def test_active_app(self, record_property, any_server, app) -> None:
+        any_server = DisplayServer(any_server, add_extensions=ScreencopyTracker.required_extensions)
+        tracker = ScreencopyTracker(any_server.display_name)
+        async with any_server as s, tracker, s.program(App(app.command[0], app.app_type)) as p:
             if app.command[1]:
                 await asyncio.wait_for(p.wait(timeout=app.command[1]), timeout=app.command[1] + 1)
             else:
                 await asyncio.sleep(long_wait_time)
-        _record_properties(record_property, server, tracker, 10)
+        _record_properties(record_property, any_server, tracker, 10)
 
-    async def test_compositor_alone(self, record_property, server) -> None:
-        server = DisplayServer(server, add_extensions=ScreencopyTracker.required_extensions)
-        tracker = ScreencopyTracker(server.display_name)
-        async with server, tracker:
+    async def test_compositor_alone(self, record_property, any_server) -> None:
+        any_server = DisplayServer(any_server, add_extensions=ScreencopyTracker.required_extensions)
+        tracker = ScreencopyTracker(any_server.display_name)
+        async with any_server, tracker:
             await asyncio.sleep(long_wait_time)
-        _record_properties(record_property, server, tracker, 1)
+        _record_properties(record_property, any_server, tracker, 1)
 
     @pytest.mark.parametrize(
         "app",
@@ -62,20 +63,20 @@ class TestScreencopyBandwidth:
             apps.snap("mir-kiosk-kodi"),
         ],
     )
-    async def test_inactive_app(self, record_property, server, app) -> None:
-        server = DisplayServer(server, add_extensions=ScreencopyTracker.required_extensions)
-        tracker = ScreencopyTracker(server.display_name)
-        async with server as s, tracker, s.program(app):
+    async def test_inactive_app(self, record_property, any_server, app) -> None:
+        any_server = DisplayServer(any_server, add_extensions=ScreencopyTracker.required_extensions)
+        tracker = ScreencopyTracker(any_server.display_name)
+        async with any_server as s, tracker, s.program(app):
             await asyncio.sleep(long_wait_time)
-        _record_properties(record_property, server, tracker, 2)
+        _record_properties(record_property, any_server, tracker, 2)
 
     @pytest.mark.deps(debs=("libgtk-4-dev",), pip_pkgs=(("pygobject", "gi"),))
     @pytest.mark.parametrize(
         "local_server",
         [
-            apps.confined_shell(),
-            apps.mir_test_tools(),
-            apps.mir_demo_server(),
+            servers.confined_shell(),
+            servers.mir_test_tools(),
+            servers.mir_demo_server(),
         ],
     )
     async def test_app_dragged_around(self, record_property, local_server) -> None:
@@ -85,7 +86,7 @@ class TestScreencopyBandwidth:
         extensions = ScreencopyTracker.required_extensions + VirtualPointer.required_extensions
         app_path = Path(__file__).parent / "clients" / "maximizing_gtk_app.py"
         server = DisplayServer(local_server, add_extensions=extensions)
-        app = server.program(apps.App(("python3", str(app_path))))
+        app = server.program(App(("python3", str(app_path))))
         tracker = ScreencopyTracker(server.display_name)
         pointer = VirtualPointer(server.display_name)
         async with server, tracker, app, pointer:

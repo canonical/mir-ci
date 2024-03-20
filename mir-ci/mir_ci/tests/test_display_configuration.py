@@ -7,7 +7,7 @@ from unittest.mock import ANY, Mock
 
 import pytest
 from mir_ci import SLOWDOWN
-from mir_ci.fixtures import apps
+from mir_ci.fixtures.servers import ServerCap, servers
 from mir_ci.program.display_server import DisplayServer
 from mir_ci.wayland.output_watcher import OutputWatcher
 
@@ -47,19 +47,14 @@ class DisplayServerStaticFile:
             yaml.dump(content, file)
 
 
-@pytest.mark.parametrize(
-    "local_server",
-    [
-        # TODO: Test other servers. Frame-based servers use
-        # a configuration file that is within the snap, so it
-        # is unclear how to read/modify that file from the outside
-        apps.mir_demo_server(),
-    ],
-)
+# TODO: Test other servers. Frame-based servers use
+# a configuration file that is within the snap, so it
+# is unclear how to read/modify that file from the outside
+@pytest.mark.parametrize("server", servers(ServerCap.DISPLAY_CONFIG))
 @pytest.mark.deps(pip_pkgs=("pyyaml",))
 class TestDisplayConfiguration:
-    async def test_can_update_scale(self, local_server) -> None:
-        server = DisplayServerStaticFile(local_server)
+    async def test_can_update_scale(self, server) -> None:
+        server = DisplayServerStaticFile(server)
         on_scale = Mock()
         watcher = OutputWatcher(server.server.display_name, on_scale=on_scale)
 
@@ -78,8 +73,8 @@ class TestDisplayConfiguration:
 
         on_scale.assert_called_with(ANY, 2)
 
-    async def test_can_update_position(self, local_server) -> None:
-        server = DisplayServerStaticFile(local_server)
+    async def test_can_update_position(self, server) -> None:
+        server = DisplayServerStaticFile(server)
         on_geometry = Mock()
         watcher = OutputWatcher(server.server.display_name, on_geometry=on_geometry)
 
