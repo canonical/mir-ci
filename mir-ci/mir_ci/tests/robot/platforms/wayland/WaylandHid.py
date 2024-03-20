@@ -47,6 +47,8 @@ class WaylandHid(VirtualPointer):
         assert step_distance > 0, "Step distance must be positive"
 
         distance = ((self._pointer_position[0] - x) ** 2 + (self._pointer_position[1] - y) ** 2) ** 0.5
+        if distance == 0:
+            return
         steps = math.ceil(distance / step_distance)
 
         for step in range(0, steps + 1):
