@@ -1,3 +1,4 @@
+from collections.abc import Generator
 from enum import Flag, auto
 from typing import Callable, Sequence
 
@@ -34,6 +35,18 @@ def server(arg: ServerCap | Server):
         return arg
 
 
+def server_params(caps: ServerCap = ServerCap.NONE) -> Generator[Server, None, None]:
+    """
+    Use this in fixture parametrization to select servers with the necessary capabilities
+    for the fixture in question.
+
+    >>> @pytest.fixture(params=server_params(ServerCap.DRAG_AND_DROP))
+    >>> def func(request) -> app.App:
+            return request.param()
+    """
+    return (v for k, v in _SERVERS if caps in k)
+
+
 def servers(caps: ServerCap = ServerCap.NONE) -> Sequence[app.App]:
     """
     Use this in test parametrization to select servers with the necessary capabilities for the
@@ -45,7 +58,7 @@ def servers(caps: ServerCap = ServerCap.NONE) -> Sequence[app.App]:
     """
     # This tuple has to be realized here, otherwise class-wide parametrization
     # will exhaust the generator on the first test function.
-    return tuple(v() for k, v in _SERVERS if caps in k)
+    return tuple(p() for p in server_params(caps))
 
 
 @server(ServerCap.ALL ^ ServerCap.FLOATING_WINDOWS)
