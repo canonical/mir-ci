@@ -10,14 +10,14 @@ from typing import Any, Generator, List, Mapping, Optional, Union
 import distro
 import pytest
 from deepmerge import conservative_merger
-from mir_ci.fixtures import servers
+from mir_ci.fixtures.servers import server_params
 from mir_ci.program import app
 
 RELEASE_PPA = "mir-team/release"
 RELEASE_PPA_ENTRY = f"https://ppa.launchpadcontent.net/{RELEASE_PPA}/ubuntu {distro.codename()}/main"
 APT_INSTALL = ("sudo", "DEBIAN_FRONTEND=noninteractive", "apt-get", "install", "--yes")
 PIP = ("python3", "-m", "pip")
-DEP_FIXTURES = {"server", "deps"}  # these are all the fixtures changing their behavior on `--deps`
+DEP_FIXTURES = {"any_server", "deps"}  # these are all the fixtures changing their behavior on `--deps`
 
 
 def pytest_addoption(parser):
@@ -137,22 +137,12 @@ def ppa() -> None:
         warnings.warn("Skipping PPA setup due to missing tools.")
 
 
-@pytest.fixture(
-    scope="function",
-    params=(
-        servers.ubuntu_frame,
-        servers.mir_kiosk,
-        servers.confined_shell,
-        servers.mir_test_tools,
-        servers.mir_demo_server,
-    ),
-)
-def server(request: pytest.FixtureRequest) -> app.App:
+@pytest.fixture(scope="function", params=server_params())
+def any_server(request: pytest.FixtureRequest) -> app.App:
     """
-    Parameterizes the servers (ubuntu-frame, mir-kiosk, confined-shell, mir_demo_server),
-    or installs them if `--deps` is given on the command line.
+    Parameterizes all the servers, or installs them if `--deps` is given on the command line.
     """
-    # Have to evaluate the param ourselves, because you can't mark fixtures and so
+    # Have to realize the param ourselves, because you can't mark fixtures and so
     # the `.deps(…)` mark never registers.
     server = _deps_install(request, request.param().marks[0].kwargs)
     _deps_skip(request)
