@@ -3,7 +3,8 @@ from pathlib import Path
 from textwrap import dedent
 
 import pytest
-from mir_ci.fixtures import apps
+from mir_ci.fixtures.servers import ServerCap, servers
+from mir_ci.program.app import App
 from mir_ci.program.display_server import DisplayServer
 from mir_ci.wayland.screencopy_tracker import ScreencopyTracker
 from mir_ci.wayland.virtual_pointer import VirtualPointer
@@ -46,16 +47,7 @@ ${{END_TEMPLATE}}    {TESTS_PATH}/robot/suites/drag_and_drop/drag_and_drop_end.p
     },
 )
 @pytest.mark.env(GSETTINGS_BACKEND="keyfile")
-@pytest.mark.parametrize(
-    "modern_server",
-    [
-        apps.ubuntu_frame(),
-        # apps.mir_kiosk(), we need servers based on Mir 2.14 or later
-        apps.confined_shell(),
-        apps.mir_test_tools(),
-        apps.mir_demo_server(),
-    ],
-)
+@pytest.mark.parametrize("server", servers(ServerCap.DRAG_AND_DROP))
 @pytest.mark.deps(
     debs=(
         "libgirepository1.0-dev",
@@ -78,10 +70,10 @@ class TestDragAndDrop:
             ("python3", APP_PATH, "--source", "text", "--target", "text", "--expect", "text"),
         ],
     )
-    async def test_source_and_dest_match(self, modern_server, app, tmp_path) -> None:
+    async def test_source_and_dest_match(self, server, app, tmp_path) -> None:
         extensions = VirtualPointer.required_extensions + ScreencopyTracker.required_extensions
-        server_instance = DisplayServer(modern_server, add_extensions=extensions)
-        program = server_instance.program(apps.App(app))
+        server_instance = DisplayServer(server, add_extensions=extensions)
+        program = server_instance.program(App(app))
 
         robot_test_case = dedent(
             """\
@@ -97,7 +89,7 @@ class TestDragAndDrop:
             robot_file.write(
                 ROBOT_TEMPLATE.format(settings=ROBOT_SETTINGS, variables=ROBOT_VARIABLES, test_case=robot_test_case)
             )
-            robot = server_instance.program(apps.App(("robot", "-d", tmp_path, robot_file.name)))
+            robot = server_instance.program(App(("robot", "-d", tmp_path, robot_file.name)))
 
             async with server_instance, program, robot:
                 await robot.wait(60)
@@ -112,10 +104,10 @@ class TestDragAndDrop:
             ("python3", "-u", APP_PATH, "--source", "text", "--target", "pixbuf", "--expect", "pixbuf"),
         ],
     )
-    async def test_source_and_dest_mismatch(self, modern_server, app, tmp_path) -> None:
+    async def test_source_and_dest_mismatch(self, server, app, tmp_path) -> None:
         extensions = VirtualPointer.required_extensions + ScreencopyTracker.required_extensions
-        server_instance = DisplayServer(modern_server, add_extensions=extensions)
-        program = server_instance.program(apps.App(app))
+        server_instance = DisplayServer(server, add_extensions=extensions)
+        program = server_instance.program(App(app))
 
         robot_test_case = dedent(
             """\
@@ -132,7 +124,7 @@ class TestDragAndDrop:
             robot_file.write(
                 ROBOT_TEMPLATE.format(settings=ROBOT_SETTINGS, variables=ROBOT_VARIABLES, test_case=robot_test_case)
             )
-            robot = server_instance.program(apps.App(("robot", "-d", tmp_path, robot_file.name)))
+            robot = server_instance.program(App(("robot", "-d", tmp_path, robot_file.name)))
 
             async with server_instance, program, robot:
                 await robot.wait(60)

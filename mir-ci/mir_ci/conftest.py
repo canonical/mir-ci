@@ -10,17 +10,14 @@ from typing import Any, Generator, List, Mapping, Optional, Union
 import distro
 import pytest
 from deepmerge import conservative_merger
-from mir_ci.fixtures import apps
+from mir_ci.fixtures.servers import server_params
+from mir_ci.program import app
 
 RELEASE_PPA = "mir-team/release"
 RELEASE_PPA_ENTRY = f"https://ppa.launchpadcontent.net/{RELEASE_PPA}/ubuntu {distro.codename()}/main"
 APT_INSTALL = ("sudo", "DEBIAN_FRONTEND=noninteractive", "apt-get", "install", "--yes")
 PIP = ("python3", "-m", "pip")
-DEP_FIXTURES = {
-    "mir_server",
-    "deps",
-    "mir_and_nonmir_server",
-}  # these are all the fixtures changing their behavior on `--deps`
+DEP_FIXTURES = {"any_server", "deps"}  # these are all the fixtures changing their behavior on `--deps`
 
 
 def pytest_addoption(parser):
@@ -50,7 +47,7 @@ def _deps_skip(request: pytest.FixtureRequest) -> None:
             pytest.skip("dependency-only run")
 
 
-def _deps_install(request: pytest.FixtureRequest, spec: Union[str, Mapping[str, Any]]) -> apps.App:
+def _deps_install(request: pytest.FixtureRequest, spec: Union[str, Mapping[str, Any]]) -> app.App:
     """
     Install dependencies for the command spec provided. If `spec` is a string, it's assumed
     to be a snap and command name.
@@ -67,13 +64,15 @@ def _deps_install(request: pytest.FixtureRequest, spec: Union[str, Mapping[str, 
         debs: Optional[tuple[str]] = spec.get("debs")
         snap: Optional[str] = spec.get("snap")
         channel: str = spec.get("channel", "latest/stable")
+        classic: bool = spec.get("classic", False)
         pip_pkgs: tuple[str, ...] = spec.get("pip_pkgs", ())
-        app_type: Optional[apps.AppType] = spec.get("app_type")
+        app_type: Optional[app.AppType] = spec.get("app_type")
     elif isinstance(spec, str):
         cmd = [spec]
         debs = None
         snap = spec
         channel = "latest/stable"
+        classic = False
         pip_pkgs = ()
         app_type = "snap"
     else:
@@ -103,7 +102,8 @@ def _deps_install(request: pytest.FixtureRequest, spec: Union[str, Mapping[str, 
                 try:
                     subprocess.check_call(("snap", "list", snap), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                 except subprocess.CalledProcessError:
-                    subprocess.check_call(("sudo", "snap", "install", snap, "--channel", channel))
+                    _classic = ("--classic",) if classic else ()
+                    subprocess.check_call(("sudo", "snap", "install", snap, "--channel", channel, *_classic))
                     if shutil.which(f"/snap/{snap}/current/bin/setup.sh"):
                         subprocess.check_call(("sudo", f"/snap/{snap}/current/bin/setup.sh"))
                     subprocess.call(
@@ -123,7 +123,7 @@ def _deps_install(request: pytest.FixtureRequest, spec: Union[str, Mapping[str, 
         if missing_pkgs:
             subprocess.check_call((*PIP, "install", *missing_pkgs))
 
-    return apps.App(cmd, app_type)
+    return app.App(cmd, app_type)
 
 
 @pytest.fixture(scope="session")
@@ -140,53 +140,20 @@ def ppa() -> None:
         warnings.warn("Skipping PPA setup due to missing tools.")
 
 
-@pytest.fixture(
-    scope="function",
-    params=(
-        apps.ubuntu_frame,
-        apps.mir_kiosk,
-        apps.confined_shell,
-        apps.mir_test_tools,
-        apps.mir_demo_server,
-    ),
-)
-def mir_server(request: pytest.FixtureRequest) -> apps.App:
+@pytest.fixture(scope="function", params=server_params())
+def any_server(request: pytest.FixtureRequest) -> app.App:
     """
-    Parameterizes the servers (ubuntu-frame, mir-kiosk, confined-shell, mir_demo_server),
-    or installs them if `--deps` is given on the command line.
+    Parameterizes all the servers, or installs them if `--deps` is given on the command line.
     """
-    # Have to evaluate the param ourselves, because you can't mark fixtures and so
+    # Have to realize the param ourselves, because you can't mark fixtures and so
     # the `.deps(…)` mark never registers.
     server = _deps_install(request, request.param().marks[0].kwargs)
     _deps_skip(request)
     return server
 
 
-@pytest.fixture(
-    scope="function",
-    params=(
-        apps.ubuntu_frame,
-        apps.mir_kiosk,
-        apps.confined_shell,
-        apps.mir_test_tools,
-        apps.mir_demo_server,
-        apps.gnome_shell,
-    ),
-)
-def mir_and_nonmir_server(request: pytest.FixtureRequest) -> apps.App:
-    """
-    Parameterizes the servers (ubuntu-frame, mir-kiosk, confined-shell, mir_demo_server,
-    gnome-shell), or installs them if `--deps` is given on the command line.
-    """
-    # Have to evaluate the param ourselves, because you can't mark fixtures and so
-    # the `.deps(…)` mark never registers.
-    mir_and_nonmir_server = _deps_install(request, request.param().marks[0].kwargs)
-    _deps_skip(request)
-    return mir_and_nonmir_server
-
-
 @pytest.fixture(scope="function")
-def deps(request: pytest.FixtureRequest) -> Optional[apps.App]:
+def deps(request: pytest.FixtureRequest) -> Optional[app.App]:
     """
     Ensures the dependencies are available, or installs them if `--deps` is given on the command line.
 
