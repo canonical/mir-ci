@@ -18,8 +18,8 @@ class ServerCap(Flag):
     FLOATING_WINDOWS = auto()
     DRAG_AND_DROP = auto()
     DISPLAY_CONFIG = auto()
-    SCREENCOPY_BANDWIDTH = auto()
-    ALL = FLOATING_WINDOWS | DRAG_AND_DROP | DISPLAY_CONFIG | SCREENCOPY_BANDWIDTH
+    SCREENCOPY = auto()
+    ALL = FLOATING_WINDOWS | DRAG_AND_DROP | DISPLAY_CONFIG | SCREENCOPY
 
 
 _SERVERS: set[tuple[ServerCap, Server]] = set()
@@ -96,7 +96,7 @@ def miriway():
 
 @server(
     ServerCap.ALL
-    ^ (ServerCap.FLOATING_WINDOWS | ServerCap.DRAG_AND_DROP | ServerCap.DISPLAY_CONFIG | ServerCap.SCREENCOPY_BANDWIDTH)
+    ^ (ServerCap.FLOATING_WINDOWS | ServerCap.DRAG_AND_DROP | ServerCap.DISPLAY_CONFIG | ServerCap.SCREENCOPY)
 )
 def gnome_shell():
     return deb(

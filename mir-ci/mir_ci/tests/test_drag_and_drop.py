@@ -47,7 +47,7 @@ ${{END_TEMPLATE}}    {TESTS_PATH}/robot/suites/drag_and_drop/drag_and_drop_end.p
     },
 )
 @pytest.mark.env(GSETTINGS_BACKEND="keyfile")
-@pytest.mark.parametrize("server", servers(ServerCap.DRAG_AND_DROP))
+@pytest.mark.parametrize("server", servers(ServerCap.DRAG_AND_DROP | ServerCap.SCREENCOPY))
 @pytest.mark.deps(
     debs=(
         "libgirepository1.0-dev",
