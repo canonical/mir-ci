@@ -61,14 +61,9 @@ jobs:
         ulimit -c unlimited
         echo "/tmp/corefile-%e-%p-%t" | sudo tee /proc/sys/kernel/core_pattern
 
-        sudo adduser $USER video
-        sudo adduser $USER input
+        sudo systemd-run --uid 1001 -p Environment=XDG_SESSION_TYPE=wayland -p PAMName=login -p TTYPath=/dev/tty1 -- tail -f /dev/null
 
-        sg video "
-          sg input '
-            python -m pytest ${{ steps.pytest-args.outputs.args }} --junitxml=junit-${{ matrix.server || matrix.mark }}-${{ matrix.python }}.xml
-          '
-        "
+        python -m pytest ${{ steps.pytest-args.outputs.args }} --junitxml=junit-${{ matrix.server || matrix.mark }}-${{ matrix.python }}.xml
 
     - name: Upload test results
       uses: actions/upload-artifact@v4
