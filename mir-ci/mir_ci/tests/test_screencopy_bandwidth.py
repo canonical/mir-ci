@@ -25,6 +25,7 @@ def _record_properties(fixture, server, tracker, min_frames):
 
 @pytest.mark.performance
 class TestScreencopyBandwidth:
+    @pytest.mark.parametrize("server", servers.servers(servers.ServerCap.SCREENCOPY_BANDWIDTH))
     @pytest.mark.parametrize(
         "app",
         [
@@ -38,23 +39,25 @@ class TestScreencopyBandwidth:
             apps.snap("mir-kiosk-neverputt", extra=False),
         ],
     )
-    async def test_active_app(self, record_property, any_server, app) -> None:
-        any_server = DisplayServer(any_server, add_extensions=ScreencopyTracker.required_extensions)
-        tracker = ScreencopyTracker(any_server.display_name)
-        async with any_server as s, tracker, s.program(App(app.command[0], app.app_type)) as p:
+    async def test_active_app(self, record_property, server, app) -> None:
+        server = DisplayServer(server, add_extensions=ScreencopyTracker.required_extensions)
+        tracker = ScreencopyTracker(server.display_name)
+        async with server as s, tracker, s.program(App(app.command[0], app.app_type)) as p:
             if app.command[1]:
                 await asyncio.wait_for(p.wait(timeout=app.command[1]), timeout=app.command[1] + 1)
             else:
                 await asyncio.sleep(long_wait_time)
-        _record_properties(record_property, any_server, tracker, 10)
+        _record_properties(record_property, server, tracker, 10)
 
-    async def test_compositor_alone(self, record_property, any_server) -> None:
-        any_server = DisplayServer(any_server, add_extensions=ScreencopyTracker.required_extensions)
-        tracker = ScreencopyTracker(any_server.display_name)
-        async with any_server, tracker:
+    @pytest.mark.parametrize("server", servers.servers(servers.ServerCap.SCREENCOPY_BANDWIDTH))
+    async def test_compositor_alone(self, record_property, server) -> None:
+        server = DisplayServer(server, add_extensions=ScreencopyTracker.required_extensions)
+        tracker = ScreencopyTracker(server.display_name)
+        async with server, tracker:
             await asyncio.sleep(long_wait_time)
-        _record_properties(record_property, any_server, tracker, 1)
+        _record_properties(record_property, server, tracker, 1)
 
+    @pytest.mark.parametrize("server", servers.servers(servers.ServerCap.SCREENCOPY_BANDWIDTH))
     @pytest.mark.parametrize(
         "app",
         [
@@ -63,12 +66,12 @@ class TestScreencopyBandwidth:
             apps.snap("mir-kiosk-kodi"),
         ],
     )
-    async def test_inactive_app(self, record_property, any_server, app) -> None:
-        any_server = DisplayServer(any_server, add_extensions=ScreencopyTracker.required_extensions)
-        tracker = ScreencopyTracker(any_server.display_name)
-        async with any_server as s, tracker, s.program(app):
+    async def test_inactive_app(self, record_property, server, app) -> None:
+        server = DisplayServer(server, add_extensions=ScreencopyTracker.required_extensions)
+        tracker = ScreencopyTracker(server.display_name)
+        async with server as s, tracker, s.program(app):
             await asyncio.sleep(long_wait_time)
-        _record_properties(record_property, any_server, tracker, 2)
+        _record_properties(record_property, server, tracker, 2)
 
     @pytest.mark.deps(debs=("libgtk-4-dev",), pip_pkgs=(("pygobject", "gi"),))
     @pytest.mark.parametrize(
