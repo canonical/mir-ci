@@ -105,6 +105,5 @@ def gnome_shell():
         "--no-x11",
         "--wayland-display",
         DisplayServer.get_wayland_display(),
-        debs=("gnome-shell",),
         id="gnome_shell",
     )
