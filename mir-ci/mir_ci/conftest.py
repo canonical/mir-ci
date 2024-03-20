@@ -10,7 +10,8 @@ from typing import Any, Generator, List, Mapping, Optional, Union
 import distro
 import pytest
 from deepmerge import conservative_merger
-from mir_ci.fixtures import apps
+from mir_ci.fixtures import servers
+from mir_ci.program import app
 
 RELEASE_PPA = "mir-team/release"
 RELEASE_PPA_ENTRY = f"https://ppa.launchpadcontent.net/{RELEASE_PPA}/ubuntu {distro.codename()}/main"
@@ -46,7 +47,7 @@ def _deps_skip(request: pytest.FixtureRequest) -> None:
             pytest.skip("dependency-only run")
 
 
-def _deps_install(request: pytest.FixtureRequest, spec: Union[str, Mapping[str, Any]]) -> apps.App:
+def _deps_install(request: pytest.FixtureRequest, spec: Union[str, Mapping[str, Any]]) -> app.App:
     """
     Install dependencies for the command spec provided. If `spec` is a string, it's assumed
     to be a snap and command name.
@@ -64,7 +65,7 @@ def _deps_install(request: pytest.FixtureRequest, spec: Union[str, Mapping[str, 
         snap: Optional[str] = spec.get("snap")
         channel: str = spec.get("channel", "latest/stable")
         pip_pkgs: tuple[str, ...] = spec.get("pip_pkgs", ())
-        app_type: Optional[apps.AppType] = spec.get("app_type")
+        app_type: Optional[app.AppType] = spec.get("app_type")
     elif isinstance(spec, str):
         cmd = [spec]
         debs = None
@@ -119,7 +120,7 @@ def _deps_install(request: pytest.FixtureRequest, spec: Union[str, Mapping[str, 
         if missing_pkgs:
             subprocess.check_call((*PIP, "install", *missing_pkgs))
 
-    return apps.App(cmd, app_type)
+    return app.App(cmd, app_type)
 
 
 @pytest.fixture(scope="session")
@@ -139,14 +140,14 @@ def ppa() -> None:
 @pytest.fixture(
     scope="function",
     params=(
-        apps.ubuntu_frame,
-        apps.mir_kiosk,
-        apps.confined_shell,
-        apps.mir_test_tools,
-        apps.mir_demo_server,
+        servers.ubuntu_frame,
+        servers.mir_kiosk,
+        servers.confined_shell,
+        servers.mir_test_tools,
+        servers.mir_demo_server,
     ),
 )
-def server(request: pytest.FixtureRequest) -> apps.App:
+def server(request: pytest.FixtureRequest) -> app.App:
     """
     Parameterizes the servers (ubuntu-frame, mir-kiosk, confined-shell, mir_demo_server),
     or installs them if `--deps` is given on the command line.
@@ -159,7 +160,7 @@ def server(request: pytest.FixtureRequest) -> apps.App:
 
 
 @pytest.fixture(scope="function")
-def deps(request: pytest.FixtureRequest) -> Optional[apps.App]:
+def deps(request: pytest.FixtureRequest) -> Optional[app.App]:
     """
     Ensures the dependencies are available, or installs them if `--deps` is given on the command line.
 
