@@ -16,7 +16,8 @@ class ServerCap(Flag):
     NONE = 0
     FLOATING_WINDOWS = auto()
     DRAG_AND_DROP = auto()
-    ALL = FLOATING_WINDOWS | DRAG_AND_DROP
+    DISPLAY_CONFIG = auto()
+    ALL = FLOATING_WINDOWS | DRAG_AND_DROP | DISPLAY_CONFIG
 
 
 _SERVERS: set[tuple[ServerCap, Server]] = set()
@@ -61,22 +62,22 @@ def servers(caps: ServerCap = ServerCap.NONE) -> Sequence[app.App]:
     return tuple(p() for p in server_params(caps))
 
 
-@server(ServerCap.ALL ^ ServerCap.FLOATING_WINDOWS)
+@server(ServerCap.ALL ^ (ServerCap.FLOATING_WINDOWS | ServerCap.DISPLAY_CONFIG))
 def ubuntu_frame():
     return snap("ubuntu-frame", channel="22/stable", id="ubuntu_frame")
 
 
-@server(ServerCap.ALL ^ (ServerCap.FLOATING_WINDOWS | ServerCap.DRAG_AND_DROP))
+@server(ServerCap.ALL ^ (ServerCap.FLOATING_WINDOWS | ServerCap.DRAG_AND_DROP | ServerCap.DISPLAY_CONFIG))
 def mir_kiosk():
     return snap("mir-kiosk", id="mir_kiosk")
 
 
-@server
+@server(ServerCap.ALL ^ ServerCap.DISPLAY_CONFIG)
 def confined_shell():
     return snap("confined-shell", channel="edge", id="confined_shell")
 
 
-@server
+@server(ServerCap.ALL ^ ServerCap.DISPLAY_CONFIG)
 def mir_test_tools():
     return snap("mir-test-tools", channel="22/beta", cmd=("mir-test-tools.demo-server",), id="mir_test_tools")
 
