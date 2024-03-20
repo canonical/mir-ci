@@ -94,10 +94,7 @@ def miriway():
     return snap("miriway", channel="stable", classic=True)
 
 
-@server(
-    ServerCap.ALL
-    ^ (ServerCap.FLOATING_WINDOWS | ServerCap.DRAG_AND_DROP | ServerCap.DISPLAY_CONFIG | ServerCap.SCREENCOPY)
-)
+@server(ServerCap.ALL ^ (ServerCap.DISPLAY_CONFIG | ServerCap.SCREENCOPY))
 def gnome_shell():
     return deb(
         "gnome-shell",
