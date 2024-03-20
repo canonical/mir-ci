@@ -24,6 +24,7 @@ jobs:
         - confined_shell
         - mir_test_tools
         - mir_demo_server
+        - gnome_shell
         include:
         - server: null
           mark: self
