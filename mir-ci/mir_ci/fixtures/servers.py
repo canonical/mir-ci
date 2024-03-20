@@ -3,6 +3,7 @@ from enum import Flag, auto
 from typing import Callable, Sequence
 
 from ..program import app
+from ..program.display_server import DisplayServer
 from . import deb, snap
 
 Server = Callable[[], app.App]
@@ -17,7 +18,8 @@ class ServerCap(Flag):
     FLOATING_WINDOWS = auto()
     DRAG_AND_DROP = auto()
     DISPLAY_CONFIG = auto()
-    ALL = FLOATING_WINDOWS | DRAG_AND_DROP | DISPLAY_CONFIG
+    SCREENCOPY = auto()
+    ALL = FLOATING_WINDOWS | DRAG_AND_DROP | DISPLAY_CONFIG | SCREENCOPY
 
 
 _SERVERS: set[tuple[ServerCap, Server]] = set()
@@ -90,3 +92,15 @@ def mir_demo_server():
 @server
 def miriway():
     return snap("miriway", channel="stable", classic=True)
+
+
+@server(ServerCap.ALL ^ (ServerCap.DISPLAY_CONFIG | ServerCap.SCREENCOPY))
+def gnome_shell():
+    return deb(
+        "gnome-shell",
+        "--wayland",
+        "--no-x11",
+        "--wayland-display",
+        DisplayServer.get_wayland_display(),
+        id="gnome_shell",
+    )
