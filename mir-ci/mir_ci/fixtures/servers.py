@@ -85,3 +85,8 @@ def mir_test_tools():
 @server
 def mir_demo_server():
     return deb("mir_demo_server", debs=("mir-test-tools", "mir-graphics-drivers-desktop"), id="mir_demo_server")
+
+
+@server
+def miriway():
+    return snap("miriway", channel="stable", classic=True)
