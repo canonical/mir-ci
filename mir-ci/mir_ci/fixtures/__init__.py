@@ -10,6 +10,7 @@ def _dependency(
     app_type: AppType,
     snap: Optional[str] = None,
     channel: str = "latest/stable",
+    classic: bool = False,
     debs: Collection[str] = (),
     pip_pkgs: Collection[str] = (),
     marks: Union[pytest.MarkDecorator, Collection[Union[pytest.MarkDecorator, pytest.Mark]]] = (),
@@ -26,7 +27,9 @@ def _dependency(
     return pytest.param(
         App(ret, app_type),
         marks=(  # type: ignore
-            pytest.mark.deps(cmd=cmd, snap=snap, debs=debs, pip_pkgs=pip_pkgs, channel=channel, app_type=app_type),
+            pytest.mark.deps(
+                cmd=cmd, snap=snap, debs=debs, pip_pkgs=pip_pkgs, channel=channel, classic=classic, app_type=app_type
+            ),
             *marks,
         ),
         id=id,

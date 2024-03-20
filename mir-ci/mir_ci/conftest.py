@@ -64,6 +64,7 @@ def _deps_install(request: pytest.FixtureRequest, spec: Union[str, Mapping[str, 
         debs: Optional[tuple[str]] = spec.get("debs")
         snap: Optional[str] = spec.get("snap")
         channel: str = spec.get("channel", "latest/stable")
+        classic: bool = spec.get("classic", False)
         pip_pkgs: tuple[str, ...] = spec.get("pip_pkgs", ())
         app_type: Optional[app.AppType] = spec.get("app_type")
     elif isinstance(spec, str):
@@ -71,6 +72,7 @@ def _deps_install(request: pytest.FixtureRequest, spec: Union[str, Mapping[str, 
         debs = None
         snap = spec
         channel = "latest/stable"
+        classic = False
         pip_pkgs = ()
         app_type = "snap"
     else:
@@ -100,7 +102,8 @@ def _deps_install(request: pytest.FixtureRequest, spec: Union[str, Mapping[str, 
                 try:
                     subprocess.check_call(("snap", "list", snap), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                 except subprocess.CalledProcessError:
-                    subprocess.check_call(("sudo", "snap", "install", snap, "--channel", channel))
+                    _classic = ("--classic",) if classic else ()
+                    subprocess.check_call(("sudo", "snap", "install", snap, "--channel", channel, *_classic))
                     if shutil.which(f"/snap/{snap}/current/bin/setup.sh"):
                         subprocess.check_call(("sudo", f"/snap/{snap}/current/bin/setup.sh"))
                     subprocess.call(
