@@ -19,7 +19,8 @@ class ServerCap(Flag):
     DRAG_AND_DROP = auto()
     DISPLAY_CONFIG = auto()
     SCREENCOPY = auto()
-    ALL = FLOATING_WINDOWS | DRAG_AND_DROP | DISPLAY_CONFIG | SCREENCOPY
+    INPUT_METHOD = auto()
+    ALL = FLOATING_WINDOWS | DRAG_AND_DROP | DISPLAY_CONFIG | SCREENCOPY | INPUT_METHOD
 
 
 _SERVERS: set[tuple[ServerCap, Server]] = set()
@@ -69,7 +70,10 @@ def ubuntu_frame():
     return snap("ubuntu-frame", channel="22/stable", id="ubuntu_frame")
 
 
-@server(ServerCap.ALL ^ (ServerCap.FLOATING_WINDOWS | ServerCap.DRAG_AND_DROP | ServerCap.DISPLAY_CONFIG))
+@server(
+    ServerCap.ALL
+    ^ (ServerCap.FLOATING_WINDOWS | ServerCap.DRAG_AND_DROP | ServerCap.DISPLAY_CONFIG | ServerCap.INPUT_METHOD)
+)
 def mir_kiosk():
     return snap("mir-kiosk", id="mir_kiosk")
 
@@ -94,7 +98,7 @@ def miriway():
     return snap("miriway", channel="stable", classic=True)
 
 
-@server(ServerCap.ALL ^ (ServerCap.DISPLAY_CONFIG | ServerCap.SCREENCOPY))
+@server(ServerCap.ALL ^ (ServerCap.DISPLAY_CONFIG | ServerCap.SCREENCOPY | ServerCap.INPUT_METHOD))
 def gnome_shell():
     return deb(
         "gnome-shell",
