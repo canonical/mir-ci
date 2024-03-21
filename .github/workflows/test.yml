@@ -57,6 +57,8 @@ jobs:
 
     - name: Run the tests
       working-directory: mir-ci/mir_ci
+      env:
+        MIR_CI_VARIANT: 1024
       run: |
         # set up coredumps
         ulimit -c unlimited
@@ -71,7 +73,9 @@ jobs:
       if: success() || failure()
       with:
         name: test-results-${{ matrix.server || matrix.mark }}
-        path: mir-ci/mir_ci/junit-*.xml
+        path: |
+          mir-ci/mir_ci/junit-*.xml
+          /tmp/pytest-of-*/*-current/**/log.html
 
     - if: ${{ matrix.mark == 'self' }}
       name: Upload coverage data
