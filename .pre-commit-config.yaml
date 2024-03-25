@@ -1,4 +1,9 @@
-exclude: ^bin|mir-ci/mir_ci/wayland/protocols
+exclude: |
+  (?x)^(
+    bin/.*|
+    mir-ci/mir_ci/wayland/protocols/.*|
+    mir-ci/mir_ci/tests/robot/platforms/zapper/ZapperHid.py
+  )$
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: v4.5.0

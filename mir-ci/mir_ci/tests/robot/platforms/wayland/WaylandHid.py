@@ -80,6 +80,12 @@ class WaylandHid(VirtualPointer):
         self.button(Button[button], False)
 
     @keyword
+    async def click_pointer_button(self, button: str) -> None:
+        await self.connect()
+        self.button(Button[button], True)
+        self.button(Button[button], False)
+
+    @keyword
     async def release_buttons(self) -> None:
         await self.connect()
         for button in Button:
