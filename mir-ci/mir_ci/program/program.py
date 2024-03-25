@@ -107,9 +107,14 @@ class Program(Benchmarkable):
             scope = f"mirci-{uuid.uuid4()}.scope"
             prefix = ("systemd-run", "--user", "--quiet", "--scope", f"--unit={scope}")
             command = (*prefix, *command)
+            # TODO: the global `env` and `xdg` marks should be amended with
+            # app-local ones, so different programs can get different environments.
+            env = dict(os.environ, **self.env)
+        else:
+            env = dict({k: v for k, v in os.environ.items() if k in ("PATH", "XDG_RUNTIME_DIR")}, **self.env)
         process = await asyncio.create_subprocess_exec(
             *command,
-            env=dict(os.environ, **self.env),
+            env=env,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.STDOUT,
             close_fds=True,
