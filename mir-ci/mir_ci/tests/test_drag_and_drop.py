@@ -25,7 +25,7 @@ ROBOT_TEMPLATE = """\
 ROBOT_SETTINGS = f"""\
 Library     {TESTS_PATH}/robot/platforms/wayland/Screencopy.py    AS    VIDEO
 Library     {TESTS_PATH}/robot/platforms/wayland/WaylandHid.py    AS    HID
-Resource    {TESTS_PATH}/robot/resources/kvm/KVM.resource
+Resource    {TESTS_PATH}/robot/resources/kvm/kvm.resource
 """
 
 ROBOT_VARIABLES = f"""\

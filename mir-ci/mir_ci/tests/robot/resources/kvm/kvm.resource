@@ -4,6 +4,35 @@ Documentation       Keyword definitions for specialised functionality
 
 
 *** Keywords ***
+Press Key And Match
+    [Arguments]             ${key}                  ${template}             ${tentatives}=1         ${delay}=1
+    ${combo}=               Create List             ${key}
+    Press Combo And Match
+    ...                     ${combo}
+    ...                     ${template}
+    ...                     ${tentatives}
+    ...                     ${delay}
+
+Press Combo And Match
+    [Arguments]             ${keys-combo}           ${template}             ${tentatives}=1         ${delay}=1
+
+    ${match}=               Set Variable            ${FALSE}
+    FOR    ${index}    IN RANGE    ${tentatives}
+        HID.Keys Combo          ${keys-combo}
+        Sleep                   ${delay}
+        ${match}=               Run Keyword And Return Status
+        ...                     HID.Match               ${template}             0.1
+        IF    ${match}    BREAK
+    END
+
+    IF    ${match} == ${FALSE}    Fail    No match found
+
+Press And Wait For Match
+    [Arguments]             ${keys-combo}           ${template}             ${timeout}=10
+
+    Keys Combo              ${keys-combo}
+    VIDEO.Match             ${template}             ${timeout}
+
 Get Center Of ${region}
     [Documentation]    Get the center point of a region.
     ...
