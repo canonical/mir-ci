@@ -100,8 +100,8 @@ class TestOSK:
 
             elif platform == "zapper":
                 proxy = import_module("checkbox_support.scripts.zapper_proxy")
-                _robot = b""
-                _assets = {}
+                procedure = b""
+                asset_map = {}
                 for name, path in assets.items():
                     if path.is_dir():
                         continue
@@ -109,11 +109,11 @@ class TestOSK:
                         # TODO: we're sending the whole robot suite as bytes, as Zapper
                         # doesn't currently support "running" a folder.
                         if path.suffix == ".robot":
-                            _robot += f.read() + b"\n\n"
+                            procedure += f.read() + b"\n\n"
                         else:
-                            _assets[name] = f.read()
+                            asset_map[name] = f.read()
 
-                status, log = proxy.zapper_run(os.environ["ZAPPER_HOST"], "robot_run", _robot, _assets, {})
+                status, log = proxy.zapper_run(os.environ["ZAPPER_HOST"], "robot_run", procedure, asset_map, {})
 
                 with open(tmp_path / "log.html", "w") as f:
                     f.write(log)
