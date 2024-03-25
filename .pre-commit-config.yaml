@@ -1,4 +1,4 @@
-exclude: ^bin|mir-ci/mir_ci/protocols
+exclude: ^bin|mir-ci/mir_ci/wayland/protocols
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: v4.5.0
