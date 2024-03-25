@@ -2,9 +2,6 @@
 Documentation       Keyword definitions for specialised functionality
 ...                 for Keyboard, Mouse and Video-based manipulation.
 
-Library             ${CURDIR}/Screencopy.py    AS    VIDEO
-Library             ${CURDIR}/WaylandHid.py    AS    HID
-
 
 *** Keywords ***
 Get Center Of ${region}
@@ -181,8 +178,7 @@ Click ${button} Button
     ...
     ...    Arguments:
     ...    - ${button}: Button to click (LEFT|RIGHT|MIDDLE).
-    HID.Press Pointer Button                        ${button}
-    HID.Release Pointer Button                      ${button}
+    HID.Click Pointer Button                        ${button}
 
 Release Buttons
     [Documentation]    Release all buttons on the virtual pointer.
