@@ -63,12 +63,7 @@ class TestOSK:
             server,
             add_extensions=extensions,
         )
-
-        robot = server_instance.program(App(("robot", "-d", tmp_path, tmp_path)))
-
-        assets = collect_assets("wayland", ("osk",), "osk")
-
-        tuple((tmp_path / k).symlink_to(v) for k, v in assets.items())
+        assets = collect_assets("wayland", ("kvm", "osk"), "osk")
 
         async with server_instance, server_instance.program(app) as app, server_instance.program(osk) as osk:
             tuple((tmp_path / k).symlink_to(v) for k, v in assets.items())
