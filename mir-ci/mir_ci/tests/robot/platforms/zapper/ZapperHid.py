@@ -106,7 +106,7 @@ class ZapperHid:
             )
 
     @keyword
-    def release_buttons(self) -> None:
+    def release_pointer_buttons(self) -> None:
         """Release all pointer buttons"""
         self._init_mouse()
         self.pressed_buttons.clear()
