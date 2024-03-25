@@ -22,7 +22,12 @@ ROBOT_TEMPLATE = """\
 *** Test Cases ***
 {test_case}
 """
-ROBOT_SETTINGS = f"Resource   {TESTS_PATH}/robot/platforms/wayland/KVM.resource"
+ROBOT_SETTINGS = f"""\
+Library     {TESTS_PATH}/robot/platforms/wayland/Screencopy.py    AS    VIDEO
+Library     {TESTS_PATH}/robot/platforms/wayland/WaylandHid.py    AS    HID
+Resource    {TESTS_PATH}/robot/resources/kvm/kvm.resource
+"""
+
 ROBOT_VARIABLES = f"""\
 ${{SRC_TEMPLATE}}    {TESTS_PATH}/robot/suites/drag_and_drop/drag_and_drop_src.png
 ${{DST_TEMPLATE}}    {TESTS_PATH}/robot/suites/drag_and_drop/drag_and_drop_dst.png
