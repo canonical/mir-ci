@@ -111,7 +111,14 @@ class Program(Benchmarkable):
             # app-local ones, so different programs can get different environments.
             env = dict(os.environ, **self.env)
         else:
-            env = dict({k: v for k, v in os.environ.items() if k in ("PATH", "XDG_RUNTIME_DIR")}, **self.env)
+            env = dict(
+                {
+                    k: v
+                    for k, v in os.environ.items()
+                    if k in ("PATH", "XDG_RUNTIME_DIR", "MIR_SERVER_MOUSE_ACCELERATION")
+                },
+                **self.env,
+            )
         process = await asyncio.create_subprocess_exec(
             *command,
             env=env,
