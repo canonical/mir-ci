@@ -211,4 +211,4 @@ Click ${button} Button
 
 Release Buttons
     [Documentation]    Release all buttons on the virtual pointer.
-    HID.Release Buttons
+    HID.Release Pointer Buttons
