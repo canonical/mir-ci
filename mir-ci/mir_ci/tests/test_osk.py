@@ -30,6 +30,7 @@ def collect_assets(platform: str, resources: Collection[str], suite: str, varian
             *(collect_asset(ROBOT_PATH / "resources" / resource, variant) for resource in resources),
             collect_asset(ROBOT_PATH / "suites" / suite, variant),
         )
+        if p.is_file()
     }
 
 
