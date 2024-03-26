@@ -32,6 +32,7 @@ def collect_assets(platform: str, resources: Collection[str], suite: str, varian
             *(collect_asset(ROBOT_PATH / "resources" / resource, variant) for resource in resources),
             collect_asset(ROBOT_PATH / "suites" / suite, variant),
         )
+        if p.is_file()
     }
 
 
@@ -103,8 +104,6 @@ class TestOSK:
                 procedure = b""
                 asset_map = {}
                 for name, path in assets.items():
-                    if path.is_dir():
-                        continue
                     with open(path, "rb") as f:
                         # TODO: we're sending the whole robot suite as bytes, as Zapper
                         # doesn't currently support "running" a folder.
