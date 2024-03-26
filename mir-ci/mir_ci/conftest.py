@@ -22,6 +22,7 @@ DEP_FIXTURES = {"any_server", "deps"}  # these are all the fixtures changing the
 
 def pytest_addoption(parser):
     parser.addoption("--deps", help="Only install the test dependencies", action="store_true")
+    parser.addoption("--robot-log", help="Location of the Robot log file", type=pathlib.Path)
 
 
 def _find_pips(pips):
@@ -241,3 +242,8 @@ def env(request: pytest.FixtureRequest) -> Generator:
             for var, value in mark.kwargs.items():
                 m.setenv(var, value)
         yield
+
+
+@pytest.fixture(scope="session")
+def robot_log(request: pytest.FixtureRequest) -> pathlib.Path:
+    return request.config.getoption("--robot-log") or pathlib.Path("log.html")
