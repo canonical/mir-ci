@@ -8,6 +8,7 @@ from unittest import IsolatedAsyncioTestCase
 from unittest.mock import MagicMock, Mock, call, mock_open, patch
 
 import pytest
+from mir_ci.fixtures.servers import ServerCap, _mir_ci_server, servers
 from mir_ci.lib.benchmarker import Benchmarker, CgroupsBackend
 from mir_ci.lib.cgroups import Cgroup
 from mir_ci.program.app import App
@@ -346,3 +347,70 @@ class TestOutputWatcher:
                 call.bind().dispatcher.__setitem__("name", None),
             ]
         )
+
+
+@pytest.mark.self
+class TestServers:
+    def is_server(self, server, app_type: str):
+        return server[2] == f"my-pretend-{app_type}"
+
+    @pytest.mark.parametrize("app_type", ["snap", "deb", "pip"])
+    def test_can_parse_mir_ci_server(self, monkeypatch, app_type) -> None:
+        monkeypatch.setenv("MIR_CI_SERVER", f"{app_type}:my-pretend-{app_type}:ALL")
+        server = _mir_ci_server()
+        app = server[1]()[0][0]
+        assert server is not None
+        if app_type == "pip":
+            assert app.command == ("python3", "-m", f"my-pretend-{app_type}")
+        else:
+            assert app.command == (f"my-pretend-{app_type}",)
+        assert app.app_type == app_type
+
+    @pytest.mark.parametrize("app_type", ["snap", "deb", "pip"])
+    def test_mir_ci_server_string_missing_capabilities(self, monkeypatch, app_type) -> None:
+        monkeypatch.setenv("MIR_CI_SERVER", f"{app_type}:my-pretend-{app_type}")
+        server = _mir_ci_server()
+        assert server is None
+
+    def test_mir_ci_server_string_app_type_is_invalid(self, monkeypatch) -> None:
+        monkeypatch.setenv("MIR_CI_SERVER", "invalid:my-pretend-invalid:ALL")
+        server = _mir_ci_server()
+        assert server is None
+
+    @pytest.mark.parametrize("app_type", ["snap", "deb", "pip"])
+    def test_mir_ci_server_string_capability_is_invalid(self, monkeypatch, app_type) -> None:
+        monkeypatch.setenv("MIR_CI_SERVER", f"{app_type}:my-pretend-{app_type}:INVALID")
+        server = _mir_ci_server()
+        assert server is None
+
+    @pytest.mark.parametrize("app_type", ["snap", "deb", "pip"])
+    def test_mir_ci_server_is_present_in_server_list(self, monkeypatch, app_type) -> None:
+        monkeypatch.setenv("MIR_CI_SERVER", f"{app_type}:my-pretend-{app_type}:ALL")
+        matches = next((server for server in servers() if self.is_server(server, app_type)), None)
+        assert matches is not None
+
+    @pytest.mark.parametrize("app_type", ["snap", "deb", "pip"])
+    @pytest.mark.parametrize(
+        "capabilities",
+        [
+            [ServerCap.FLOATING_WINDOWS.name, ServerCap.DRAG_AND_DROP.name],
+            [ServerCap.SCREENCOPY.name, ServerCap.INPUT_METHOD.name],
+            [ServerCap.DISPLAY_CONFIG.name],
+        ],
+    )
+    def test_mir_ci_server_can_be_found_by_capability(self, monkeypatch, app_type, capabilities: list[str]) -> None:
+        monkeypatch.setenv("MIR_CI_SERVER", f"{app_type}:my-pretend-{app_type}:{':'.join(capabilities)}")
+        capability = ServerCap.NONE
+        for capability_str in capabilities:
+            capability = capability & ServerCap[capability_str]
+
+        matches = next((server for server in servers(capability) if self.is_server(server, app_type)), None)
+        assert matches is not None
+
+    @pytest.mark.parametrize("app_type", ["snap", "deb", "pip"])
+    def test_mir_ci_server_cannot_be_found_if_it_lacks_capability(self, monkeypatch, app_type) -> None:
+        monkeypatch.setenv("MIR_CI_SERVER", f"{app_type}:my-pretend-{app_type}:FLOATING_WINDOWS:SCREENCOPY")
+        matches = next(
+            (server for server in servers(ServerCap.DISPLAY_CONFIG) if self.is_server(server, app_type)), None
+        )
+        assert matches is None
