@@ -1,5 +1,5 @@
-import logging
 import os
+import warnings
 from collections.abc import Generator
 from enum import Flag, auto
 from typing import Any, Callable, Mapping, Sequence
@@ -9,9 +9,6 @@ from ..program.display_server import DisplayServer
 from . import deb, pip, snap
 
 Server = Callable[[], app.App]
-
-
-_logger = logging.getLogger(__name__)
 
 
 class ServerCap(Flag):
@@ -97,7 +94,7 @@ def _mir_ci_server():
     _MIN_SPLIT_PARTS = 3
     split = mir_ci_server.split(":")
     if len(split) < _MIN_SPLIT_PARTS:
-        _logger.error(f"Too few parts for MIR_CI_SERVER specification: {mir_ci_server}")
+        warnings.warn(f"Too few parts for MIR_CI_SERVER specification: {mir_ci_server}")
         return
 
     try:
@@ -107,7 +104,7 @@ def _mir_ci_server():
             f"Invalid app type in MIR_CI_SERVER specification: {mir_ci_server}."
             f"Expected 'snap', 'deb' or 'pip' but got {split[0]}"
         )
-        _logger.error(error_msg)
+        warnings.warn(error_msg)
         return
 
     server_command: str = split[1]
@@ -116,7 +113,7 @@ def _mir_ci_server():
         try:
             capability = capability | ServerCap[capability_str]
         except KeyError:
-            _logger.error(f"Capability is invalid in MIR_CI_SERVER: {app_type}")
+            warnings.warn(f"Capability is invalid in MIR_CI_SERVER: {app_type}")
             return
 
     if app_type == app.AppType.snap:

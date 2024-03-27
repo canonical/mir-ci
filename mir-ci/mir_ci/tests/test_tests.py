@@ -220,7 +220,7 @@ class TestCGroupsBackend:
         cgb = CgroupsBackend()
         cgb.add("pi", pi)
 
-        with pytest.warns(UserWarning, match="Ignoring cgroup read failure: read error"):
+        with pytest.raises(UserWarning, match="Ignoring cgroup read failure: read error"):
             await cgb.poll()
 
     @pytest.mark.filterwarnings("error")
@@ -368,20 +368,20 @@ class TestServers:
 
     @pytest.mark.parametrize("app_type", [AppType.snap, AppType.deb, AppType.pip])
     def test_mir_ci_server_string_missing_capabilities(self, monkeypatch, app_type: AppType) -> None:
-        monkeypatch.setenv("MIR_CI_SERVER", f"{app_type.name}:my-pretend-{app_type.name}")
-        server = _mir_ci_server()
-        assert server is None
+        with pytest.raises(UserWarning):
+            monkeypatch.setenv("MIR_CI_SERVER", f"{app_type.name}:my-pretend-{app_type.name}")
+            _mir_ci_server()
 
     def test_mir_ci_server_string_app_type_is_invalid(self, monkeypatch) -> None:
-        monkeypatch.setenv("MIR_CI_SERVER", "invalid:my-pretend-invalid:ALL")
-        server = _mir_ci_server()
-        assert server is None
+        with pytest.raises(UserWarning):
+            monkeypatch.setenv("MIR_CI_SERVER", "invalid:my-pretend-invalid:ALL")
+            _mir_ci_server()
 
     @pytest.mark.parametrize("app_type", [AppType.snap, AppType.deb, AppType.pip])
     def test_mir_ci_server_string_capability_is_invalid(self, monkeypatch, app_type: AppType) -> None:
-        monkeypatch.setenv("MIR_CI_SERVER", f"{app_type.name}:my-pretend-{app_type.name}:INVALID")
-        server = _mir_ci_server()
-        assert server is None
+        with pytest.raises(UserWarning):
+            monkeypatch.setenv("MIR_CI_SERVER", f"{app_type.name}:my-pretend-{app_type.name}:INVALID")
+            _mir_ci_server()
 
     @pytest.mark.parametrize("app_type", [AppType.snap, AppType.deb, AppType.pip])
     def test_mir_ci_server_is_present_in_server_list(self, monkeypatch, app_type: AppType) -> None:
