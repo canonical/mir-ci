@@ -75,7 +75,7 @@ class TestDragAndDrop:
             ("python3", APP_PATH, "--source", "text", "--target", "text", "--expect", "text"),
         ],
     )
-    async def test_source_and_dest_match(self, server, app, tmp_path) -> None:
+    async def test_source_and_dest_match(self, robot_log, server, app, tmp_path) -> None:
         extensions = VirtualPointer.required_extensions + ScreencopyTracker.required_extensions
         server_instance = DisplayServer(server, add_extensions=extensions)
         program = server_instance.program(App(app))
@@ -94,7 +94,7 @@ class TestDragAndDrop:
             robot_file.write(
                 ROBOT_TEMPLATE.format(settings=ROBOT_SETTINGS, variables=ROBOT_VARIABLES, test_case=robot_test_case)
             )
-            robot = server_instance.program(App(("robot", "-d", tmp_path, robot_file.name)))
+            robot = server_instance.program(App(("robot", "-d", tmp_path, "--log", robot_log, robot_file.name)))
 
             async with server_instance, program, robot:
                 await robot.wait(60)
@@ -109,7 +109,7 @@ class TestDragAndDrop:
             ("python3", "-u", APP_PATH, "--source", "text", "--target", "pixbuf", "--expect", "pixbuf"),
         ],
     )
-    async def test_source_and_dest_mismatch(self, server, app, tmp_path) -> None:
+    async def test_source_and_dest_mismatch(self, robot_log, server, app, tmp_path) -> None:
         extensions = VirtualPointer.required_extensions + ScreencopyTracker.required_extensions
         server_instance = DisplayServer(server, add_extensions=extensions)
         program = server_instance.program(App(app))
@@ -129,7 +129,7 @@ class TestDragAndDrop:
             robot_file.write(
                 ROBOT_TEMPLATE.format(settings=ROBOT_SETTINGS, variables=ROBOT_VARIABLES, test_case=robot_test_case)
             )
-            robot = server_instance.program(App(("robot", "-d", tmp_path, robot_file.name)))
+            robot = server_instance.program(App(("robot", "-d", tmp_path, "--log", robot_log, robot_file.name)))
 
             async with server_instance, program, robot:
                 await robot.wait(60)

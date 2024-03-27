@@ -84,7 +84,7 @@ def collect_assets(platform: str, resources: Collection[str], suite: str, varian
 @pytest.mark.parametrize("osk", (apps.ubuntu_frame_osk(),))
 @pytest.mark.parametrize("app", (apps.pluma(),))
 class TestOSK:
-    async def test_osk_typing(self, platform, server, osk, app, tmp_path):
+    async def test_osk_typing(self, robot_log, platform, server, osk, app, tmp_path):
         extensions = VirtualPointer.required_extensions + ScreencopyTracker.required_extensions + osk.extensions
         server_instance = DisplayServer(
             server,
@@ -95,7 +95,7 @@ class TestOSK:
         async with server_instance, server_instance.program(app) as app, server_instance.program(osk) as osk:
             if platform == "wayland":
                 tuple((tmp_path / k).symlink_to(v) for k, v in assets.items())
-                robot = server_instance.program(App(("robot", "-d", tmp_path, tmp_path)))
+                robot = server_instance.program(App(("robot", "-d", tmp_path, "--log", robot_log, tmp_path)))
                 async with robot:
                     await robot.wait(120)
 
@@ -114,7 +114,7 @@ class TestOSK:
 
                 status, log = proxy.zapper_run(os.environ["ZAPPER_HOST"], "robot_run", procedure, asset_map, {})
 
-                with open(tmp_path / "log.html", "w") as f:
+                with open(robot_log.is_absolute() and robot_log or (tmp_path / robot_log), "w") as f:
                     f.write(log)
 
                 if not status:
