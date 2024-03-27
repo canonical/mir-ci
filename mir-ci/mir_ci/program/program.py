@@ -8,6 +8,7 @@ from typing import Awaitable, Dict, List, Optional, Tuple, Union
 
 from mir_ci.interfaces.benchmarkable import Benchmarkable
 from mir_ci.lib.cgroups import Cgroup
+from mir_ci.program.app import AppType
 
 from .app import App
 
@@ -103,7 +104,7 @@ class Program(Benchmarkable):
 
     async def __aenter__(self) -> "Program":
         command = tuple(str(arg) for arg in self.command)
-        if self.app_type != "snap":
+        if self.app_type != AppType.snap:
             scope = f"mirci-{uuid.uuid4()}.scope"
             prefix = ("systemd-run", "--user", "--quiet", "--scope", f"--unit={scope}")
             command = (*prefix, *command)
