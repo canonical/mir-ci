@@ -2,7 +2,7 @@ import logging
 import os
 from collections.abc import Generator
 from enum import Flag, auto
-from typing import Any, Callable, Mapping, Sequence, cast
+from typing import Any, Callable, Mapping, Sequence
 
 from ..program import app
 from ..program.display_server import DisplayServer
@@ -100,7 +100,9 @@ def _mir_ci_server():
         _logger.error(f"Too few parts for MIR_CI_SERVER specification: {mir_ci_server}")
         return
 
-    if split[0] not in ["snap", "deb", "pip"]:
+    try:
+        app_type: app.AppType = app.AppType[split[0]]
+    except KeyError:
         error_msg = (
             f"Invalid app type in MIR_CI_SERVER specification: {mir_ci_server}."
             f"Expected 'snap', 'deb' or 'pip' but got {split[0]}"
@@ -108,7 +110,6 @@ def _mir_ci_server():
         _logger.error(error_msg)
         return
 
-    app_type: app.AppType = cast(app.AppType, split[0])
     server_command: str = split[1]
     capability = ServerCap.NONE
     for capability_str in split[2:]:
@@ -118,9 +119,9 @@ def _mir_ci_server():
             _logger.error(f"Capability is invalid in MIR_CI_SERVER: {app_type}")
             return
 
-    if app_type == "snap":
+    if app_type == app.AppType.snap:
         return (capability, lambda: snap(server_command))
-    elif app_type == "pip":
+    elif app_type == app.AppType.pip:
         return (capability, lambda: pip(server_command))
     else:
         return (capability, lambda: deb(server_command))
