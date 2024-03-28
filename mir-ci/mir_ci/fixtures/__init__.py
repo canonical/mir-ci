@@ -38,16 +38,16 @@ def _dependency(
 
 
 def snap(snap: str, *args: str, cmd: Collection[str] = (), id=None, **kwargs):
-    return _dependency(cmd=cmd or (snap, *args), app_type="snap", snap=snap, id=id or snap, **kwargs)
+    return _dependency(cmd=cmd or (snap, *args), app_type=AppType.snap, snap=snap, id=id or snap, **kwargs)
 
 
 def deb(
     deb: str, *args: str, cmd: Collection[str] = (), debs: Collection[str] = (), id: Optional[str] = None, **kwargs
 ):
-    return _dependency(cmd=cmd or (deb, *args), app_type="deb", debs=debs or (deb,), id=id or deb, **kwargs)
+    return _dependency(cmd=cmd or (deb, *args), app_type=AppType.deb, debs=debs or (deb,), id=id or deb, **kwargs)
 
 
 def pip(pkg: str, *args: str, cmd: Collection[str] = (), id: Optional[str] = None, **kwargs):
     return _dependency(
-        pip_pkgs=(pkg,), app_type="pip", cmd=cmd or ("python3", "-m", pkg, *args), id=id or pkg, **kwargs
+        pip_pkgs=(pkg,), app_type=AppType.pip, cmd=cmd or ("python3", "-m", pkg, *args), id=id or pkg, **kwargs
     )

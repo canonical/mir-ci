@@ -1,10 +1,12 @@
+import os
+import warnings
 from collections.abc import Generator
 from enum import Flag, auto
 from typing import Any, Callable, Mapping, Sequence
 
 from ..program import app
 from ..program.display_server import DisplayServer
-from . import deb, snap
+from . import deb, pip, snap
 
 Server = Callable[[], app.App]
 
@@ -48,7 +50,12 @@ def server_params(caps: ServerCap = ServerCap.NONE) -> Generator[Server, None, N
     >>> def func(request) -> app.App:
             return request.param()
     """
-    return (v for k, v in _SERVERS if caps in k)
+    mir_ci_server = _mir_ci_server()
+    if mir_ci_server is not None and caps in mir_ci_server[0]:
+        yield mir_ci_server[1]
+    for k, v in _SERVERS:
+        if caps in k:
+            yield v
 
 
 def servers(caps: ServerCap = ServerCap.NONE, kwargss: Mapping[Server, Any] = {}) -> Sequence[app.App]:
@@ -74,6 +81,47 @@ def servers(caps: ServerCap = ServerCap.NONE, kwargss: Mapping[Server, Any] = {}
     # This tuple has to be realized here, otherwise class-wide parametrization
     # will exhaust the generator on the first test function.
     return tuple(p(**kwargss.get(p, {})) for p in server_params(caps))
+
+
+def _mir_ci_server():
+    """
+    Parses the 'MIR_CI_SERVER' environment variable to its corresponding server.
+    """
+    mir_ci_server = os.environ.get("MIR_CI_SERVER")
+    if mir_ci_server is None:
+        return
+
+    _MIN_SPLIT_PARTS = 3
+    split = mir_ci_server.split(":")
+    if len(split) < _MIN_SPLIT_PARTS:
+        warnings.warn(f"Too few parts for MIR_CI_SERVER specification: {mir_ci_server}")
+        return
+
+    try:
+        app_type: app.AppType = app.AppType[split[0]]
+    except KeyError:
+        error_msg = (
+            f"Invalid app type in MIR_CI_SERVER specification: {mir_ci_server}."
+            f"Expected 'snap', 'deb' or 'pip' but got {split[0]}"
+        )
+        warnings.warn(error_msg)
+        return
+
+    server_command: str = split[1]
+    capability = ServerCap.NONE
+    for capability_str in split[2:]:
+        try:
+            capability = capability | ServerCap[capability_str]
+        except KeyError:
+            warnings.warn(f"Capability is invalid in MIR_CI_SERVER: {app_type}")
+            return
+
+    if app_type == app.AppType.snap:
+        return (capability, lambda: snap(server_command))
+    elif app_type == app.AppType.pip:
+        return (capability, lambda: pip(server_command))
+    else:
+        return (capability, lambda: deb(server_command))
 
 
 @server(ServerCap.ALL ^ (ServerCap.FLOATING_WINDOWS | ServerCap.DISPLAY_CONFIG))

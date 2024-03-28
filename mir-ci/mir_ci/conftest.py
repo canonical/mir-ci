@@ -74,7 +74,7 @@ def _deps_install(request: pytest.FixtureRequest, spec: Union[str, Mapping[str, 
         channel = "latest/stable"
         classic = False
         pip_pkgs = ()
-        app_type = "snap"
+        app_type = app.AppType.snap
     else:
         raise TypeError("Bad value for argument `spec`: " + repr(spec))
 

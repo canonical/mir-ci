@@ -1,6 +1,11 @@
-from typing import Collection, Literal, Optional
+from enum import Enum
+from typing import Collection, Optional
 
-AppType = Literal["snap", "deb", "pip"]
+
+class AppType(Enum):
+    snap = 0
+    deb = 1
+    pip = 2
 
 
 class App:
