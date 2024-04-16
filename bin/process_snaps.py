@@ -35,6 +35,7 @@ SNAPS = {
     },
     "confined-shell": {
         "edge": {"recipe": "confined-shell-edge"},
+        "edge/24": {"ppa": "dev", "recipe": "confined-shell-edge-24", "release": "noble", "check-usns": False},
     },
     "graphics-test-tools": {
         "20/beta": {"recipe": "graphics-test-tools-20-beta"},
@@ -64,12 +65,14 @@ SNAPS = {
     "miriway": {
         "edge": {"ppa": "dev", "recipe": "miriway-edge"},
         "beta": {"ppa": "rc", "recipe": "miriway-beta"},
+        "edge/24": {"ppa": "dev", "recipe": "miriway-edge-24", "release": "noble", "check-usns": False},
     },
     "ubuntu-frame": {
         "20/edge": {"ppa": "dev", "recipe": "ubuntu-frame-20-edge", "release": "focal"},
         "20/beta": {"ppa": "rc", "recipe": "ubuntu-frame-20-beta", "release": "focal"},
         "22/edge": {"ppa": "dev", "recipe": "ubuntu-frame-22-edge"},
         "22/beta": {"ppa": "rc", "recipe": "ubuntu-frame-22-beta"},
+        "24/edge": {"ppa": "dev", "recipe": "ubuntu-frame-24-edge", "release": "noble", "check-usns": False},
     },
     "ubuntu-frame-osk": {
         "20/beta": {"recipe": "ubuntu-frame-osk-20-beta"},
