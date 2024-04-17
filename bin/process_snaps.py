@@ -92,8 +92,8 @@ SNAPS = {
     "mesa-core22": {
         "beta": {"recipe": "mesa-core22-beta"},
     },
-    "mesa-core24": {
-        "edge": {"recipe": "mesa-core24-edge", "check-usns": False},
+    "mesa-2404": {
+        "edge": {"recipe": "mesa-2404-edge", "check-usns": False},
     },
     "nvidia-core22": {
         "beta": {"recipe": "nvidia-core22-beta"},
