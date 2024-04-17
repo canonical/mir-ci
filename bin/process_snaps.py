@@ -78,13 +78,13 @@ SNAPS = {
         "20/beta": {"recipe": "ubuntu-frame-osk-20-beta"},
         "22/edge": {"recipe": "ubuntu-frame-osk-22-edge"},
         "22/beta": {"recipe": "ubuntu-frame-osk-22-beta"},
-        "24/beta": {"recipe": "ubuntu-frame-osk-24-beta"},
+        "24/beta": {"recipe": "ubuntu-frame-osk-24-beta", "check-usns": False},
     },
     "ubuntu-frame-vnc": {
         "20/beta": {"recipe": "ubuntu-frame-vnc-20-beta"},
         "22/edge": {"recipe": "ubuntu-frame-vnc-22-edge"},
         "22/beta": {"recipe": "ubuntu-frame-vnc-22-beta"},
-        "24/beta": {"recipe": "ubuntu-frame-vnc-24-beta"},
+        "24/beta": {"recipe": "ubuntu-frame-vnc-24-beta", "check-usns": False},
     },
     "mesa-core20": {
         "beta": {"recipe": "mesa-core20-beta"},
