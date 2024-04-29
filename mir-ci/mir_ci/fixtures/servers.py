@@ -138,7 +138,7 @@ def mir_kiosk(*args, id="mir_kiosk", **kwargs):
     return snap("mir-kiosk", *args, id=id, **kwargs)
 
 
-@server(ServerCap.ALL ^ ServerCap.DISPLAY_CONFIG)
+@server(ServerCap.ALL ^ (ServerCap.DISPLAY_CONFIG | ServerCap.MIR_FLUTTER_APP))
 def confined_shell(*args, channel="edge", id="confined_shell", **kwargs):
     return snap("confined-shell", *args, channel=channel, id=id, **kwargs)
 
@@ -153,9 +153,14 @@ def mir_demo_server(*args, debs=("mir-test-tools", "mir-graphics-drivers-desktop
     return deb("mir_demo_server", *args, debs=debs, id=id, **kwargs)
 
 
-@server
+@server(ServerCap.ALL ^ ServerCap.MIR_FLUTTER_APP)
 def miriway(*args, channel="stable", classic=True, **kwargs):
     return snap("miriway", *args, channel=channel, classic=classic, **kwargs)
+
+
+@server(ServerCap.MIR_FLUTTER_APP)
+def mir_flutter_app(*args, channel="22/edge", cmd=("mir-test-tools.mir-flutter-app",), id="mir-flutter-app", **kwargs):
+    return snap("mir-test-tools", channel=channel, cmd=(*cmd, *args), id=id, **kwargs)
 
 
 @server(ServerCap.ALL ^ (ServerCap.DISPLAY_CONFIG | ServerCap.SCREENCOPY | ServerCap.INPUT_METHOD | ServerCap.MIR_FLUTTER_APP))

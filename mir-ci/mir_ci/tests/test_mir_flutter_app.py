@@ -3,7 +3,6 @@ from pathlib import Path
 from textwrap import dedent
 
 import pytest
-from mir_ci.fixtures import apps
 from mir_ci.fixtures.servers import ServerCap, servers
 from mir_ci.program.app import App
 from mir_ci.program.display_server import DisplayServer
@@ -71,6 +70,8 @@ ${{EXPECTED_WINDOW_AFTER_MOVE}}               {ASSETS_PATH}/expected_window_afte
 ${{EXPECTED_POPUP_PLACEMENT_SLIDE}}           {ASSETS_PATH}/expected_popup_placement_slide.png
 ${{EXPECTED_POPUP_PLACEMENT_FLIP}}            {ASSETS_PATH}/expected_popup_placement_flip.png
 ${{EXPECTED_POPUP_PLACEMENT_RESIZE}}          {ASSETS_PATH}/expected_popup_placement_resize.png
+
+${{VERTICAL_DISTANCE_BETWEEN_OPTIONS}}        48
 """
 
 ROBOT_KEYWORDS = """\
@@ -85,38 +86,38 @@ Close Focused Toplevel Window
 Close Dialog
     ${pos}=    Walk Pointer To ${WINDOW_DIALOG_FOCUSED}
     ${pos}=    Displace ${pos} By (112, 0)
-    Move Pointer To ${pos}
+    Walk Pointer To ${pos}
     Click And Sleep
 
 Select ${preset} Positioner Preset
     # Reset first to make sure the dropdown list is positioned as expected
     ${pos}=    Move Pointer To ${DROPDOWN_PRESET_LABEL}
     ${pos}=    Displace ${pos} By (0, 20)
-    Move Pointer To ${pos}
+    Walk Pointer To ${pos}
     Click And Sleep
-    ${pos}=    Displace ${pos} By (0, -48)
+    ${pos}=    Displace ${pos} By (0, -${VERTICAL_DISTANCE_BETWEEN_OPTIONS})
     Walk Pointer To ${pos}
     Click And Sleep
 
     # Select preset
     ${pos}=    Move Pointer To ${DROPDOWN_PRESET_LABEL}
     ${pos}=    Displace ${pos} By (0, 25)
-    Move Pointer To ${pos}
+    Walk Pointer To ${pos}
     Click And Sleep
     IF    $preset == "LEFT"
-        ${pos}=    Displace ${pos} By (0, 48 * -5)
+        ${pos}=    Displace ${pos} By (0, ${VERTICAL_DISTANCE_BETWEEN_OPTIONS} * -5)
     ELSE IF    $preset == "RIGHT"
-        ${pos}=    Displace ${pos} By (0, 48 * -4)
+        ${pos}=    Displace ${pos} By (0, ${VERTICAL_DISTANCE_BETWEEN_OPTIONS} * -4)
     ELSE IF    $preset == "BOTTOM_LEFT"
-        ${pos}=    Displace ${pos} By (0, 48 * -3)
+        ${pos}=    Displace ${pos} By (0, ${VERTICAL_DISTANCE_BETWEEN_OPTIONS} * -3)
     ELSE IF    $preset == "BOTTOM"
-        ${pos}=    Displace ${pos} By (0, 48 * -2)
+        ${pos}=    Displace ${pos} By (0, ${VERTICAL_DISTANCE_BETWEEN_OPTIONS} * -2)
     ELSE IF    $preset == "BOTTOM_RIGHT"
-        ${pos}=    Displace ${pos} By (0, 48 * -1)
+        ${pos}=    Displace ${pos} By (0, ${VERTICAL_DISTANCE_BETWEEN_OPTIONS} * -1)
     ELSE IF    $preset == "CENTER"
-        ${pos}=    Displace ${pos} By (0, 48 * 0)
+        ${pos}=    Displace ${pos} By (0, ${VERTICAL_DISTANCE_BETWEEN_OPTIONS} * 0)
     ELSE IF    $preset == "CUSTOM"
-        ${pos}=    Displace ${pos} By (0, 48 * 1)
+        ${pos}=    Displace ${pos} By (0, ${VERTICAL_DISTANCE_BETWEEN_OPTIONS} * 1)
     ELSE
         Fail    Unexpected preset: ${preset}
     END
@@ -126,7 +127,7 @@ Select ${preset} Positioner Preset
 Move Main Window To The Top Left Of The Output
     ${pos}=    Move Pointer To ${GROUP_NEW_WINDOW}
     ${pos}=    Displace ${pos} By (0, -77)
-    Move Pointer To ${pos}
+    Walk Pointer To ${pos}
     Press LEFT Button
     Walk Pointer To (600, 0)
     Release LEFT Button
@@ -136,15 +137,17 @@ Set Top Left Custom Positioner
     Click And Sleep
     Walk Pointer To ${BUTTON_SET_DEFAULTS}
     Click And Sleep
+    # Set parent anchor to 'topLeft'
     ${pos}=    Walk Pointer To ${DROPDOWN_PARENT_ANCHOR_LABEL}
     Click And Sleep
-    ${pos}=    Displace ${pos} By (0, 48 * 4)
-    Move Pointer To ${pos}
+    ${pos}=    Displace ${pos} By (0, ${VERTICAL_DISTANCE_BETWEEN_OPTIONS} * 4)
+    Walk Pointer To ${pos}
     Click And Sleep
+    # Set child anchor to 'bottomRight'
     ${pos}=    Walk Pointer To ${DROPDOWN_CHILD_ANCHOR_LABEL}
     Click And Sleep
-    ${pos}=    Displace ${pos} By (0, 48 * 5)
-    Move Pointer To ${pos}
+    ${pos}=    Displace ${pos} By (0, ${VERTICAL_DISTANCE_BETWEEN_OPTIONS} * 5)
+    Walk Pointer To ${pos}
     Click And Sleep
     Walk Pointer To ${BUTTON_APPLY}
     Click And Sleep
@@ -159,16 +162,9 @@ Set Top Left Custom Positioner
     ),
 )
 class TestMirFlutterApp:
-    @pytest.mark.parametrize(
-        "app",
-        [
-            apps.snap("mir-flutter-app"),
-        ],
-    )
-    async def test_regular_window_opens(self, robot_log, server, app, tmp_path) -> None:
+    async def test_mir_flutter_app(self, robot_log, server, tmp_path) -> None:
         extensions = VirtualPointer.required_extensions + ScreencopyTracker.required_extensions
         server_instance = DisplayServer(server, add_extensions=extensions)
-        program = server_instance.program(App(app.command[0], app.app_type))
 
         robot_test_cases = dedent(
             """\
@@ -238,7 +234,7 @@ class TestMirFlutterApp:
                 # Try to close parent
                 ${pos}=    Walk Pointer To ${WINDOW_REGULAR_0_FOCUSED}
                 ${pos}=    Displace ${pos} By (130, 0)
-                Move Pointer To ${pos}
+                Walk Pointer To ${pos}
                 Click And Sleep
                 # Expect parent to be still open
                 VIDEO.Match    ${WINDOW_REGULAR_0_FOCUSED}
@@ -273,7 +269,7 @@ class TestMirFlutterApp:
                 Press LEFT Button
                 VIDEO.Match    ${EXPECTED_WINDOW_BEFORE_MOVE}
                 ${pos}=    Displace ${pos} By (50, 25)
-                Move Pointer To ${pos}
+                Walk Pointer To ${pos}
                 Release LEFT Button
                 VIDEO.Match    ${EXPECTED_WINDOW_AFTER_MOVE}
                 Close Dialog
@@ -298,24 +294,24 @@ class TestMirFlutterApp:
                 Move Pointer To ${BUTTON_CUSTOM_PRESET}
                 Click And Sleep
                 ${pos}=    Walk Pointer To ${LABEL_CONSTRAINTS}
-                # Uncheck slide X
-                ${pos}=    Displace ${pos} By (120, -30)
-                Move Pointer To ${pos}
+                # Uncheck 'slide X' checkbox
+                ${pos}=    Displace ${pos} By (100, -30)
+                Walk Pointer To ${pos}
                 Click And Sleep
-                # Uncheck slide Y
+                # Uncheck 'slide Y' checkbox
                 ${pos}=    Walk Pointer To ${LABEL_CONSTRAINTS}
-                ${pos}=    Displace ${pos} By (192, -30)
-                Move Pointer To ${pos}
+                ${pos}=    Displace ${pos} By (170, -30)
+                Walk Pointer To ${pos}
                 Click And Sleep
-                # Check flip X
+                # Check 'flip X' checkbox
                 ${pos}=    Walk Pointer To ${LABEL_CONSTRAINTS}
-                ${pos}=    Displace ${pos} By (120, 0)
-                Move Pointer To ${pos}
+                ${pos}=    Displace ${pos} By (100, 0)
+                Walk Pointer To ${pos}
                 Click And Sleep
-                # Check flip Y
+                # Check 'flip Y' checkbox
                 ${pos}=    Walk Pointer To ${LABEL_CONSTRAINTS}
-                ${pos}=    Displace ${pos} By (192, 0)
-                Move Pointer To ${pos}
+                ${pos}=    Displace ${pos} By (170, 0)
+                Walk Pointer To ${pos}
                 Click And Sleep
                 Walk Pointer To ${BUTTON_APPLY}
                 Click And Sleep
@@ -336,24 +332,24 @@ class TestMirFlutterApp:
                 Move Pointer To ${BUTTON_CUSTOM_PRESET}
                 Click And Sleep
                 ${pos}=    Walk Pointer To ${LABEL_CONSTRAINTS}
-                # Uncheck slide X
-                ${pos}=    Displace ${pos} By (120, -30)
-                Move Pointer To ${pos}
+                # Uncheck 'slide X' checkbox
+                ${pos}=    Displace ${pos} By (100, -30)
+                Walk Pointer To ${pos}
                 Click And Sleep
-                # Uncheck slide Y
+                # Uncheck 'slide Y' checkbox
                 ${pos}=    Walk Pointer To ${LABEL_CONSTRAINTS}
-                ${pos}=    Displace ${pos} By (192, -30)
-                Move Pointer To ${pos}
+                ${pos}=    Displace ${pos} By (170, -30)
+                Walk Pointer To ${pos}
                 Click And Sleep
-                # Check resize X
+                # Check 'resize X' checkbox
                 ${pos}=    Walk Pointer To ${LABEL_CONSTRAINTS}
-                ${pos}=    Displace ${pos} By (120, 30)
-                Move Pointer To ${pos}
+                ${pos}=    Displace ${pos} By (100, 30)
+                Walk Pointer To ${pos}
                 Click And Sleep
-                # Check resize Y
+                # Check 'resize Y' checkbox
                 ${pos}=    Walk Pointer To ${LABEL_CONSTRAINTS}
-                ${pos}=    Displace ${pos} By (192, 30)
-                Move Pointer To ${pos}
+                ${pos}=    Displace ${pos} By (170, 30)
+                Walk Pointer To ${pos}
                 Click And Sleep
                 Walk Pointer To ${BUTTON_APPLY}
                 Click And Sleep
@@ -373,15 +369,15 @@ class TestMirFlutterApp:
                 Set Top Left Custom Positioner
                 Move Pointer To ${BUTTON_CUSTOM_PRESET}
                 Click And Sleep
-                # Check flip X
+                # Check 'flip X' checkbox
                 ${pos}=    Walk Pointer To ${LABEL_CONSTRAINTS}
-                ${pos}=    Displace ${pos} By (120, 0)
-                Move Pointer To ${pos}
+                ${pos}=    Displace ${pos} By (100, 0)
+                Walk Pointer To ${pos}
                 Click And Sleep
-                # Check flip Y
+                # Check 'flip Y' checkbox
                 ${pos}=    Walk Pointer To ${LABEL_CONSTRAINTS}
-                ${pos}=    Displace ${pos} By (192, 0)
-                Move Pointer To ${pos}
+                ${pos}=    Displace ${pos} By (170, 0)
+                Walk Pointer To ${pos}
                 Click And Sleep
                 Walk Pointer To ${BUTTON_APPLY}
                 Click And Sleep
@@ -401,15 +397,15 @@ class TestMirFlutterApp:
                 Set Top Left Custom Positioner
                 Move Pointer To ${BUTTON_CUSTOM_PRESET}
                 Click And Sleep
-                # Check resize X
+                # Check 'resize X' checkbox
                 ${pos}=    Walk Pointer To ${LABEL_CONSTRAINTS}
-                ${pos}=    Displace ${pos} By (120, 30)
-                Move Pointer To ${pos}
+                ${pos}=    Displace ${pos} By (100, 30)
+                Walk Pointer To ${pos}
                 Click And Sleep
-                # Check resize Y
+                # Check 'resize Y' checkbox
                 ${pos}=    Walk Pointer To ${LABEL_CONSTRAINTS}
-                ${pos}=    Displace ${pos} By (192, 30)
-                Move Pointer To ${pos}
+                ${pos}=    Displace ${pos} By (170, 30)
+                Walk Pointer To ${pos}
                 Click And Sleep
                 Walk Pointer To ${BUTTON_APPLY}
                 Click And Sleep
@@ -427,11 +423,12 @@ class TestMirFlutterApp:
         """
         )
 
-        with tempfile.NamedTemporaryFile(mode="w+", suffix=".robot", buffering=1) as robot_file:
-            robot_file.write(
-                ROBOT_TEMPLATE.format(settings=ROBOT_SETTINGS, variables=ROBOT_VARIABLES, keywords=ROBOT_KEYWORDS, test_cases=robot_test_cases)
-            )
-            robot = server_instance.program(App(("robot", "-d", tmp_path, "--log", robot_log, robot_file.name)))
+        async with server_instance:
+            with tempfile.NamedTemporaryFile(mode="w+", suffix=".robot", buffering=1) as robot_file:
+                robot_file.write(
+                    ROBOT_TEMPLATE.format(settings=ROBOT_SETTINGS, variables=ROBOT_VARIABLES, keywords=ROBOT_KEYWORDS, test_cases=robot_test_cases)
+                )
+                robot = server_instance.program(App(("robot", "-d", tmp_path, "--log", robot_log, robot_file.name)))
 
-            async with server_instance, program, robot:
-                await robot.wait(120)
+                async with robot:
+                    await robot.wait(120)
