@@ -9,7 +9,6 @@ from mir_ci.program.display_server import DisplayServer
 from mir_ci.wayland.screencopy_tracker import ScreencopyTracker
 from mir_ci.wayland.virtual_pointer import VirtualPointer
 
-
 TESTS_PATH = Path(__file__).parent
 ASSETS_PATH = TESTS_PATH / "robot/suites/mir_flutter_app"
 
@@ -152,6 +151,7 @@ Set Top Left Custom Positioner
     Walk Pointer To ${BUTTON_APPLY}
     Click And Sleep
 """
+
 
 @pytest.mark.parametrize("server", servers(ServerCap.MIR_FLUTTER_APP))
 @pytest.mark.deps(
@@ -426,7 +426,12 @@ class TestMirFlutterApp:
         async with server_instance:
             with tempfile.NamedTemporaryFile(mode="w+", suffix=".robot", buffering=1) as robot_file:
                 robot_file.write(
-                    ROBOT_TEMPLATE.format(settings=ROBOT_SETTINGS, variables=ROBOT_VARIABLES, keywords=ROBOT_KEYWORDS, test_cases=robot_test_cases)
+                    ROBOT_TEMPLATE.format(
+                        settings=ROBOT_SETTINGS,
+                        variables=ROBOT_VARIABLES,
+                        keywords=ROBOT_KEYWORDS,
+                        test_cases=robot_test_cases,
+                    )
                 )
                 robot = server_instance.program(App(("robot", "-d", tmp_path, "--log", robot_log, robot_file.name)))
 

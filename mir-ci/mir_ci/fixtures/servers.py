@@ -132,7 +132,13 @@ def ubuntu_frame():
 
 @server(
     ServerCap.ALL
-    ^ (ServerCap.FLOATING_WINDOWS | ServerCap.DRAG_AND_DROP | ServerCap.DISPLAY_CONFIG | ServerCap.INPUT_METHOD  | ServerCap.MIR_FLUTTER_APP)
+    ^ (
+        ServerCap.FLOATING_WINDOWS
+        | ServerCap.DRAG_AND_DROP
+        | ServerCap.DISPLAY_CONFIG
+        | ServerCap.INPUT_METHOD
+        | ServerCap.MIR_FLUTTER_APP
+    )
 )
 def mir_kiosk(*args, id="mir_kiosk", **kwargs):
     return snap("mir-kiosk", *args, id=id, **kwargs)
@@ -163,7 +169,10 @@ def mir_flutter_app(*args, channel="22/edge", cmd=("mir-test-tools.mir-flutter-a
     return snap("mir-test-tools", channel=channel, cmd=(*cmd, *args), id=id, **kwargs)
 
 
-@server(ServerCap.ALL ^ (ServerCap.DISPLAY_CONFIG | ServerCap.SCREENCOPY | ServerCap.INPUT_METHOD | ServerCap.MIR_FLUTTER_APP))
+@server(
+    ServerCap.ALL
+    ^ (ServerCap.DISPLAY_CONFIG | ServerCap.SCREENCOPY | ServerCap.INPUT_METHOD | ServerCap.MIR_FLUTTER_APP)
+)
 def gnome_shell(
     *args,
     cmd=("gnome-shell", "--wayland", "--no-x11", "--wayland-display", DisplayServer.get_wayland_display()),
