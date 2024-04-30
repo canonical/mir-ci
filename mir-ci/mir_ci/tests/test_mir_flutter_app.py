@@ -204,7 +204,7 @@ class TestMirFlutterApp:
                 Click And Sleep
                 Walk Pointer To ${BUTTON_POPUP_0}
                 Click And Sleep
-                Walk Pointer to ${WINDOW_POPUP_1}
+                Walk Pointer To ${WINDOW_POPUP_1}
                 Click And Sleep
                 Close Focused Toplevel Window
 
@@ -213,7 +213,7 @@ class TestMirFlutterApp:
                 Click And Sleep
                 Walk Pointer To ${BUTTON_TIP_0}
                 Click And Sleep
-                Walk Pointer to ${WINDOW_TIP_1}
+                Walk Pointer To ${WINDOW_TIP_1}
                 Click And Sleep
                 Close Focused Toplevel Window
 
