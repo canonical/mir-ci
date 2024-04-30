@@ -50,9 +50,9 @@ class Screencopy(ScreencopyTracker):
         last_checked_frame_count = 0
         screenshot = None
         while time.time() <= end_time:
-            frame_count, screenshot = await asyncio.wait_for(self.grab_screenshot(), timeout)
-            if last_checked_frame_count != frame_count:
-                last_checked_frame_count = frame_count
+            screenshot = await asyncio.wait_for(self.grab_screenshot(), timeout)
+            if last_checked_frame_count != self.frame_count:
+                last_checked_frame_count = self.frame_count
                 try:
                     regions = self._rpa_images.find_template_in_image(
                         screenshot,
@@ -82,7 +82,7 @@ class Screencopy(ScreencopyTracker):
         """
         Grabs the current frame tracked by the screencopy tracker.
 
-        :return Tuple (frame count, Pillow Image of the frame)
+        :return Pillow Image of the frame
         """
         await self.connect()
 
@@ -100,7 +100,7 @@ class Screencopy(ScreencopyTracker):
         b, g, r, a, *_ = image.split()
         image = Image.merge("RGBA", (r, g, b, a))
 
-        return (self.frame_count, image)
+        return image
 
     async def connect(self):
         """Connect to the display."""
