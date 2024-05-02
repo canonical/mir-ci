@@ -19,12 +19,13 @@ ROBOT_TEMPLATE = """\
 *** Variables ***
 {variables}
 
-*** Keywords ***
-{keywords}
-
 *** Test Cases ***
 {test_cases}
+
+*** Keywords ***
+{keywords}
 """
+
 ROBOT_SETTINGS = f"""\
 Library     {TESTS_PATH}/robot/platforms/wayland/Screencopy.py    AS    VIDEO
 Library     {TESTS_PATH}/robot/platforms/wayland/WaylandHid.py    AS    HID
@@ -32,45 +33,59 @@ Resource    {TESTS_PATH}/robot/resources/kvm/kvm.resource
 """
 
 ROBOT_VARIABLES = f"""\
-${{BUTTON_REGULAR}}                           {ASSETS_PATH}/button_regular.png
-${{BUTTON_FLOATING_REGULAR}}                  {ASSETS_PATH}/button_floating_regular.png
-${{BUTTON_DIALOG}}                            {ASSETS_PATH}/button_dialog.png
-${{BUTTON_DIALOG_0}}                          {ASSETS_PATH}/button_dialog_0.png
-${{BUTTON_SATELLITE_0}}                       {ASSETS_PATH}/button_satellite_0.png
-${{BUTTON_POPUP_0}}                           {ASSETS_PATH}/button_popup_0.png
-${{BUTTON_TIP_0}}                             {ASSETS_PATH}/button_tip_0.png
-${{BUTTON_CLOSE_FOCUSED}}                     {ASSETS_PATH}/button_close_focused.png
-${{BUTTON_CUSTOM_PRESET}}                     {ASSETS_PATH}/button_custom_preset.png
-${{BUTTON_SET_DEFAULTS}}                      {ASSETS_PATH}/button_set_defaults.png
-${{BUTTON_APPLY}}                             {ASSETS_PATH}/button_apply.png
+${{ANCHOR_OPTION_TOP_LEFT}}                     {ASSETS_PATH}/anchor_option_top_left.png
+${{ANCHOR_OPTION_BOTTOM_RIGHT}}                 {ASSETS_PATH}/anchor_option_bottom_right.png
 
-${{DROPDOWN_PRESET_LABEL}}                    {ASSETS_PATH}/dropdown_preset_label.png
-${{DROPDOWN_OPTION_CUSTOM}}                   {ASSETS_PATH}/dropdown_option_custom.png
-${{DROPDOWN_OPTION_LEFT}}                     {ASSETS_PATH}/dropdown_option_left.png
-${{DROPDOWN_PARENT_ANCHOR_LABEL}}             {ASSETS_PATH}/dropdown_parent_anchor_label.png
-${{DROPDOWN_CHILD_ANCHOR_LABEL}}              {ASSETS_PATH}/dropdown_child_anchor_label.png
+${{BUTTON_REGULAR}}                             {ASSETS_PATH}/button_regular.png
+${{BUTTON_FLOATING_REGULAR}}                    {ASSETS_PATH}/button_floating_regular.png
+${{BUTTON_DIALOG}}                              {ASSETS_PATH}/button_dialog.png
+${{BUTTON_DIALOG_0}}                            {ASSETS_PATH}/button_dialog_0.png
+${{BUTTON_SATELLITE_0}}                         {ASSETS_PATH}/button_satellite_0.png
+${{BUTTON_POPUP_0}}                             {ASSETS_PATH}/button_popup_0.png
+${{BUTTON_TIP_0}}                               {ASSETS_PATH}/button_tip_0.png
+${{BUTTON_CLOSE_FOCUSED}}                       {ASSETS_PATH}/button_close_focused.png
+${{BUTTON_CUSTOM_PRESET}}                       {ASSETS_PATH}/button_custom_preset.png
+${{BUTTON_SET_DEFAULTS}}                        {ASSETS_PATH}/button_set_defaults.png
+${{BUTTON_APPLY}}                               {ASSETS_PATH}/button_apply.png
 
-${{GROUP_NEW_WINDOW}}                         {ASSETS_PATH}/group_new_window.png
+${{DROPDOWN_LABEL_PRESET}}                      {ASSETS_PATH}/dropdown_label_preset.png
+${{DROPDOWN_LABEL_PARENT_ANCHOR}}               {ASSETS_PATH}/dropdown_label_parent_anchor.png
+${{DROPDOWN_LABEL_CHILD_ANCHOR}}                {ASSETS_PATH}/dropdown_label_child_anchor.png
 
-${{LABEL_CONSTRAINTS}}                        {ASSETS_PATH}/label_constraints.png
+${{EXPECTED_SATELLITE_PLACEMENT}}               {ASSETS_PATH}/expected_satellite_placement.png
+${{EXPECTED_WINDOW_BEFORE_MOVE}}                {ASSETS_PATH}/expected_window_before_move.png
+${{EXPECTED_WINDOW_AFTER_MOVE}}                 {ASSETS_PATH}/expected_window_after_move.png
+${{EXPECTED_POPUP_PLACEMENT_SLIDE}}             {ASSETS_PATH}/expected_popup_placement_slide.png
+${{EXPECTED_POPUP_PLACEMENT_FLIP}}              {ASSETS_PATH}/expected_popup_placement_flip.png
+${{EXPECTED_POPUP_PLACEMENT_RESIZE}}            {ASSETS_PATH}/expected_popup_placement_resize.png
 
-${{WINDOW_MAIN}}                              {ASSETS_PATH}/window_main.png
-${{WINDOW_REGULAR_0_FOCUSED}}                 {ASSETS_PATH}/window_regular_0_focused.png
-${{WINDOW_FLOATING_REGULAR_0_FOCUSED}}        {ASSETS_PATH}/window_floating_regular_0_focused.png
-${{WINDOW_FLOATING_REGULAR_0_NON_FOCUSED}}    {ASSETS_PATH}/window_floating_regular_0_non_focused.png
-${{WINDOW_DIALOG_FOCUSED}}                    {ASSETS_PATH}/window_dialog_focused.png
-${{WINDOW_SATELLITE_1}}                       {ASSETS_PATH}/window_satellite_1.png
-${{WINDOW_POPUP_1}}                           {ASSETS_PATH}/window_popup_1.png
-${{WINDOW_TIP_1}}                             {ASSETS_PATH}/window_tip_1.png
+${{GROUP_NEW_WINDOW}}                           {ASSETS_PATH}/group_new_window.png
 
-${{EXPECTED_SATELLITE_PLACEMENT}}             {ASSETS_PATH}/expected_satellite_placement.png
-${{EXPECTED_WINDOW_BEFORE_MOVE}}              {ASSETS_PATH}/expected_window_before_move.png
-${{EXPECTED_WINDOW_AFTER_MOVE}}               {ASSETS_PATH}/expected_window_after_move.png
-${{EXPECTED_POPUP_PLACEMENT_SLIDE}}           {ASSETS_PATH}/expected_popup_placement_slide.png
-${{EXPECTED_POPUP_PLACEMENT_FLIP}}            {ASSETS_PATH}/expected_popup_placement_flip.png
-${{EXPECTED_POPUP_PLACEMENT_RESIZE}}          {ASSETS_PATH}/expected_popup_placement_resize.png
+${{LABEL_CONSTRAINTS}}                          {ASSETS_PATH}/label_constraints.png
 
-${{VERTICAL_DISTANCE_BETWEEN_OPTIONS}}        48
+${{PRESET_OPTION_BOTTOM_LEFT_SELECTED}}         {ASSETS_PATH}/preset_option_bottom_left_selected.png
+${{PRESET_OPTION_BOTTOM_LEFT}}                  {ASSETS_PATH}/preset_option_bottom_left.png
+${{PRESET_OPTION_BOTTOM_RIGHT_SELECTED}}        {ASSETS_PATH}/preset_option_bottom_right_selected.png
+${{PRESET_OPTION_BOTTOM_RIGHT}}                 {ASSETS_PATH}/preset_option_bottom_right.png
+${{PRESET_OPTION_BOTTOM_SELECTED}}              {ASSETS_PATH}/preset_option_bottom_selected.png
+${{PRESET_OPTION_BOTTOM}}                       {ASSETS_PATH}/preset_option_bottom.png
+${{PRESET_OPTION_CENTER_SELECTED}}              {ASSETS_PATH}/preset_option_center_selected.png
+${{PRESET_OPTION_CENTER}}                       {ASSETS_PATH}/preset_option_center.png
+${{PRESET_OPTION_CUSTOM_SELECTED}}              {ASSETS_PATH}/preset_option_custom_selected.png
+${{PRESET_OPTION_CUSTOM}}                       {ASSETS_PATH}/preset_option_custom.png
+${{PRESET_OPTION_LEFT_SELECTED}}                {ASSETS_PATH}/preset_option_left_selected.png
+${{PRESET_OPTION_LEFT}}                         {ASSETS_PATH}/preset_option_left.png
+${{PRESET_OPTION_RIGHT_SELECTED}}               {ASSETS_PATH}/preset_option_right_selected.png
+${{PRESET_OPTION_RIGHT}}                        {ASSETS_PATH}/preset_option_right.png
+
+${{WINDOW_MAIN}}                                {ASSETS_PATH}/window_main.png
+${{WINDOW_REGULAR_0_FOCUSED}}                   {ASSETS_PATH}/window_regular_0_focused.png
+${{WINDOW_FLOATING_REGULAR_0_FOCUSED}}          {ASSETS_PATH}/window_floating_regular_0_focused.png
+${{WINDOW_FLOATING_REGULAR_0_NON_FOCUSED}}      {ASSETS_PATH}/window_floating_regular_0_non_focused.png
+${{WINDOW_DIALOG_FOCUSED}}                      {ASSETS_PATH}/window_dialog_focused.png
+${{WINDOW_SATELLITE_1}}                         {ASSETS_PATH}/window_satellite_1.png
+${{WINDOW_POPUP_1}}                             {ASSETS_PATH}/window_popup_1.png
+${{WINDOW_TIP_1}}                               {ASSETS_PATH}/window_tip_1.png
 """
 
 ROBOT_KEYWORDS = """\
@@ -89,38 +104,32 @@ Close Dialog
     Click And Sleep
 
 Select ${preset} Positioner Preset
-    # Reset first to make sure the dropdown list is positioned as expected
-    ${pos}=    Move Pointer To ${DROPDOWN_PRESET_LABEL}
+    ${pos}=    Move Pointer To ${DROPDOWN_LABEL_PRESET}
     ${pos}=    Displace ${pos} By (0, 20)
-    Walk Pointer To ${pos}
+    ${pos}=    Walk Pointer To ${pos}
     Click And Sleep
-    ${pos}=    Displace ${pos} By (0, -${VERTICAL_DISTANCE_BETWEEN_OPTIONS})
+    # Move away from the dropdown list to avoid highlighting an item
+    ${pos}=    Displace ${pos} By (-50, 0)
     Walk Pointer To ${pos}
-    Click And Sleep
-
     # Select preset
-    ${pos}=    Move Pointer To ${DROPDOWN_PRESET_LABEL}
-    ${pos}=    Displace ${pos} By (0, 25)
-    Walk Pointer To ${pos}
-    Click And Sleep
     IF    $preset == "LEFT"
-        ${pos}=    Displace ${pos} By (0, ${VERTICAL_DISTANCE_BETWEEN_OPTIONS} * -5)
+        ${templates}=    Create List    ${PRESET_OPTION_LEFT}            ${PRESET_OPTION_LEFT_SELECTED}
     ELSE IF    $preset == "RIGHT"
-        ${pos}=    Displace ${pos} By (0, ${VERTICAL_DISTANCE_BETWEEN_OPTIONS} * -4)
+        ${templates}=    Create List    ${PRESET_OPTION_RIGHT}           ${PRESET_OPTION_RIGHT_SELECTED}
     ELSE IF    $preset == "BOTTOM_LEFT"
-        ${pos}=    Displace ${pos} By (0, ${VERTICAL_DISTANCE_BETWEEN_OPTIONS} * -3)
+        ${templates}=    Create List    ${PRESET_OPTION_BOTTOM_LEFT}     ${PRESET_OPTION_BOTTOM_LEFT_SELECTED}
     ELSE IF    $preset == "BOTTOM"
-        ${pos}=    Displace ${pos} By (0, ${VERTICAL_DISTANCE_BETWEEN_OPTIONS} * -2)
+        ${templates}=    Create List    ${PRESET_OPTION_BOTTOM}          ${PRESET_OPTION_BOTTOM_SELECTED}
     ELSE IF    $preset == "BOTTOM_RIGHT"
-        ${pos}=    Displace ${pos} By (0, ${VERTICAL_DISTANCE_BETWEEN_OPTIONS} * -1)
+        ${templates}=    Create List    ${PRESET_OPTION_BOTTOM_RIGHT}    ${PRESET_OPTION_BOTTOM_RIGHT_SELECTED}
     ELSE IF    $preset == "CENTER"
-        ${pos}=    Displace ${pos} By (0, ${VERTICAL_DISTANCE_BETWEEN_OPTIONS} * 0)
+        ${templates}=    Create List    ${PRESET_OPTION_CENTER}          ${PRESET_OPTION_CENTER_SELECTED}
     ELSE IF    $preset == "CUSTOM"
-        ${pos}=    Displace ${pos} By (0, ${VERTICAL_DISTANCE_BETWEEN_OPTIONS} * 1)
+        ${templates}=    Create List    ${PRESET_OPTION_CUSTOM}          ${PRESET_OPTION_CUSTOM_SELECTED}
     ELSE
         Fail    Unexpected preset: ${preset}
     END
-    Walk Pointer To ${pos}
+    Walk Pointer To Any Of ${templates}
     Click And Sleep
 
 Move Main Window To The Top Left Of The Output
@@ -136,20 +145,27 @@ Set Top Left Custom Positioner
     Click And Sleep
     Walk Pointer To ${BUTTON_SET_DEFAULTS}
     Click And Sleep
-    # Set parent anchor to 'topLeft'
-    ${pos}=    Walk Pointer To ${DROPDOWN_PARENT_ANCHOR_LABEL}
+    Walk Pointer To ${DROPDOWN_LABEL_PARENT_ANCHOR}
     Click And Sleep
-    ${pos}=    Displace ${pos} By (0, ${VERTICAL_DISTANCE_BETWEEN_OPTIONS} * 4)
-    Walk Pointer To ${pos}
+    Walk Pointer To ${ANCHOR_OPTION_TOP_LEFT}
     Click And Sleep
-    # Set child anchor to 'bottomRight'
-    ${pos}=    Walk Pointer To ${DROPDOWN_CHILD_ANCHOR_LABEL}
+    Walk Pointer To ${DROPDOWN_LABEL_CHILD_ANCHOR}
     Click And Sleep
-    ${pos}=    Displace ${pos} By (0, ${VERTICAL_DISTANCE_BETWEEN_OPTIONS} * 5)
-    Walk Pointer To ${pos}
+    Walk Pointer To ${ANCHOR_OPTION_BOTTOM_RIGHT}
     Click And Sleep
     Walk Pointer To ${BUTTON_APPLY}
     Click And Sleep
+
+Walk Pointer To Any Of ${templates}
+    [Arguments]    ${step_distance}=16    ${delay}=0.01
+    ${regions}=    VIDEO.Match Any Of    ${templates}
+    ${position}=    Get Center Of ${regions}[0]
+    HID.Walk Pointer To Absolute
+    ...    ${position}[0]
+    ...    ${position}[1]
+    ...    ${step_distance}
+    ...    ${delay}
+    RETURN    ${position}
 """
 
 
@@ -169,7 +185,6 @@ class TestMirFlutterApp:
         robot_test_cases = dedent(
             """\
             Reference App Opens
-                Sleep    2
                 VIDEO.Match    ${WINDOW_MAIN}
 
             Regular Window Opens

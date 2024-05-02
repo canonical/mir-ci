@@ -50,9 +50,9 @@ class Screencopy(ScreencopyTracker):
         last_checked_frame_count = 0
         screenshot = None
         while time.time() <= end_time:
-            screenshot = await asyncio.wait_for(self.grab_screenshot(), timeout)
-            if last_checked_frame_count != self.frame_count:
-                last_checked_frame_count = self.frame_count
+            frame_count, screenshot = await asyncio.wait_for(self.grab_screenshot(), timeout)
+            if last_checked_frame_count != frame_count:
+                last_checked_frame_count = frame_count
                 try:
                     regions = self._rpa_images.find_template_in_image(
                         screenshot,
@@ -65,7 +65,7 @@ class Screencopy(ScreencopyTracker):
                     break
         else:
             if screenshot:
-                self._log_failed_match(screenshot, template)
+                self._log_failed_match(screenshot, [template])
             raise ImageNotFoundError
 
         return [
@@ -78,11 +78,62 @@ class Screencopy(ScreencopyTracker):
             for region in regions
         ]
 
+    @keyword
+    async def match_any_of(self, templates: List[str], timeout: int = 5) -> List[dict]:
+        """
+        Grab screenshots and compare until there's a match with at least one of
+        the given templates.
+
+        :param templates: list of paths to image files to be used as templates
+        :param timeout: timeout in seconds
+        :return: list of matched regions for the first matching template
+        :raises ImageNotFoundError: if no match is found within the timeout
+        """
+
+        class MatchFound(Exception):
+            pass
+
+        regions = []
+        template = ""
+        end_time = time.time() + float(timeout)
+        last_checked_frame_count = 0
+        screenshot = None
+        try:
+            while time.time() <= end_time:
+                frame_count, screenshot = await asyncio.wait_for(self.grab_screenshot(), timeout)
+                if last_checked_frame_count != frame_count:
+                    last_checked_frame_count = frame_count
+                    for template in templates:
+                        try:
+                            regions = self._rpa_images.find_template_in_image(
+                                screenshot,
+                                template,
+                                tolerance=self.TOLERANCE,
+                            )
+                        except (RuntimeError, ValueError, ImageNotFoundError):
+                            continue
+                        else:
+                            raise MatchFound
+            if screenshot:
+                self._log_failed_match(screenshot, templates)
+            raise ImageNotFoundError
+        except MatchFound:
+            return [
+                {
+                    "template": template,
+                    "left": region.left,
+                    "top": region.top,
+                    "right": region.right,
+                    "bottom": region.bottom,
+                }
+                for region in regions
+            ]
+
     async def grab_screenshot(self):
         """
         Grabs the current frame tracked by the screencopy tracker.
 
-        :return Pillow Image of the frame
+        :return Tuple (frame count, Pillow Image of the frame)
         """
         await self.connect()
 
@@ -100,7 +151,7 @@ class Screencopy(ScreencopyTracker):
         b, g, r, a, *_ = image.split()
         image = Image.merge("RGBA", (r, g, b, a))
 
-        return image
+        return (self.frame_count, image)
 
     async def connect(self):
         """Connect to the display."""
@@ -121,13 +172,16 @@ class Screencopy(ScreencopyTracker):
         im_b64 = base64.b64encode(im_bytes)
         return im_b64.decode()
 
-    def _log_failed_match(self, screenshot, template):
+    def _log_failed_match(self, screenshot, templates):
         """Log a failure with template matching."""
-        template_img = Image.open(template)
-        template_string = (
-            'Template was:<br /><img style="max-width: 100%" src="data:image/png;base64,'
-            f'{self._to_base64(template_img)}" /><br />'
-        )
+        template_string = ""
+        for num_template, template in enumerate(templates):
+            template_img = Image.open(template)
+            header = "Template" if len(templates) == 1 else f"Template #{num_template}"
+            template_string += (
+                f'{header} was:<br /><img style="max-width: 100%" src="data:image/png;base64,'
+                f'{self._to_base64(template_img)}" /><br />'
+            )
         image_string = (
             'Image was:<br /><img style="max-width: 100%" src="data:image/png;base64,'
             f'{self._to_base64(screenshot)}" />'
