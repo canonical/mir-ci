@@ -43,7 +43,6 @@ SNAPS = {
     },
     "mir-kiosk": {
         "beta": {"ppa": "rc", "recipe": "mir-kiosk-beta", "release": "focal"},
-        "edge": {"ppa": "dev", "recipe": "mir-kiosk-edge", "release": "focal"},
     },
     "mir-kiosk-kodi": {
         "edge": {"recipe": "mir-kiosk-kodi-edge", "non-uniform": True},
@@ -56,9 +55,7 @@ SNAPS = {
     },
     "mir-test-tools": {
         "20/beta": {"ppa": "rc", "recipe": "mir-test-tools-20-beta", "release": "focal"},
-        "20/edge": {"ppa": "dev", "recipe": "mir-test-tools-20-edge", "release": "focal"},
         "22/beta": {"ppa": "rc", "recipe": "mir-test-tools-22-beta", "release": "jammy"},
-        "22/edge": {"ppa": "dev", "recipe": "mir-test-tools-22-edge", "release": "jammy"},
         "24/beta": {"ppa": "rc", "recipe": "mir-test-tools-24-beta"},
         "24/edge": {"ppa": "dev", "recipe": "mir-test-tools-24-edge"},
     },
@@ -68,9 +65,7 @@ SNAPS = {
     },
     "ubuntu-frame": {
         "20/beta": {"ppa": "rc", "recipe": "ubuntu-frame-20-beta", "release": "focal"},
-        "20/edge": {"ppa": "dev", "recipe": "ubuntu-frame-20-edge", "release": "focal"},
-        "22/beta": {"ppa": "rc", "recipe": "ubuntu-frame-22-edge", "release": "jammy"},
-        "22/edge": {"ppa": "dev", "recipe": "ubuntu-frame-22-edge", "release": "jammy"},
+        "22/beta": {"ppa": "rc", "recipe": "ubuntu-frame-22-beta", "release": "jammy"},
         "24/beta": {"ppa": "rc", "recipe": "ubuntu-frame-24-beta"},
         "24/edge": {"ppa": "dev", "recipe": "ubuntu-frame-24-edge"},
     },
