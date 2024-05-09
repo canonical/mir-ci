@@ -34,7 +34,8 @@ SNAPS = {
         "edge": {"ppa": "release", "recipe": "checkbox-mir-edge"},
     },
     "confined-shell": {
-        "edge": {"recipe": "confined-shell-edge"},
+        "beta": {"ppa": "rc", "recipe": "confined-shell-beta"},
+        "edge": {"ppa": "dev", "recipe": "confined-shell-edge"},
     },
     "graphics-test-tools": {
         "20/beta": {"recipe": "graphics-test-tools-20-beta"},
