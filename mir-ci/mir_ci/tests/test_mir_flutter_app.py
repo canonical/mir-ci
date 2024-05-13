@@ -89,25 +89,21 @@ ${{WINDOW_TIP_1}}                               {ASSETS_PATH}/window_tip_1.png
 """
 
 ROBOT_KEYWORDS = """\
-Click And Sleep
-    Click LEFT Button
-    Sleep    0.5
-
 Close Focused Toplevel Window
     Walk Pointer To ${BUTTON_CLOSE_FOCUSED}
-    Click And Sleep
+    Click LEFT Button
 
 Close Dialog
     ${pos}=    Walk Pointer To ${WINDOW_DIALOG_FOCUSED}
     ${pos}=    Displace ${pos} By (112, 0)
     Walk Pointer To ${pos}
-    Click And Sleep
+    Click LEFT Button
 
 Select ${preset} Positioner Preset
     ${pos}=    Move Pointer To ${DROPDOWN_LABEL_PRESET}
     ${pos}=    Displace ${pos} By (0, 20)
     ${pos}=    Walk Pointer To ${pos}
-    Click And Sleep
+    Click LEFT Button
     # Move away from the dropdown list to avoid highlighting an item
     ${pos}=    Displace ${pos} By (-50, 0)
     Walk Pointer To ${pos}
@@ -130,7 +126,7 @@ Select ${preset} Positioner Preset
         Fail    Unexpected preset: ${preset}
     END
     Walk Pointer To Any Of ${templates}
-    Click And Sleep
+    Click LEFT Button
 
 Move Main Window To The Top Left Of The Output
     ${pos}=    Move Pointer To ${GROUP_NEW_WINDOW}
@@ -142,19 +138,19 @@ Move Main Window To The Top Left Of The Output
 
 Set Top Left Custom Positioner
     Move Pointer To ${BUTTON_CUSTOM_PRESET}
-    Click And Sleep
+    Click LEFT Button
     Walk Pointer To ${BUTTON_SET_DEFAULTS}
-    Click And Sleep
+    Click LEFT Button
     Walk Pointer To ${DROPDOWN_LABEL_PARENT_ANCHOR}
-    Click And Sleep
+    Click LEFT Button
     Walk Pointer To ${ANCHOR_OPTION_TOP_LEFT}
-    Click And Sleep
+    Click LEFT Button
     Walk Pointer To ${DROPDOWN_LABEL_CHILD_ANCHOR}
-    Click And Sleep
+    Click LEFT Button
     Walk Pointer To ${ANCHOR_OPTION_BOTTOM_RIGHT}
-    Click And Sleep
+    Click LEFT Button
     Walk Pointer To ${BUTTON_APPLY}
-    Click And Sleep
+    Click LEFT Button
 
 Walk Pointer To Any Of ${templates}
     [Arguments]    ${step_distance}=16    ${delay}=0.01
@@ -189,68 +185,68 @@ class TestMirFlutterApp:
 
             Regular Window Opens
                 Move Pointer To ${BUTTON_REGULAR}
-                Click And Sleep
+                Click LEFT Button
                 VIDEO.Match    ${WINDOW_REGULAR_0_FOCUSED}
                 Close Focused Toplevel Window
 
             Floating Regular Window Opens
                 Move Pointer To ${BUTTON_FLOATING_REGULAR}
-                Click And Sleep
+                Click LEFT Button
                 VIDEO.Match    ${WINDOW_FLOATING_REGULAR_0_FOCUSED}
                 Close Focused Toplevel Window
 
             Dialog Window Opens
                 Move Pointer To ${BUTTON_DIALOG}
-                Click And Sleep
+                Click LEFT Button
                 VIDEO.Match    ${WINDOW_DIALOG_FOCUSED}
                 Close Focused Toplevel Window
 
             Satellite Window Opens
                 Move Pointer To ${BUTTON_REGULAR}
-                Click And Sleep
+                Click LEFT Button
                 Walk Pointer To ${BUTTON_SATELLITE_0}
-                Click And Sleep
+                Click LEFT Button
                 Walk Pointer To ${WINDOW_SATELLITE_1}
-                Click And Sleep
+                Click LEFT Button
                 Close Focused Toplevel Window
 
             Popup Window Opens
                 Move Pointer To ${BUTTON_REGULAR}
-                Click And Sleep
+                Click LEFT Button
                 Walk Pointer To ${BUTTON_POPUP_0}
-                Click And Sleep
+                Click LEFT Button
                 Walk Pointer To ${WINDOW_POPUP_1}
-                Click And Sleep
+                Click LEFT Button
                 Close Focused Toplevel Window
 
             Tip Window Opens
                 Move Pointer To ${BUTTON_REGULAR}
-                Click And Sleep
+                Click LEFT Button
                 Walk Pointer To ${BUTTON_TIP_0}
-                Click And Sleep
+                Click LEFT Button
                 Walk Pointer To ${WINDOW_TIP_1}
-                Click And Sleep
+                Click LEFT Button
                 Close Focused Toplevel Window
 
             Floating Regular Window Stays On Top
                 Move Pointer To ${BUTTON_FLOATING_REGULAR}
-                Click And Sleep
+                Click LEFT Button
                 Walk Pointer To ${GROUP_NEW_WINDOW}
-                Click And Sleep
+                Click LEFT Button
                 Walk Pointer To ${WINDOW_FLOATING_REGULAR_0_NON_FOCUSED}
-                Click And Sleep
+                Click LEFT Button
                 Close Focused Toplevel Window
 
             Dialog Is Modal To Parent
                 Move Pointer To ${BUTTON_REGULAR}
-                Click And Sleep
+                Click LEFT Button
                 Walk Pointer To ${BUTTON_DIALOG_0}
-                Click And Sleep
+                Click LEFT Button
                 # Try to close parent
                 ${pos}=    Walk Pointer To ${WINDOW_REGULAR_0_FOCUSED}
                 ${pos}=    Displace ${pos} By (130, 0)
                 Walk Pointer To ${pos}
-                Click And Sleep
+                Click LEFT Button
                 # Expect parent to be still open
                 VIDEO.Match    ${WINDOW_REGULAR_0_FOCUSED}
                 Close Dialog
@@ -259,27 +255,27 @@ class TestMirFlutterApp:
             Satellite Is Placed According To Custom Positioner
                 Select CUSTOM Positioner Preset
                 Walk Pointer To ${BUTTON_FLOATING_REGULAR}
-                Click And Sleep
+                Click LEFT Button
                 Walk Pointer To ${BUTTON_SATELLITE_0}
-                Click And Sleep
+                Click LEFT Button
                 VIDEO.Match    ${EXPECTED_SATELLITE_PLACEMENT}
                 Close Focused Toplevel Window
 
             Child Windows Move With Parent
                 Move Pointer To ${BUTTON_FLOATING_REGULAR}
-                Click And Sleep
+                Click LEFT Button
                 Select LEFT Positioner Preset
                 Walk Pointer To ${BUTTON_SATELLITE_0}
-                Click And Sleep
+                Click LEFT Button
                 Select BOTTOM_LEFT Positioner Preset
                 Walk Pointer To ${BUTTON_POPUP_0}
-                Click And Sleep
+                Click LEFT Button
                 Select BOTTOM Positioner Preset
                 Walk Pointer To ${BUTTON_TIP_0}
-                Click And Sleep
+                Click LEFT Button
                 Select CENTER Positioner Preset
                 Walk Pointer To ${BUTTON_DIALOG_0}
-                Click And Sleep
+                Click LEFT Button
                 ${pos}=    Walk Pointer To ${WINDOW_FLOATING_REGULAR_0_FOCUSED}
                 Press LEFT Button
                 VIDEO.Match    ${EXPECTED_WINDOW_BEFORE_MOVE}
@@ -294,145 +290,145 @@ class TestMirFlutterApp:
                 Set Top Left Custom Positioner
                 Move Main Window To The Top Left Of The Output
                 Walk Pointer To ${BUTTON_FLOATING_REGULAR}
-                Click And Sleep
+                Click LEFT Button
                 Walk Pointer To ${WINDOW_FLOATING_REGULAR_0_FOCUSED}
                 Press LEFT Button
                 Walk Pointer To (250, 90)
                 Release LEFT Button
                 Walk Pointer To ${BUTTON_POPUP_0}
-                Click And Sleep
+                Click LEFT Button
                 VIDEO.Match    ${EXPECTED_POPUP_PLACEMENT_SLIDE}
                 Close Focused Toplevel Window
 
             Flip Constraint Is Applied
                 Set Top Left Custom Positioner
                 Move Pointer To ${BUTTON_CUSTOM_PRESET}
-                Click And Sleep
+                Click LEFT Button
                 ${pos}=    Walk Pointer To ${LABEL_CONSTRAINTS}
                 # Uncheck 'slide X' checkbox
                 ${pos}=    Displace ${pos} By (100, -30)
                 Walk Pointer To ${pos}
-                Click And Sleep
+                Click LEFT Button
                 # Uncheck 'slide Y' checkbox
                 ${pos}=    Walk Pointer To ${LABEL_CONSTRAINTS}
                 ${pos}=    Displace ${pos} By (170, -30)
                 Walk Pointer To ${pos}
-                Click And Sleep
+                Click LEFT Button
                 # Check 'flip X' checkbox
                 ${pos}=    Walk Pointer To ${LABEL_CONSTRAINTS}
                 ${pos}=    Displace ${pos} By (100, 0)
                 Walk Pointer To ${pos}
-                Click And Sleep
+                Click LEFT Button
                 # Check 'flip Y' checkbox
                 ${pos}=    Walk Pointer To ${LABEL_CONSTRAINTS}
                 ${pos}=    Displace ${pos} By (170, 0)
                 Walk Pointer To ${pos}
-                Click And Sleep
+                Click LEFT Button
                 Walk Pointer To ${BUTTON_APPLY}
-                Click And Sleep
+                Click LEFT Button
                 Move Main Window To The Top Left Of The Output
                 Walk Pointer To ${BUTTON_FLOATING_REGULAR}
-                Click And Sleep
+                Click LEFT Button
                 Walk Pointer To ${WINDOW_FLOATING_REGULAR_0_FOCUSED}
                 Press LEFT Button
                 Walk Pointer To (250, 90)
                 Release LEFT Button
                 Walk Pointer To ${BUTTON_POPUP_0}
-                Click And Sleep
+                Click LEFT Button
                 VIDEO.Match    ${EXPECTED_POPUP_PLACEMENT_FLIP}
                 Close Focused Toplevel Window
 
             Resize Constraint Is Applied
                 Set Top Left Custom Positioner
                 Move Pointer To ${BUTTON_CUSTOM_PRESET}
-                Click And Sleep
+                Click LEFT Button
                 ${pos}=    Walk Pointer To ${LABEL_CONSTRAINTS}
                 # Uncheck 'slide X' checkbox
                 ${pos}=    Displace ${pos} By (100, -30)
                 Walk Pointer To ${pos}
-                Click And Sleep
+                Click LEFT Button
                 # Uncheck 'slide Y' checkbox
                 ${pos}=    Walk Pointer To ${LABEL_CONSTRAINTS}
                 ${pos}=    Displace ${pos} By (170, -30)
                 Walk Pointer To ${pos}
-                Click And Sleep
+                Click LEFT Button
                 # Check 'resize X' checkbox
                 ${pos}=    Walk Pointer To ${LABEL_CONSTRAINTS}
                 ${pos}=    Displace ${pos} By (100, 30)
                 Walk Pointer To ${pos}
-                Click And Sleep
+                Click LEFT Button
                 # Check 'resize Y' checkbox
                 ${pos}=    Walk Pointer To ${LABEL_CONSTRAINTS}
                 ${pos}=    Displace ${pos} By (170, 30)
                 Walk Pointer To ${pos}
-                Click And Sleep
+                Click LEFT Button
                 Walk Pointer To ${BUTTON_APPLY}
-                Click And Sleep
+                Click LEFT Button
                 Move Main Window To The Top Left Of The Output
                 Walk Pointer To ${BUTTON_FLOATING_REGULAR}
-                Click And Sleep
+                Click LEFT Button
                 Walk Pointer To ${WINDOW_FLOATING_REGULAR_0_FOCUSED}
                 Press LEFT Button
                 Walk Pointer To (250, 60)
                 Release LEFT Button
                 Walk Pointer To ${BUTTON_POPUP_0}
-                Click And Sleep
+                Click LEFT Button
                 VIDEO.Match    ${EXPECTED_POPUP_PLACEMENT_RESIZE}
                 Close Focused Toplevel Window
 
             Flip Constraint Precedes Slide
                 Set Top Left Custom Positioner
                 Move Pointer To ${BUTTON_CUSTOM_PRESET}
-                Click And Sleep
+                Click LEFT Button
                 # Check 'flip X' checkbox
                 ${pos}=    Walk Pointer To ${LABEL_CONSTRAINTS}
                 ${pos}=    Displace ${pos} By (100, 0)
                 Walk Pointer To ${pos}
-                Click And Sleep
+                Click LEFT Button
                 # Check 'flip Y' checkbox
                 ${pos}=    Walk Pointer To ${LABEL_CONSTRAINTS}
                 ${pos}=    Displace ${pos} By (170, 0)
                 Walk Pointer To ${pos}
-                Click And Sleep
+                Click LEFT Button
                 Walk Pointer To ${BUTTON_APPLY}
-                Click And Sleep
+                Click LEFT Button
                 Move Main Window To The Top Left Of The Output
                 Walk Pointer To ${BUTTON_FLOATING_REGULAR}
-                Click And Sleep
+                Click LEFT Button
                 Walk Pointer To ${WINDOW_FLOATING_REGULAR_0_FOCUSED}
                 Press LEFT Button
                 Walk Pointer To (250, 90)
                 Release LEFT Button
                 Walk Pointer To ${BUTTON_POPUP_0}
-                Click And Sleep
+                Click LEFT Button
                 VIDEO.Match    ${EXPECTED_POPUP_PLACEMENT_FLIP}
                 Close Focused Toplevel Window
 
             Slide Constraint Precedes Resize
                 Set Top Left Custom Positioner
                 Move Pointer To ${BUTTON_CUSTOM_PRESET}
-                Click And Sleep
+                Click LEFT Button
                 # Check 'resize X' checkbox
                 ${pos}=    Walk Pointer To ${LABEL_CONSTRAINTS}
                 ${pos}=    Displace ${pos} By (100, 30)
                 Walk Pointer To ${pos}
-                Click And Sleep
+                Click LEFT Button
                 # Check 'resize Y' checkbox
                 ${pos}=    Walk Pointer To ${LABEL_CONSTRAINTS}
                 ${pos}=    Displace ${pos} By (170, 30)
                 Walk Pointer To ${pos}
-                Click And Sleep
+                Click LEFT Button
                 Walk Pointer To ${BUTTON_APPLY}
-                Click And Sleep
+                Click LEFT Button
                 Move Main Window To The Top Left Of The Output
                 Walk Pointer To ${BUTTON_FLOATING_REGULAR}
-                Click And Sleep
+                Click LEFT Button
                 Walk Pointer To ${WINDOW_FLOATING_REGULAR_0_FOCUSED}
                 Press LEFT Button
                 Walk Pointer To (250, 90)
                 Release LEFT Button
                 Walk Pointer To ${BUTTON_POPUP_0}
-                Click And Sleep
+                Click LEFT Button
                 VIDEO.Match    ${EXPECTED_POPUP_PLACEMENT_SLIDE}
                 Close Focused Toplevel Window
         """
