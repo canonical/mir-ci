@@ -130,7 +130,7 @@ STORE_HEADERS = {
 }
 
 CHECK_NOTICES_PATH = "/snap/bin/review-tools.check-notices"
-CHECK_NOTICES_ARGS = ["--ignore-pockets", "esm-apps"]
+CHECK_NOTICES_ARGS = []
 
 
 def get_store_snap(processor, snap, channel):
