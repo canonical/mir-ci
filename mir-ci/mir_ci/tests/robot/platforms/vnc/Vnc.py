@@ -30,7 +30,9 @@ class Vnc:
     ROBOT_LISTENER_API_VERSION = 3
     TOLERANCE = 0.8
 
-    def __init__(self, host="localhost", port=5900, username: Optional[str]=None, password: Optional[str]=None) -> None:
+    def __init__(
+        self, host="localhost", port=5900, username: Optional[str] = None, password: Optional[str] = None
+    ) -> None:
         self.ROBOT_LIBRARY_LISTENER = self
         self._client: asyncvnc.Client = None
         self._host = host
