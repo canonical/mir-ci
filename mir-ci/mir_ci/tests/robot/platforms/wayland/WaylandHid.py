@@ -1,7 +1,6 @@
 import asyncio
 import math
 import os
-from typing import Optional, Tuple
 
 from mir_ci.wayland.virtual_pointer import Button, VirtualPointer
 from robot.api.deco import keyword, library
@@ -22,7 +21,7 @@ class WaylandHid(VirtualPointer):
 
     def __init__(self) -> None:
         self.ROBOT_LIBRARY_LISTENER = self
-        self._pointer_position: Optional[Tuple[int, int]] = None
+        self._pointer_position = (0, 0)
         display_name = os.environ.get("WAYLAND_DISPLAY", "wayland-0")
         super().__init__(display_name)
 
@@ -43,7 +42,6 @@ class WaylandHid(VirtualPointer):
     @keyword
     async def walk_pointer_to_absolute(self, x: int, y: int, step_distance: int, delay: float) -> None:
         await self.connect()
-        assert self._pointer_position is not None, "Cannot walk without moving the pointer at least once"
         assert step_distance > 0, "Step distance must be positive"
 
         distance = ((self._pointer_position[0] - x) ** 2 + (self._pointer_position[1] - y) ** 2) ** 0.5
