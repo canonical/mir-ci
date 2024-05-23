@@ -22,8 +22,8 @@ class ServerCap(Flag):
     DISPLAY_CONFIG = auto()
     SCREENCOPY = auto()
     INPUT_METHOD = auto()
-    MIR_FLUTTER_APP = auto()
-    ALL = FLOATING_WINDOWS | DRAG_AND_DROP | DISPLAY_CONFIG | SCREENCOPY | INPUT_METHOD | MIR_FLUTTER_APP
+    MIR_SHELL_PROTO = auto()
+    ALL = FLOATING_WINDOWS | DRAG_AND_DROP | DISPLAY_CONFIG | SCREENCOPY | INPUT_METHOD | MIR_SHELL_PROTO
 
 
 _SERVERS: set[tuple[ServerCap, Server]] = set()
@@ -125,7 +125,7 @@ def _mir_ci_server():
         return (capability, lambda: deb(server_command))
 
 
-@server(ServerCap.ALL ^ (ServerCap.FLOATING_WINDOWS | ServerCap.DISPLAY_CONFIG | ServerCap.MIR_FLUTTER_APP))
+@server(ServerCap.ALL ^ (ServerCap.FLOATING_WINDOWS | ServerCap.DISPLAY_CONFIG | ServerCap.MIR_SHELL_PROTO))
 def ubuntu_frame():
     return snap("ubuntu-frame", channel="22/stable", id="ubuntu_frame")
 
@@ -137,41 +137,36 @@ def ubuntu_frame():
         | ServerCap.DRAG_AND_DROP
         | ServerCap.DISPLAY_CONFIG
         | ServerCap.INPUT_METHOD
-        | ServerCap.MIR_FLUTTER_APP
+        | ServerCap.MIR_SHELL_PROTO
     )
 )
 def mir_kiosk(*args, id="mir_kiosk", **kwargs):
     return snap("mir-kiosk", *args, id=id, **kwargs)
 
 
-@server(ServerCap.ALL ^ (ServerCap.DISPLAY_CONFIG | ServerCap.MIR_FLUTTER_APP))
+@server(ServerCap.ALL ^ (ServerCap.DISPLAY_CONFIG | ServerCap.MIR_SHELL_PROTO))
 def confined_shell(*args, channel="edge", id="confined_shell", **kwargs):
     return snap("confined-shell", *args, channel=channel, id=id, **kwargs)
 
 
-@server(ServerCap.ALL ^ (ServerCap.DISPLAY_CONFIG | ServerCap.MIR_FLUTTER_APP))
-def mir_test_tools(*args, channel="22/beta", cmd=("mir-test-tools.demo-server",), id="mir_test_tools", **kwargs):
+@server(ServerCap.ALL ^ ServerCap.DISPLAY_CONFIG)
+def mir_test_tools(*args, channel="24/beta", cmd=("mir-test-tools.demo-server",), id="mir_test_tools", **kwargs):
     return snap("mir-test-tools", channel=channel, cmd=(*cmd, *args), id=id, **kwargs)
 
 
-@server(ServerCap.ALL ^ ServerCap.MIR_FLUTTER_APP)
+@server(ServerCap.ALL ^ ServerCap.MIR_SHELL_PROTO)
 def mir_demo_server(*args, debs=("mir-test-tools", "mir-graphics-drivers-desktop"), id="mir_demo_server", **kwargs):
     return deb("mir_demo_server", *args, debs=debs, id=id, **kwargs)
 
 
-@server(ServerCap.ALL ^ ServerCap.MIR_FLUTTER_APP)
+@server(ServerCap.ALL ^ ServerCap.MIR_SHELL_PROTO)
 def miriway(*args, channel="stable", classic=True, **kwargs):
     return snap("miriway", *args, channel=channel, classic=classic, **kwargs)
 
 
-@server(ServerCap.MIR_FLUTTER_APP)
-def mir_flutter_app(*args, channel="22/edge", cmd=("mir-test-tools.mir-flutter-app",), id="mir-flutter-app", **kwargs):
-    return snap("mir-test-tools", channel=channel, cmd=(*cmd, *args), id=id, **kwargs)
-
-
 @server(
     ServerCap.ALL
-    ^ (ServerCap.DISPLAY_CONFIG | ServerCap.SCREENCOPY | ServerCap.INPUT_METHOD | ServerCap.MIR_FLUTTER_APP)
+    ^ (ServerCap.DISPLAY_CONFIG | ServerCap.SCREENCOPY | ServerCap.INPUT_METHOD | ServerCap.MIR_SHELL_PROTO)
 )
 def gnome_shell(
     *args,
