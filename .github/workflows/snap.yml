@@ -42,7 +42,7 @@ jobs:
     - name: Check out code
       uses: actions/checkout@v4
       with:
-        repository: MirServer/checkbox-mir
+        repository: canonical/checkbox-mir
         fetch-depth: 0
 
     - name: Use the current mir-ci commit

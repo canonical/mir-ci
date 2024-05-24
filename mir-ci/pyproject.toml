@@ -17,8 +17,8 @@ dependencies = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/MirServer/mir-ci"
-"Bug Tracker" = "https://github.com/MirServer/mir-ci/issues"
+"Homepage" = "https://github.com/canonical/mir-ci"
+"Bug Tracker" = "https://github.com/canonical/mir-ci/issues"
 
 [tool.hatch.metadata]
 allow-direct-references = true
