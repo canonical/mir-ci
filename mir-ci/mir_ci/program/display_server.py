@@ -84,7 +84,7 @@ class DisplayServer(Benchmarkable):
 
     async def __aexit__(self, *args):
         # If Mir is run for too short a period of time it tends to not shut down correctly
-        # See https://github.com/MirServer/mir/issues/2845
+        # See https://github.com/canonical/mir/issues/2845
         sleep_time = self.start_time + min_mir_run_time - time.time()
         if sleep_time > 0:
             await asyncio.sleep(sleep_time)
