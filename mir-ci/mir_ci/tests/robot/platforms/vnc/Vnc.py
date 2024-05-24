@@ -54,6 +54,7 @@ class Vnc:
         :raises ImageNotFoundError: if no match is found within the timeout
         """
         await self.connect()
+        assert self._client is not None, "Client must be connected"
         regions = []
         end_time = time.time() + float(timeout)
         screenshot = None
@@ -87,11 +88,13 @@ class Vnc:
     @keyword
     async def type_string(self, text: str):
         await self.connect()
+        assert self._client is not None, "Client must be connected"
         self._client.keyboard.write(text)
 
     @keyword
     async def move_pointer_to_absolute(self, x: int, y: int) -> None:
         await self.connect()
+        assert self._client is not None, "Client must be connected"
         self._client.mouse.move(x, y)
         self._pointer_position = (x, y)
 
@@ -105,6 +108,7 @@ class Vnc:
     @keyword
     async def walk_pointer_to_absolute(self, x: int, y: int, step_distance: int, delay: float) -> None:
         await self.connect()
+        assert self._client is not None, "Client must be connected"
         assert step_distance > 0, "Step distance must be positive"
 
         if self._pointer_position is None:
@@ -137,6 +141,7 @@ class Vnc:
     @keyword
     async def press_pointer_button(self, button: str) -> None:
         await self.connect()
+        assert self._client is not None, "Client must be connected"
         mask = 1 << Button[button]
         self._client.mouse.buttons |= mask
         self._client.mouse._write()
@@ -144,6 +149,7 @@ class Vnc:
     @keyword
     async def release_pointer_button(self, button: str) -> None:
         await self.connect()
+        assert self._client is not None, "Client must be connected"
         mask = 1 << Button[button]
         self._client.mouse.buttons &= ~mask
         self._client.mouse._write()
@@ -151,11 +157,13 @@ class Vnc:
     @keyword
     async def click_pointer_button(self, button: str) -> None:
         await self.connect()
+        assert self._client is not None, "Client must be connected"
         self._client.mouse.click(Button[button])
 
     @keyword
     async def release_buttons(self) -> None:
         await self.connect()
+        assert self._client is not None, "Client must be connected"
         self._client.mouse.buttons = 0
         self._client.mouse._write()
 
@@ -171,6 +179,7 @@ class Vnc:
                   of the output.
         :return tuple containing the corresponding absolute x and y coordinates.
         """
+        assert self._client is not None, "Client must be connected"
         assert 0 <= x <= 1, "x not in range 0..1"
         assert 0 <= y <= 1, "y not in range 0..1"
         assert self._client.video.width > 0, "Output width must be greater than 0"
