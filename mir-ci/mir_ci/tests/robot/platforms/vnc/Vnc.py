@@ -34,7 +34,7 @@ class Vnc:
         self, host="localhost", port=5900, username: Optional[str] = None, password: Optional[str] = None
     ) -> None:
         self.ROBOT_LIBRARY_LISTENER = self
-        self._client: asyncvnc.Client = None
+        self._client: Optional[asyncvnc.Client] = None
         self._host = host
         self._port = port
         self._username = username
