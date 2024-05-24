@@ -40,7 +40,7 @@ SNAPS = {
     "graphics-test-tools": {
         "20/beta": {"recipe": "graphics-test-tools-20-beta"},
         "22/beta": {"recipe": "graphics-test-tools-22-beta"},
-        "24/edge": {"recipe": "graphics-test-tools-24-edge"},
+        "24/beta": {"recipe": "graphics-test-tools-24-beta"},
     },
     "mir-kiosk": {
         "beta": {"ppa": "rc", "recipe": "mir-kiosk-beta", "release": "focal"},
