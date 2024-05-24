@@ -5,7 +5,7 @@ import time
 from asyncio import open_connection
 from enum import IntEnum
 from io import BytesIO
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import asyncvnc
 from PIL import Image
@@ -39,7 +39,7 @@ class Vnc:
         self._port = port
         self._username = username
         self._password = password
-        self._pointer_position = (0, 0)
+        self._pointer_position: Optional[Tuple[int, int]] = None
         self._rpa_images = Images()
 
     @keyword
@@ -106,6 +106,10 @@ class Vnc:
     async def walk_pointer_to_absolute(self, x: int, y: int, step_distance: int, delay: float) -> None:
         await self.connect()
         assert step_distance > 0, "Step distance must be positive"
+
+        if self._pointer_position is None:
+            self._pointer_position = (0, 0)
+            self._client.mouse.move(self._pointer_position[0], self._pointer_position[1])
 
         distance = ((self._pointer_position[0] - x) ** 2 + (self._pointer_position[1] - y) ** 2) ** 0.5
         if distance == 0:
