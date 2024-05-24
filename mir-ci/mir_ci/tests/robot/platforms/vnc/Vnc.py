@@ -102,7 +102,7 @@ class Vnc:
     async def move_pointer_to_proportional(self, x: float, y: float) -> tuple[int, int]:
         await self.connect()
         absolute_position = self.get_absolute_from_proportional(x, y)
-        self.move_pointer_to_absolute(absolute_position[0], absolute_position[1])
+        await self.move_pointer_to_absolute(absolute_position[0], absolute_position[1])
         return absolute_position
 
     @keyword
