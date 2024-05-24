@@ -158,7 +158,7 @@ def miriway(*args, channel="stable", classic=True, **kwargs):
     return snap("miriway", *args, channel=channel, classic=classic, **kwargs)
 
 
-@server(ServerCap.ALL ^ (ServerCap.DISPLAY_CONFIG | ServerCap.SCREENCOPY | ServerCap.INPUT_METHOD))
+@server(ServerCap.ALL ^ (ServerCap.DISPLAY_CONFIG | ServerCap.SCREENCOPY | ServerCap.INPUT_METHOD | ServerCap.VNC))
 def gnome_shell(
     *args,
     cmd=("gnome-shell", "--wayland", "--no-x11", "--wayland-display", DisplayServer.get_wayland_display()),
