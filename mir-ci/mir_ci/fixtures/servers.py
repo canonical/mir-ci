@@ -23,7 +23,8 @@ class ServerCap(Flag):
     SCREENCOPY = auto()
     INPUT_METHOD = auto()
     MIR_SHELL_PROTO = auto()
-    ALL = FLOATING_WINDOWS | DRAG_AND_DROP | DISPLAY_CONFIG | SCREENCOPY | INPUT_METHOD | MIR_SHELL_PROTO
+    VNC = auto()
+    ALL = FLOATING_WINDOWS | DRAG_AND_DROP | DISPLAY_CONFIG | SCREENCOPY | INPUT_METHOD | MIR_SHELL_PROTO | VNC
 
 
 _SERVERS: set[tuple[ServerCap, Server]] = set()
@@ -163,10 +164,15 @@ def mir_demo_server(*args, debs=("mir-test-tools", "mir-graphics-drivers-desktop
 def miriway(*args, channel="stable", classic=True, **kwargs):
     return snap("miriway", *args, channel=channel, classic=classic, **kwargs)
 
-
 @server(
     ServerCap.ALL
-    ^ (ServerCap.DISPLAY_CONFIG | ServerCap.SCREENCOPY | ServerCap.INPUT_METHOD | ServerCap.MIR_SHELL_PROTO)
+    ^ (
+        ServerCap.DISPLAY_CONFIG
+        | ServerCap.SCREENCOPY
+        | ServerCap.INPUT_METHOD
+        | ServerCap.MIR_SHELL_PROTO
+        | ServerCap.VNC
+    )
 )
 def gnome_shell(
     *args,

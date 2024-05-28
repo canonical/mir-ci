@@ -37,6 +37,8 @@ jobs:
         python-version: "3.11"
 
     - uses: actions/checkout@v4
+      with:
+        lfs: true
 
     - id: pytest-args
       name: Determine pytest arguments
