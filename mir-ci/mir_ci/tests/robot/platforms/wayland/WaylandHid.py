@@ -43,8 +43,11 @@ class WaylandHid(VirtualPointer):
     @keyword
     async def walk_pointer_to_absolute(self, x: int, y: int, step_distance: int, delay: float) -> None:
         await self.connect()
-        assert self._pointer_position is not None, "Cannot walk without moving the pointer at least once"
         assert step_distance > 0, "Step distance must be positive"
+
+        if self._pointer_position is None:
+            self._pointer_position = (0, 0)
+            self.move_to_absolute(self._pointer_position[0], self._pointer_position[1])
 
         distance = ((self._pointer_position[0] - x) ** 2 + (self._pointer_position[1] - y) ** 2) ** 0.5
         if distance == 0:

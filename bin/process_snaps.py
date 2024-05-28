@@ -25,7 +25,7 @@ logger.setLevel(logging.DEBUG)
 
 APPLICATION = "mir-ci"
 LAUNCHPAD = "production"
-DEFAULT_RELEASE = "jammy"
+DEFAULT_RELEASE = "noble"
 TEAM = "mir-team"
 SOURCE_NAME = "mir"
 
@@ -34,16 +34,15 @@ SNAPS = {
         "edge": {"ppa": "release", "recipe": "checkbox-mir-edge"},
     },
     "confined-shell": {
-        "edge": {"recipe": "confined-shell-edge"},
-        "edge/24": {"ppa": "dev", "recipe": "confined-shell-edge-24", "release": "noble", "check-usns": False},
+        "beta": {"ppa": "rc", "recipe": "confined-shell-beta"},
+        "edge": {"ppa": "dev", "recipe": "confined-shell-edge"},
     },
     "graphics-test-tools": {
         "20/beta": {"recipe": "graphics-test-tools-20-beta"},
         "22/beta": {"recipe": "graphics-test-tools-22-beta"},
-        "24/edge": {"recipe": "graphics-test-tools-24-edge", "check-usns": False},
+        "24/beta": {"recipe": "graphics-test-tools-24-beta"},
     },
     "mir-kiosk": {
-        "edge": {"ppa": "dev", "recipe": "mir-kiosk-edge", "release": "focal"},
         "beta": {"ppa": "rc", "recipe": "mir-kiosk-beta", "release": "focal"},
     },
     "mir-kiosk-kodi": {
@@ -56,35 +55,32 @@ SNAPS = {
         "edge": {"recipe": "mir-kiosk-scummvm-edge"},
     },
     "mir-test-tools": {
-        "20/edge": {"ppa": "dev", "recipe": "mir-test-tools-20-edge", "release": "focal"},
         "20/beta": {"ppa": "rc", "recipe": "mir-test-tools-20-beta", "release": "focal"},
-        "22/edge": {"ppa": "dev", "recipe": "mir-test-tools-22-edge"},
-        "22/beta": {"ppa": "rc", "recipe": "mir-test-tools-22-beta"},
-        "24/edge": {"ppa": "dev", "recipe": "mir-test-tools-24-edge", "release": "noble", "check-usns": False},
+        "22/beta": {"ppa": "rc", "recipe": "mir-test-tools-22-beta", "release": "jammy"},
+        "24/beta": {"ppa": "rc", "recipe": "mir-test-tools-24-beta"},
+        "24/edge": {"ppa": "dev", "recipe": "mir-test-tools-24-edge"},
     },
     "miriway": {
-        "edge": {"ppa": "dev", "recipe": "miriway-edge"},
         "beta": {"ppa": "rc", "recipe": "miriway-beta"},
-        "edge/24": {"ppa": "dev", "recipe": "miriway-edge-24", "release": "noble", "check-usns": False},
+        "edge": {"ppa": "dev", "recipe": "miriway-edge"},
     },
     "ubuntu-frame": {
-        "20/edge": {"ppa": "dev", "recipe": "ubuntu-frame-20-edge", "release": "focal"},
         "20/beta": {"ppa": "rc", "recipe": "ubuntu-frame-20-beta", "release": "focal"},
-        "22/edge": {"ppa": "dev", "recipe": "ubuntu-frame-22-edge"},
-        "22/beta": {"ppa": "rc", "recipe": "ubuntu-frame-22-beta"},
-        "24/edge": {"ppa": "dev", "recipe": "ubuntu-frame-24-edge", "release": "noble", "check-usns": False},
+        "22/beta": {"ppa": "rc", "recipe": "ubuntu-frame-22-beta", "release": "jammy"},
+        "24/beta": {"ppa": "rc", "recipe": "ubuntu-frame-24-beta"},
+        "24/edge": {"ppa": "dev", "recipe": "ubuntu-frame-24-edge"},
     },
     "ubuntu-frame-osk": {
         "20/beta": {"recipe": "ubuntu-frame-osk-20-beta"},
-        "22/edge": {"recipe": "ubuntu-frame-osk-22-edge"},
         "22/beta": {"recipe": "ubuntu-frame-osk-22-beta"},
-        "24/beta": {"recipe": "ubuntu-frame-osk-24-beta", "check-usns": False},
+        "24/beta": {"recipe": "ubuntu-frame-osk-24-beta"},
+        "24/edge": {"recipe": "ubuntu-frame-osk-24-edge"},
     },
     "ubuntu-frame-vnc": {
         "20/beta": {"recipe": "ubuntu-frame-vnc-20-beta"},
-        "22/edge": {"recipe": "ubuntu-frame-vnc-22-edge"},
         "22/beta": {"recipe": "ubuntu-frame-vnc-22-beta"},
-        "24/beta": {"recipe": "ubuntu-frame-vnc-24-beta", "check-usns": False},
+        "24/beta": {"recipe": "ubuntu-frame-vnc-24-beta"},
+        "24/edge": {"recipe": "ubuntu-frame-vnc-24-edge"},
     },
     "mesa-core20": {
         "beta": {"recipe": "mesa-core20-beta"},
@@ -93,7 +89,7 @@ SNAPS = {
         "beta": {"recipe": "mesa-core22-beta"},
     },
     "mesa-2404": {
-        "edge": {"recipe": "mesa-2404-edge", "check-usns": False},
+        "beta": {"recipe": "mesa-2404-beta"},
     },
     "nvidia-core22": {
         "beta": {"recipe": "nvidia-core22-beta"},
@@ -134,7 +130,7 @@ STORE_HEADERS = {
 }
 
 CHECK_NOTICES_PATH = "/snap/bin/review-tools.check-notices"
-CHECK_NOTICES_ARGS = ["--ignore-pockets", "esm-apps"]
+CHECK_NOTICES_ARGS = []
 
 
 def get_store_snap(processor, snap, channel):
