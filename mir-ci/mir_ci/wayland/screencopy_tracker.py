@@ -134,7 +134,7 @@ if __name__ == "__main__":
     tracker = ScreencopyTracker(os.environ["WAYLAND_DISPLAY"])
 
     async def capture_frames():
-        with tracker:
+        async with tracker:
             await asyncio.sleep(60)
 
     try:
