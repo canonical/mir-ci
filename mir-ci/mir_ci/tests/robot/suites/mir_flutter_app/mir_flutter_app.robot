@@ -277,6 +277,8 @@ Select ${preset} Positioner Preset
     Click LEFT Button
     ${pos}=                 Displace ${pos} By (0, -${vertical_distance_between_options})
     Walk Pointer To ${pos}
+    # Wait for the dropdown list to show up
+    Sleep                   1
     Click LEFT Button
 
     # Select preset
@@ -301,6 +303,8 @@ Select ${preset} Positioner Preset
     ELSE
         Fail                    Unexpected preset: ${preset}
     END
+    # Wait for the dropdown list to show up
+    Sleep                   1
     Walk Pointer To ${pos}
     Click LEFT Button
 
