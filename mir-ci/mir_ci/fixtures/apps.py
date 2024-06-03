@@ -23,3 +23,7 @@ def ubuntu_frame_osk(**kwargs):
         extensions=("zwlr_layer_shell_v1", "zwp_virtual_keyboard_manager_v1", "zwp_virtual_keyboard_manager_v1"),
         **kwargs,
     )
+
+
+def flutter_app(*args: str, **kwargs):
+    return snap("mir-test-tools", cmd=("mir-test-tools.flutter-app", *args), **kwargs)
