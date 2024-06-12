@@ -1,38 +1,39 @@
-import tempfile
+import itertools
 from pathlib import Path
 from textwrap import dedent
+from typing import Collection
 
 import pytest
+from mir_ci import VARIANT
 from mir_ci.fixtures.servers import ServerCap, servers
-from mir_ci.program.app import App
+from mir_ci.program.app import App, AppType
 from mir_ci.program.display_server import DisplayServer
 from mir_ci.wayland.screencopy_tracker import ScreencopyTracker
 from mir_ci.wayland.virtual_pointer import VirtualPointer
 
 TESTS_PATH = Path(__file__).parent
 APP_PATH = TESTS_PATH / "clients" / "drag_and_drop_demo.py"
+ROBOT_PATH = TESTS_PATH / "robot"
 
-ROBOT_TEMPLATE = """\
-*** Settings ***
-{settings}
 
-*** Variables ***
-{variables}
+def collect_asset(asset: Path, variant):
+    variants = reversed((variant, *variant.parents[:-1]))
+    return itertools.chain(
+        asset.glob("*"),
+        *((asset / "variants" / v).glob("*") for v in variants),
+    )
 
-*** Test Cases ***
-{test_case}
-"""
-ROBOT_SETTINGS = f"""\
-Library     {TESTS_PATH}/robot/platforms/wayland/Screencopy.py    AS    VIDEO
-Library     {TESTS_PATH}/robot/platforms/wayland/WaylandHid.py    AS    HID
-Resource    {TESTS_PATH}/robot/resources/kvm/kvm.resource
-"""
 
-ROBOT_VARIABLES = f"""\
-${{SRC_TEMPLATE}}    {TESTS_PATH}/robot/suites/drag_and_drop/drag_and_drop_src.png
-${{DST_TEMPLATE}}    {TESTS_PATH}/robot/suites/drag_and_drop/drag_and_drop_dst.png
-${{END_TEMPLATE}}    {TESTS_PATH}/robot/suites/drag_and_drop/drag_and_drop_end.png
-"""
+def collect_assets(platform: str, resources: Collection[str], suite: str, variant: Path = VARIANT):
+    return {
+        p.name: p
+        for p in itertools.chain(
+            collect_asset(ROBOT_PATH / "platforms" / platform, variant),
+            *(collect_asset(ROBOT_PATH / "resources" / resource, variant) for resource in resources),
+            collect_asset(ROBOT_PATH / "suites" / suite, variant),
+        )
+        if p.is_file()
+    }
 
 
 @pytest.mark.xdg(
@@ -68,71 +69,13 @@ ${{END_TEMPLATE}}    {TESTS_PATH}/robot/suites/drag_and_drop/drag_and_drop_end.p
     ),
 )
 class TestDragAndDrop:
-    @pytest.mark.parametrize(
-        "app",
-        [
-            ("python3", APP_PATH, "--source", "pixbuf", "--target", "pixbuf", "--expect", "pixbuf"),
-            ("python3", APP_PATH, "--source", "text", "--target", "text", "--expect", "text"),
-        ],
-    )
-    async def test_source_and_dest_match(self, robot_log, server, app, tmp_path) -> None:
+    async def test_drag_and_drop(self, robot_log, server, tmp_path) -> None:
         extensions = VirtualPointer.required_extensions + ScreencopyTracker.required_extensions
         server_instance = DisplayServer(server, add_extensions=extensions)
-        program = server_instance.program(App(app))
+        assets = collect_assets("wayland", ["kvm"], "drag_and_drop")
 
-        robot_test_case = dedent(
-            """\
-            Source and Destination Match
-                Move Pointer To ${SRC_TEMPLATE}
-                Press LEFT Button
-                Walk Pointer To ${DST_TEMPLATE}
-                Release LEFT Button
-        """
-        )
-
-        with tempfile.NamedTemporaryFile(mode="w+", suffix=".robot", buffering=1) as robot_file:
-            robot_file.write(
-                ROBOT_TEMPLATE.format(settings=ROBOT_SETTINGS, variables=ROBOT_VARIABLES, test_case=robot_test_case)
-            )
-            robot = server_instance.program(App(("robot", "-d", tmp_path, "--log", robot_log, robot_file.name)))
-
-            async with server_instance, program, robot:
-                await robot.wait(60)
-                await program.wait()
-
-    @pytest.mark.parametrize(
-        "app",
-        [
-            ("python3", "-u", APP_PATH, "--source", "pixbuf", "--target", "text", "--expect", "pixbuf"),
-            ("python3", "-u", APP_PATH, "--source", "text", "--target", "pixbuf", "--expect", "text"),
-            ("python3", "-u", APP_PATH, "--source", "pixbuf", "--target", "text", "--expect", "text"),
-            ("python3", "-u", APP_PATH, "--source", "text", "--target", "pixbuf", "--expect", "pixbuf"),
-        ],
-    )
-    async def test_source_and_dest_mismatch(self, robot_log, server, app, tmp_path) -> None:
-        extensions = VirtualPointer.required_extensions + ScreencopyTracker.required_extensions
-        server_instance = DisplayServer(server, add_extensions=extensions)
-        program = server_instance.program(App(app))
-
-        robot_test_case = dedent(
-            """\
-            Source and Destination Mismatch
-                Move Pointer To ${SRC_TEMPLATE}
-                Press LEFT Button
-                Walk Pointer To ${DST_TEMPLATE}
-                Release LEFT Button
-                Walk Pointer To ${END_TEMPLATE}
-        """
-        )
-
-        with tempfile.NamedTemporaryFile(mode="w+", suffix=".robot", buffering=1) as robot_file:
-            robot_file.write(
-                ROBOT_TEMPLATE.format(settings=ROBOT_SETTINGS, variables=ROBOT_VARIABLES, test_case=robot_test_case)
-            )
-            robot = server_instance.program(App(("robot", "-d", tmp_path, "--log", robot_log, robot_file.name)))
-
-            async with server_instance, program, robot:
-                await robot.wait(60)
-                assert program.is_running()
-                await program.kill()
-            assert "drag-begin\ndrag-failed\nenter-notify-event: dropbox" in program.output
+        async with server_instance, server_instance.program(App(("python3", "-u", str(APP_PATH)), AppType.pip)):
+            tuple((tmp_path / k).symlink_to(v) for k, v in assets.items())
+            robot = server_instance.program(App(("robot", "-d", tmp_path, "--log", robot_log, tmp_path)))
+            async with robot:
+                await robot.wait(120)

@@ -156,6 +156,7 @@ class DropArea(Gtk.Label):
         Gtk.Label.__init__(self)
         self.feedback = Gtk.Label.new()
         self.feedback.set_label("(nothing)")
+        self.feedback.set_line_wrap(True)
         self.result_callback = result_callback
 
         self.set_label("Drop something on me!")
