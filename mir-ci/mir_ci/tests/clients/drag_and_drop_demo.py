@@ -49,7 +49,6 @@ class DragDropWindow(Gtk.Window):
 
         evbox = Gtk.EventBox()
         evbox.add(dropbox)
-        evbox.connect("enter-notify-event", lambda x, y: print("enter-notify-event: dropbox"))
 
         hbox = Gtk.Box(spacing=12)
         hbox.pack_start(sourcebox, False, True, 0)
@@ -76,8 +75,6 @@ class DragSourceIconView(Gtk.IconView):
         self.add_item("Item 3", "edit-copy")
 
         self.enable_model_drag_source(Gdk.ModifierType.BUTTON1_MASK, [], DRAG_ACTION)
-        self.connect("drag-begin", lambda x, y: print("drag-begin"))
-        self.connect("drag-failed", lambda x, y, z: print("drag-failed"))
         self.connect("drag-data-get", self.on_drag_data_get)
 
         match source_mode:
@@ -121,11 +118,9 @@ class DragSourceIconView(Gtk.IconView):
         selected_iter = self.get_model().get_iter(selected_path)
 
         if info == TARGET_ENTRY_TEXT:
-            print("drag-data-get: text")
             text = self.get_model().get_value(selected_iter, COLUMN_TEXT)
             data.set_text(text, -1)
         elif info == TARGET_ENTRY_PIXBUF:
-            print("drag-data-get: pixbuf")
             pixbuf = self.get_model().get_value(selected_iter, COLUMN_PIXBUF)
             data.set_pixbuf(pixbuf)
 
