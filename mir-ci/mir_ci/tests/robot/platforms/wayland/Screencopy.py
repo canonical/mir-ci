@@ -1,6 +1,9 @@
 import asyncio
 import base64
 import os
+import shutil
+import subprocess
+import tempfile
 import time
 from io import BytesIO
 from typing import List
@@ -33,6 +36,9 @@ class Screencopy(ScreencopyTracker):
         display_name = os.environ.get("WAYLAND_DISPLAY", "wayland-0")
         super().__init__(display_name)
         self._rpa_images = Images()
+
+    def _start_suite(self, data, result) -> None:
+        self._screenshots_dir = tempfile.mkdtemp()
 
     @keyword
     async def match(self, template: str, timeout: int = 5) -> List[dict]:
@@ -99,6 +105,7 @@ class Screencopy(ScreencopyTracker):
         image = Image.frombytes("RGBA", size, data, "raw", "RGBA", stride, -1)
         b, g, r, a, *_ = image.split()
         image = Image.merge("RGBA", (r, g, b, a))
+        image.save(f"{self._screenshots_dir}/{self.frame_count:010d}.png", compress_level=1)
 
         return (self.frame_count, image)
 
@@ -136,6 +143,37 @@ class Screencopy(ScreencopyTracker):
             template_string + image_string,
             html=True,
         )
+
+    def _end_suite(self, data, result) -> None:
+        if not result.passed:
+            video_path = f"{self._screenshots_dir}/video.webm"
+            try:
+                subprocess.run(
+                    (
+                        "ffmpeg",
+                        "-f",
+                        "image2",
+                        "-r",
+                        "5",
+                        "-pattern_type",
+                        "glob",
+                        "-i",
+                        f"{self._screenshots_dir}/*.png",
+                        video_path,
+                    ),
+                    capture_output=True,
+                    check=True,
+                )
+            except (FileNotFoundError, PermissionError, subprocess.CalledProcessError) as ex:
+                logger.warn(ex)
+            else:
+                with open(video_path, "rb") as f:
+                    logger.error(
+                        '<video controls style="max-width: 50%" src="data:video/webm;base64,'
+                        f'{base64.b64encode(f.read()).decode()}" />',
+                        html=True,
+                    )
+        shutil.rmtree(self._screenshots_dir)
 
     def _close(self):
         """Listener method called when the library goes out of scope."""
