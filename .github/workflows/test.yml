@@ -29,7 +29,7 @@ jobs:
         - server: null
           mark: self
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
     - uses: actions/setup-python@v5
@@ -52,7 +52,7 @@ jobs:
     - name: Set up dependencies
       working-directory: mir-ci/mir_ci
       run: |
-        sudo apt-get --yes install pkg-config libwayland-dev
+        sudo apt-get --yes install pkg-config libwayland-dev ffmpeg
         pip install -e ..
         [ '${{ matrix.mark }}' == 'self' ] && pip install pytest-cov
         python -m pytest ${{ steps.pytest-args.outputs.args }} --deps
@@ -60,7 +60,7 @@ jobs:
     - name: Run the tests
       working-directory: mir-ci/mir_ci
       env:
-        MIR_CI_VARIANT: 1024
+        MIR_CI_VARIANT: noble/1024/1024x768
       run: |
         # set up coredumps
         ulimit -c unlimited
@@ -108,7 +108,7 @@ jobs:
         limit-access-to-actor: true
 
   ProcessArtifacts:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: RunTests
     if: ${{ success() || failure() }}
     steps:
