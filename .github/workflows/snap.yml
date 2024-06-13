@@ -13,7 +13,7 @@ concurrency:
 
 jobs:
   arches:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       arches: ${{ steps.get-arches.outputs.arches }}
 
@@ -29,7 +29,7 @@ jobs:
 
   checkbox-mir:
     needs: [arches]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     timeout-minutes: 360
 
