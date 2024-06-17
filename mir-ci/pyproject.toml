@@ -29,6 +29,9 @@ exclude = [
     ".gitignore",
 ]
 
+[tool.hatch.build.targets.wheel.force-include]
+"mir_ci/tests/robot/resources/osk/variants/jammy" = "mir_ci/tests/robot/resources/osk/variants/jammy"
+
 [tool.hatch.build.hooks.custom]
 dependencies = [
     "pywayland",
