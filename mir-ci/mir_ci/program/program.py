@@ -116,7 +116,7 @@ class Program(Benchmarkable):
                 {
                     k: v
                     for k, v in os.environ.items()
-                    if k in ("PATH", "XDG_RUNTIME_DIR", "MIR_SERVER_MOUSE_ACCELERATION")
+                    if k in ("PATH", "XDG_RUNTIME_DIR") or k.startswith("MIR_SERVER_")
                 },
                 **self.env,
             )
