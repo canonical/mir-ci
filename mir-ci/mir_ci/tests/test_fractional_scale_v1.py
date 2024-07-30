@@ -50,7 +50,7 @@ def collect_assets(platform: str, resources: Collection[str], suite: str, varian
         ),
     },
 )
-@pytest.mark.env(GSETTINGS_BACKEND="keyfile", MIR_ADD_WAYLAND_EXTENSIONS="all", MIR_PLATFORM_DISPLAY_LIBS="mir:virtual")
+@pytest.mark.env(GSETTINGS_BACKEND="keyfile")
 @pytest.mark.parametrize("server", servers(ServerCap.FLOATING_WINDOWS | ServerCap.DISPLAY_CONFIG))
 @pytest.mark.deps(
     debs=(

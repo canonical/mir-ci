@@ -1,23 +1,14 @@
 *** Settings ***
 Resource        ${KVM_RESOURCE}
 
-Suite Setup     Suite Setup
-
-
 *** Variables ***
 ${T}    ${CURDIR}
 
-
 *** Test Cases ***
-Drag And Drop Image To Text
-    Walk Pointer To ${SRC_IMAGES}
+Click Button With Fractional Scaling Enabled
+    Log to console          ${KVM_RESOURCE}
+    Match                   ${T}/gtk4-demo-title-app-title.png
+    Move Pointer To         ${T}/gtk4-demo-button-simple-constraints.png
     Click LEFT Button
-    Walk Pointer To ${DST_TEXT}
-    Click LEFT Button
-
-    Walk Pointer To ${ITEM}
-    Press LEFT Button
-    Walk Pointer To ${TARGET}
-    Release Buttons
-    Match                   ${T}/dnd_nothing.png
+    Match                   ${T}/gtk-4-demo-title-simple-constraints.png
 
