@@ -54,10 +54,7 @@ def collect_assets(platform: str, resources: Collection[str], suite: str, varian
 @pytest.mark.parametrize("server", servers(ServerCap.FLOATING_WINDOWS | ServerCap.DISPLAY_CONFIG))
 @pytest.mark.deps(
     debs=(
-        "libgirepository1.0-dev",
-        "libgtk-3-dev",
-        "fonts-ubuntu",
-        "adwaita-icon-theme-full",
+        "gtk-4-examples",
     ),
     pip_pkgs=(
         ("pygobject", "gi"),
