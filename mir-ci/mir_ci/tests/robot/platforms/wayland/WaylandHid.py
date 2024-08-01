@@ -26,6 +26,10 @@ class WaylandHid(VirtualPointer):
         display_name = os.environ.get("WAYLAND_DISPLAY", "wayland-0")
         super().__init__(display_name)
 
+    @keyword 
+    async def set_output_scale(self, output_scale: float) -> None:
+        self.output_scale = output_scale
+
     @keyword
     async def move_pointer_to_absolute(self, x: int, y: int) -> None:
         await self.connect()
