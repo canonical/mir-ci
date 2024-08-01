@@ -33,7 +33,6 @@ def collect_assets(platform: str, resources: Collection[str], suite: str, varian
         if p.is_file()
     }
 
-
 @pytest.mark.xdg(
     XDG_CONFIG_HOME={
         "glib-2.0/settings/keyfile": dedent(
@@ -52,6 +51,7 @@ def collect_assets(platform: str, resources: Collection[str], suite: str, varian
 )
 @pytest.mark.env(GSETTINGS_BACKEND="keyfile")
 @pytest.mark.parametrize("server", servers(ServerCap.FLOATING_WINDOWS | ServerCap.DISPLAY_CONFIG))
+@pytest.mark.parametrize("scale", [1.0, 1.25, 1.5, 1.75, 2.0])
 @pytest.mark.deps(
     debs=(
         "gtk-4-examples",
@@ -64,13 +64,17 @@ def collect_assets(platform: str, resources: Collection[str], suite: str, varian
     ),
 )
 class TestFractionalScaleV1:
-    async def test_fractional_scale_v1(self, robot_log, server, tmp_path) -> None:
-        extensions = ('all',)
+    async def test_fractional_scale_v1(self, robot_log, server, scale, tmp_path) -> None:
+        extensions = ('all',)  # TODO no need to enable all extensions
         server_instance = DisplayServer(server, add_extensions=extensions)
+
         assets = collect_assets("wayland", ["kvm"], "fractional_scale_v1")
 
         async with server_instance, server_instance.program(App(APP_PATH, AppType.deb)):
             tuple((tmp_path / k).symlink_to(v) for k, v in assets.items())
-            robot = server_instance.program(App(("robot", "-d", tmp_path, "--log", robot_log, tmp_path)))
+
+            robot = server_instance.program(
+                App(("robot", "-d", tmp_path, "--log", robot_log, "--variable", f"SCALE:{scale}", tmp_path)))
+
             async with robot:
                 await robot.wait(120)
