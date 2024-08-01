@@ -26,6 +26,10 @@ class WaylandHid(VirtualPointer):
         display_name = os.environ.get("WAYLAND_DISPLAY", "wayland-0")
         super().__init__(display_name)
 
+    @keyword 
+    async def set_output_scale(self, output_scale: float) -> None:
+        self.output_scale = output_scale
+
     @keyword
     async def move_pointer_to_absolute(self, x: int, y: int) -> None:
         await self.connect()
@@ -108,9 +112,9 @@ class WaylandHid(VirtualPointer):
         """
         assert 0 <= x <= 1, "x not in range 0..1"
         assert 0 <= y <= 1, "y not in range 0..1"
-        assert self.output_width > 0, "Output width must be greater than 0"
-        assert self.output_height > 0, "Output height must be greater than 0"
-        return (int(x * self.output_width), int(y * self.output_height))
+        assert self.output_physical_width > 0, "Output width must be greater than 0"
+        assert self.output_physical_height > 0, "Output height must be greater than 0"
+        return (int(x * self.output_physical_width), int(y * self.output_physical_height))
 
     async def connect(self):
         """Connect to the display."""

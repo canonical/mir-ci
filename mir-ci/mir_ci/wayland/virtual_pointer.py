@@ -20,15 +20,16 @@ class Button(IntEnum):
 class VirtualPointer(WaylandClient):
     required_extensions = (ZwlrVirtualPointerManagerV1.name, ZxdgOutputManagerV1.name)
 
-    def __init__(self, display_name: str) -> None:
+    def __init__(self, display_name: str, output_scale = 1.0) -> None:
         super().__init__(display_name)
         self.pointer_manager: Optional[ZwlrVirtualPointerManagerV1Proxy] = None
         self.pointer: Optional[ZwlrVirtualPointerV1Proxy] = None
         self.output_manager: Optional[ZxdgOutputManagerV1Proxy] = None
         self.wl_outputs: List[WlOutputProxy] = []
         self.xdg_outputs: List[ZxdgOutputV1Proxy] = []
-        self.output_width = 0
-        self.output_height = 0
+        self.output_physical_width = 0
+        self.output_physical_height = 0
+        self.output_scale = output_scale 
 
     def registry_global(self, registry, id_num: int, iface_name: str, version: int) -> None:
         if iface_name == ZwlrVirtualPointerManagerV1.name:
@@ -53,23 +54,24 @@ class VirtualPointer(WaylandClient):
         pass
 
     def xdg_output_logical_size(self, xdg_output, width: int, height: int) -> None:
+        # Whenever the logical size changes, we updated the cached physical size
         if xdg_output == self.xdg_outputs[0]:
-            self.output_width = width
-            self.output_height = height
+            self.output_physical_width = int(width * self.output_scale)
+            self.output_physical_height = int(height * self.output_scale)
 
     def move_to_absolute(self, x: float, y: float) -> None:
-        assert self.output_width > 0, "Output width must be greater than 0"
-        assert self.output_height > 0, "Output height must be greater than 0"
-        assert x >= 0 and x <= self.output_width, "x not in range 0-" + str(self.output_width)
-        assert y >= 0 and y <= self.output_height, "y not in range 0-" + str(self.output_height)
+        assert self.output_physical_width > 0, "Output width must be greater than 0"
+        assert self.output_physical_height > 0, "Output height must be greater than 0"
+        assert x >= 0 and x <= self.output_physical_width, "x not in range 0-" + str(self.output_physical_width)
+        assert y >= 0 and y <= self.output_physical_height, "y not in range 0-" + str(self.output_physical_height)
         assert self.pointer is not None, "No pointer"
         assert self.display is not None, "No display"
-        self.pointer.motion_absolute(self.timestamp(), int(x), int(y), self.output_width, self.output_height)
+        self.pointer.motion_absolute(self.timestamp(), int(x), int(y), self.output_physical_width, self.output_physical_height)
         self.pointer.frame()
         self.display.roundtrip()
 
     def move_to_proportional(self, x: float, y: float) -> None:
-        self.move_to_absolute(x * self.output_width, y * self.output_height)
+        self.move_to_absolute(x * self.output_physical_width, y * self.output_physical_height)
 
     def button(self, button: Button, state: bool) -> None:
         assert self.pointer is not None, "No pointer"
