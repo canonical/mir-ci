@@ -1,51 +1,14 @@
 import asyncio
-import importlib
-import os
-import tempfile
-from typing import Any
 from unittest.mock import ANY, Mock
 
 import pytest
 from mir_ci import SLOWDOWN
 from mir_ci.fixtures.servers import ServerCap, servers
-from mir_ci.program.display_server import DisplayServer
 from mir_ci.wayland.output_watcher import OutputWatcher
 
+from display_server_static_file import DisplayServerStaticFile
+
 short_wait_time = 1 * SLOWDOWN
-
-
-class DisplayServerStaticFile:
-    def __init__(self, local_server):
-        self.local_server = local_server
-        tmp_file = tempfile.NamedTemporaryFile(delete=False)
-        self.tmp_filename = tmp_file.name
-        try:
-            os.remove(self.tmp_filename)
-        except OSError:
-            pass
-
-        self.server = DisplayServer(self.local_server, env={"MIR_SERVER_DISPLAY_CONFIG": f"static={self.tmp_filename}"})
-
-    async def __aenter__(self) -> "DisplayServerStaticFile":
-        await self.server.__aenter__()
-        return self
-
-    async def __aexit__(self, *args):
-        await self.server.__aexit__(*args)
-
-    def read_config(self) -> Any:
-        yaml = importlib.import_module("yaml")
-        with open(self.tmp_filename, "r") as file:
-            # the yaml parser doesn't like tabs before our comments
-            content = file.read().replace("\t#", "  #")
-            data = yaml.safe_load(content)
-            return data
-
-    def write_config(self, content: Any) -> None:
-        yaml = importlib.import_module("yaml")
-        with open(self.tmp_filename, "w") as file:
-            yaml.dump(content, file)
-
 
 # TODO: Test other servers. Frame-based servers use
 # a configuration file that is within the snap, so it
