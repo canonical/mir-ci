@@ -89,7 +89,7 @@ class TestScreencopyBandwidth:
         pointer = VirtualPointer(server.display_name)
         async with server, tracker, app, pointer:
             await asyncio.sleep(2 * SLOWDOWN)  # TODO: detect when the window is drawn instead
-            pointer.move_to_absolute(pointer.output_width / 2, 10)
+            pointer.move_to_absolute(pointer.output_physical_width / 2, 10)
             await pause()
             pointer.button(Button.LEFT, True)
             await pause()
