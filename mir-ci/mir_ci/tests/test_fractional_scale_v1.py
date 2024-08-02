@@ -103,7 +103,7 @@ class TestFractionalScaleV1:
             tuple((tmp_path / k).symlink_to(v) for k, v in assets.items())
 
             robot = server_instance.server.program(
-                App(("robot", "-d", tmp_path, "--log", robot_log, tmp_path)))
+                    App(("robot", "-d", tmp_path, "--log", robot_log, "--variable", f"SCALE:{scale}", tmp_path)))
 
             async with robot:
                 await robot.wait(120)
