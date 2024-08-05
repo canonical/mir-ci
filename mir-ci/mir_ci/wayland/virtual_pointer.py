@@ -20,7 +20,7 @@ class Button(IntEnum):
 class VirtualPointer(WaylandClient):
     required_extensions = (ZwlrVirtualPointerManagerV1.name, ZxdgOutputManagerV1.name)
 
-    def __init__(self, display_name: str, output_scale = 1.0) -> None:
+    def __init__(self, display_name: str, output_scale=1.0) -> None:
         super().__init__(display_name)
         self.pointer_manager: Optional[ZwlrVirtualPointerManagerV1Proxy] = None
         self.pointer: Optional[ZwlrVirtualPointerV1Proxy] = None
@@ -29,7 +29,7 @@ class VirtualPointer(WaylandClient):
         self.xdg_outputs: List[ZxdgOutputV1Proxy] = []
         self.output_physical_width = 0
         self.output_physical_height = 0
-        self.output_scale = output_scale 
+        self.output_scale = output_scale
 
     def registry_global(self, registry, id_num: int, iface_name: str, version: int) -> None:
         if iface_name == ZwlrVirtualPointerManagerV1.name:
@@ -66,7 +66,9 @@ class VirtualPointer(WaylandClient):
         assert y >= 0 and y <= self.output_physical_height, "y not in range 0-" + str(self.output_physical_height)
         assert self.pointer is not None, "No pointer"
         assert self.display is not None, "No display"
-        self.pointer.motion_absolute(self.timestamp(), int(x), int(y), self.output_physical_width, self.output_physical_height)
+        self.pointer.motion_absolute(
+            self.timestamp(), int(x), int(y), self.output_physical_width, self.output_physical_height
+        )
         self.pointer.frame()
         self.display.roundtrip()
 

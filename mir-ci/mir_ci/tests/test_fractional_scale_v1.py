@@ -4,12 +4,13 @@ from textwrap import dedent
 from typing import Collection
 
 import pytest
+from display_server_static_file import DisplayServerStaticFile
 from mir_ci import VARIANT
 from mir_ci.fixtures.servers import ServerCap, servers
 from mir_ci.program.app import App, AppType
+
 # from mir_ci.program.display_server import DisplayServer
 
-from display_server_static_file import DisplayServerStaticFile
 
 TESTS_PATH = Path(__file__).parent
 APP_PATH = "gtk4-demo"
@@ -35,6 +36,7 @@ def collect_assets(platform: str, resources: Collection[str], suite: str, varian
         if p.is_file()
     }
 
+
 def get_display_config(scale: float) -> dict:
     return {
         "layouts": {
@@ -45,12 +47,13 @@ def get_display_config(scale: float) -> dict:
                         "unknown-1": {
                             "state": "enabled",
                             "scale": scale,
-                        }
+                        },
                     }
                 ]
             }
         }
     }
+
 
 @pytest.mark.xdg(
     XDG_CONFIG_HOME={
@@ -72,9 +75,7 @@ def get_display_config(scale: float) -> dict:
 @pytest.mark.parametrize("server", servers(ServerCap.FLOATING_WINDOWS | ServerCap.DISPLAY_CONFIG))
 @pytest.mark.parametrize("scale", [1.0, 1.25, 1.5, 1.75, 2.0])
 @pytest.mark.deps(
-    debs=(
-        "gtk-4-examples",
-    ),
+    debs=("gtk-4-examples",),
     pip_pkgs=(
         ("pygobject", "gi"),
         ("robotframework~=6.1.1", "robot"),
@@ -84,10 +85,11 @@ def get_display_config(scale: float) -> dict:
 )
 class TestFractionalScaleV1:
     async def test_fractional_scale_v1(self, robot_log, server, scale, tmp_path) -> None:
-        extensions = ('all',)  # TODO no need to enable all extension
+        extensions = ("all",)  # TODO no need to enable all extension
 
-        server_instance = DisplayServerStaticFile(server, add_extensions=extensions, env={
-                                                  'MIR_SERVER_X11_OUTPUT': '1024x768'})
+        server_instance = DisplayServerStaticFile(
+            server, add_extensions=extensions, env={"MIR_SERVER_X11_OUTPUT": "1024x768"}
+        )
         server_instance.write_config(get_display_config(scale))
 
         assets = collect_assets("wayland", ["kvm"], "fractional_scale_v1")
@@ -96,7 +98,8 @@ class TestFractionalScaleV1:
             tuple((tmp_path / k).symlink_to(v) for k, v in assets.items())
 
             robot = server_instance.server.program(
-                    App(("robot", "-d", tmp_path, "--log", robot_log, "--variable", f"SCALE:{scale}", tmp_path)))
+                App(("robot", "-d", tmp_path, "--log", robot_log, "--variable", f"SCALE:{scale}", tmp_path))
+            )
 
             async with robot:
                 await robot.wait(120)

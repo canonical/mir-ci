@@ -2,13 +2,13 @@ import asyncio
 from unittest.mock import ANY, Mock
 
 import pytest
+from display_server_static_file import DisplayServerStaticFile
 from mir_ci import SLOWDOWN
 from mir_ci.fixtures.servers import ServerCap, servers
 from mir_ci.wayland.output_watcher import OutputWatcher
 
-from display_server_static_file import DisplayServerStaticFile
-
 short_wait_time = 1 * SLOWDOWN
+
 
 # TODO: Test other servers. Frame-based servers use
 # a configuration file that is within the snap, so it

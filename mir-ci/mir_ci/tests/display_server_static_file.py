@@ -2,7 +2,9 @@ import importlib
 import os
 import tempfile
 from typing import Any
+
 from mir_ci.program.display_server import DisplayServer
+
 
 class DisplayServerStaticFile:
     def __init__(self, local_server, *args, **kwargs):
@@ -16,10 +18,10 @@ class DisplayServerStaticFile:
 
         config_file = f"static={self.tmp_filename}"
 
-        if 'env' in kwargs:
-            env = kwargs['env']
-            if 'MIR_SERVER_DISPLAY_CONFIG' not in env:
-                env['MIR_SERVER_DISPLAY_CONFIG'] = config_file
+        if "env" in kwargs:
+            env = kwargs["env"]
+            if "MIR_SERVER_DISPLAY_CONFIG" not in env:
+                env["MIR_SERVER_DISPLAY_CONFIG"] = config_file
 
         self.server = DisplayServer(self.local_server, *args, **kwargs)
 

@@ -214,21 +214,20 @@ Release Buttons
     HID.Release Pointer Buttons
 
 Scroll Until Match ${template}
-	[Documentation]		Scroll the (virtual) mouse wheel until a match is found.
-	...
-	...		Arguments:
-	...		- ${template}: The image we're trying to match
-	...		- ${trials}: Number of tests before failing
+    [Documentation]    Scroll the (virtual) mouse wheel until a match is found.
+    ...
+    ...    Arguments:
+    ...    - ${template}: The image we're trying to match
+    ...    - ${trials}: Number of tests before failing
     [Arguments]             ${trials}=5
 
-	FOR 	${index}	 IN RANGE	${trials}
-		${match_found}= 	Run Keyword and Return Status 	Match 	${template}
+    FOR    ${index}    IN RANGE    ${trials}
+        ${match_found}=         Run Keyword and Return Status
+        ...                     Match                   ${template}
 
-		IF 	${match_found} == ${True}    	
-			RETURN
-		END
+        IF    ${match_found} == ${TRUE}    RETURN
 
-		Vertical Scroll	120
-	END
+        Vertical Scroll         120
+    END
 
-	FAIL	No match found
+    FAIL                    No match found
