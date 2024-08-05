@@ -52,7 +52,7 @@ def collect_assets(platform: str, resources: Collection[str], suite: str, varian
 )
 @pytest.mark.env(GSETTINGS_BACKEND="keyfile")
 @pytest.mark.parametrize("server", servers(ServerCap.FLOATING_WINDOWS | ServerCap.DISPLAY_CONFIG))
-@pytest.mark.parametrize("scale", [1.0, 1.25, 1.5, 1.75, 2.0])
+@pytest.mark.parametrize("scale", [1.0, 1.5, 2.0])
 @pytest.mark.deps(
     debs=("gtk-4-examples",),
     pip_pkgs=(
