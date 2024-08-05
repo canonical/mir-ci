@@ -68,7 +68,7 @@ class TestFractionalScaleV1:
         server_instance = DisplayServer(
             server,
             add_extensions=extensions,
-            env={"MIR_SERVER_DISPLAY_SCALE": str(scale)},
+            env={"MIR_SERVER_X11_OUTPUT": "1024x768", "MIR_SERVER_DISPLAY_SCALE": str(scale)},
         )
 
         assets = collect_assets("wayland", ["kvm"], "fractional_scale_v1")
