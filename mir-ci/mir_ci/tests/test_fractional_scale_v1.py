@@ -4,10 +4,10 @@ from textwrap import dedent
 from typing import Collection
 
 import pytest
-from display_server_static_file import DisplayServerStaticFile
 from mir_ci import VARIANT
 from mir_ci.fixtures.servers import ServerCap, servers
 from mir_ci.program.app import App, AppType
+from mir_ci.program.display_server import DisplayServer
 
 # from mir_ci.program.display_server import DisplayServer
 
@@ -87,17 +87,21 @@ class TestFractionalScaleV1:
     async def test_fractional_scale_v1(self, robot_log, server, scale, tmp_path) -> None:
         extensions = ("all",)  # TODO no need to enable all extension
 
-        server_instance = DisplayServerStaticFile(
-            server, add_extensions=extensions, env={"MIR_SERVER_X11_OUTPUT": "1024x768"}
+        server_instance = DisplayServer(
+            server,
+            add_extensions=extensions,
+            env={
+                "MIR_SERVER_X11_OUTPUT": "1024x768",
+                "MIR_SERVER_DISPLAY_SCALE": str(scale),
+            },
         )
-        server_instance.write_config(get_display_config(scale))
 
         assets = collect_assets("wayland", ["kvm"], "fractional_scale_v1")
 
-        async with server_instance, server_instance.server.program(App(APP_PATH, AppType.deb)):
+        async with server_instance, server_instance.program(App(APP_PATH, AppType.deb)):
             tuple((tmp_path / k).symlink_to(v) for k, v in assets.items())
 
-            robot = server_instance.server.program(
+            robot = server_instance.program(
                 App(("robot", "-d", tmp_path, "--log", robot_log, "--variable", f"SCALE:{scale}", tmp_path))
             )
 
