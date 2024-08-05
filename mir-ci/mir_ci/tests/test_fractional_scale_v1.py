@@ -44,14 +44,7 @@ def get_display_config(scale: float) -> dict:
                         "card-id": 0,
                         "unknown-1": {
                             "state": "enabled",
-                            "mode": "1280x1024@60",
-                            "position": [
-                                0,
-                                0
-                            ],
-                            "orientation": "normal",
                             "scale": scale,
-                            "group": 0
                         }
                     }
                 ]
@@ -92,10 +85,10 @@ def get_display_config(scale: float) -> dict:
 class TestFractionalScaleV1:
     async def test_fractional_scale_v1(self, robot_log, server, scale, tmp_path) -> None:
         extensions = ('all',)  # TODO no need to enable all extension
-        display_config = get_display_config(scale)
 
-        server_instance = DisplayServerStaticFile(server, add_extensions=extensions)
-        server_instance.write_config(display_config)
+        server_instance = DisplayServerStaticFile(server, add_extensions=extensions, env={
+                                                  'MIR_SERVER_X11_OUTPUT': '1024x768'})
+        server_instance.write_config(get_display_config(scale))
 
         assets = collect_assets("wayland", ["kvm"], "fractional_scale_v1")
 

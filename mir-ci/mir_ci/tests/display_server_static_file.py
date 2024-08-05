@@ -15,7 +15,12 @@ class DisplayServerStaticFile:
             pass
 
         config_file = f"static={self.tmp_filename}"
-        self.server = DisplayServer(self.local_server, env={"MIR_SERVER_DISPLAY_CONFIG": config_file}, *args, **kwargs)
+
+        env = kwargs['env']
+        if 'MIR_SERVER_DISPLAY_CONFIG' not in env:
+            env['MIR_SERVER_DISPLAY_CONFIG'] = config_file
+
+        self.server = DisplayServer(self.local_server, *args, **kwargs)
 
     async def __aenter__(self) -> "DisplayServerStaticFile":
         await self.server.__aenter__()

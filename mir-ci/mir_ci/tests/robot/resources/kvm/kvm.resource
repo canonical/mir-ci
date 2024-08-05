@@ -212,3 +212,23 @@ Click ${button} Button
 Release Buttons
     [Documentation]    Release all buttons on the virtual pointer.
     HID.Release Pointer Buttons
+
+Scroll Until Match ${template}
+	[Documentation]		Scroll the (virtual) mouse wheel until a match is found.
+	...
+	...		Arguments:
+	...		- ${template}: The image we're trying to match
+	...		- ${trials}: Number of tests before failing
+    [Arguments]             ${trials}=5
+
+	FOR 	${index}	 IN RANGE	${trials}
+		${match_found}= 	Run Keyword and Return Status 	Match 	${template}
+
+		IF 	${match_found} == ${True}    	
+			RETURN
+		END
+
+		Vertical Scroll	120
+	END
+
+	FAIL	No match found

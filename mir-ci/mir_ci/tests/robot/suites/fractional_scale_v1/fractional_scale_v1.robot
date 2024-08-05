@@ -5,6 +5,7 @@ Test Setup 	Set Output Scale	${SCALE}
 
 *** Variables ***
 ${T}    ${CURDIR}
+${combo-boxes}	${T}/${SCALE}-gtk4-demo-button-combo-boxes-maximized.png
 
 *** Test Cases ***
 Ensure Scaling Is Visually Correct
@@ -23,8 +24,19 @@ Ensure Scaling Is Visually Correct
     Click LEFT Button
 
 Click Button With Fractional Scaling Enabled
-    Move Pointer To Proportional (0.5, 0.5)
-    Match                   	${T}/${SCALE}-gtk4-demo-title-app-title.png
-    Move Pointer To ${T}/${SCALE}-gtk4-demo-button-combo-boxes.png
+    Move Pointer To Proportional (1.0, 1.0)
+    Walk Pointer To ${T}/${SCALE}-gtk4-demo-title-app-title.png
     Click LEFT Button
-    Match			${T}/${SCALE}-gtk4-demo-title-combo-boxes.png
+    Click LEFT Button
+
+    ${match_found}= 	Run Keyword and Return Status 	Match 	${combo-boxes}
+
+    IF 	${match_found} == ${False}    	
+    	Move Pointer To Proportional (0.1, 0.5)
+		Scroll Until Match ${combo-boxes}
+    END
+
+	Move Pointer To ${combo-boxes}
+    Click LEFT Button
+
+    Match			${T}/${SCALE}-gtk4-demo-title-combo-boxes-maximized.png

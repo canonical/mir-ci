@@ -98,6 +98,14 @@ class WaylandHid(VirtualPointer):
         for button in Button:
             self.button(button, False)
 
+    @keyword
+    async def vertical_scroll(self, amount: float) -> None:
+        await self.connect()
+        self.pointer.axis_source(0)
+        self.pointer.axis(self.timestamp(), 0, amount)
+        self.pointer.frame()
+        self.display.roundtrip()
+
     def get_absolute_from_proportional(self, x: float, y: float) -> tuple[int, int]:
         """
         Get the absolute position for the given output size proportions.
