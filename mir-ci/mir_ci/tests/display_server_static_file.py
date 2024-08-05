@@ -18,10 +18,11 @@ class DisplayServerStaticFile:
 
         config_file = f"static={self.tmp_filename}"
 
-        if "env" in kwargs:
-            env = kwargs["env"]
-            if "MIR_SERVER_DISPLAY_CONFIG" not in env:
-                env["MIR_SERVER_DISPLAY_CONFIG"] = config_file
+        if "env" not in kwargs:
+            kwargs["env"] = {}
+
+        if "MIR_SERVER_DISPLAY_CONFIG" not in kwargs["env"]:
+            kwargs["env"]["MIR_SERVER_DISPLAY_CONFIG"] = config_file
 
         self.server = DisplayServer(self.local_server, *args, **kwargs)
 
