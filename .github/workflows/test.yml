@@ -21,12 +21,33 @@ jobs:
         server:
         - mir_kiosk
         - ubuntu_frame
-        - confined_shell
         - mir_test_tools
-        - mir_demo_server
-        - gnome_shell
+        channel: [stable]
         include:
+        - server: ubuntu_frame
+          channel: 24/edge
+
+        - server: mir_test_tools
+          channel: 24/edge
+
+        - server: mir_demo_server
+          channel: null
+
+        - server: mir_demo_server
+          channel: null
+          ppa: mir-team/dev
+
+        - server: confined_shell
+          channel: beta
+
+        - server: confined_shell
+          channel: edge
+
+        - server: gnome_shell
+          channel: null
+
         - server: null
+          channel: null
           mark: self
 
     runs-on: ubuntu-24.04
@@ -40,22 +61,29 @@ jobs:
       with:
         lfs: true
 
-    - id: pytest-args
-      name: Determine pytest arguments
+    - id: vars
+      name: Determine variables
       run: |
-        ARGS=( --verbose --capture=no )
-        [ -n '${{ matrix.server }}' ] && ARGS+=( -k ${{ matrix.server }} )
-        [ -n '${{ matrix.mark }}' ] && ARGS+=( -m ${{ matrix.mark }} )
-        [ '${{ matrix.mark }}' == 'self' ] && ARGS+=( --cov --cov-branch --cov-report=xml )
-        echo args=${ARGS[@]} >> $GITHUB_OUTPUT
+        PYTEST_ARGS=( --verbose --capture=no )
+        [ -n '${{ matrix.server }}' ] && PYTEST_ARGS+=( -k ${{ matrix.server }} )
+        [ -n '${{ matrix.mark }}' ] && PYTEST_ARGS+=( -m ${{ matrix.mark }} )
+        [ '${{ matrix.mark }}' == 'self' ] && PYTEST_ARGS+=( --cov --cov-branch --cov-report=xml )
+        echo pytest_args=${PYTEST_ARGS[@]} >> $GITHUB_OUTPUT
+
+        ARTIFACT_KEY="${{ matrix.server || matrix.mark }}"
+        [ -n '${{ matrix.channel }}' ] && ARTIFACT_KEY+="-$( echo ${{ matrix.channel }} | tr / _ )"
+        [ -n '${{ matrix.ppa }}' ] && ARTIFACT_KEY+="-$( echo ${{ matrix.ppa }} | tr / _ )"
+        echo artifact_key=${ARTIFACT_KEY} >> $GITHUB_OUTPUT
 
     - name: Set up dependencies
       working-directory: mir-ci/mir_ci
       run: |
+        [ -n '${{ matrix.ppa }}' ] && sudo add-apt-repository --yes ppa:${{ matrix.ppa }}
+        [ -n '${{ matrix.channel }}' ] && sudo snap install $( echo ${{ matrix.server }} | tr _ - ) --channel ${{ matrix.channel }}
         sudo apt-get --yes install pkg-config libwayland-dev ffmpeg
         pip install -e ..
         [ '${{ matrix.mark }}' == 'self' ] && pip install pytest-cov
-        python -m pytest ${{ steps.pytest-args.outputs.args }} --deps
+        python -m pytest ${{ steps.vars.outputs.pytest_args }} --deps
 
     - name: Run the tests
       working-directory: mir-ci/mir_ci
@@ -68,13 +96,13 @@ jobs:
 
         sudo systemd-run --uid 1001 -p Environment=XDG_SESSION_TYPE=wayland -p PAMName=login -p TTYPath=/dev/tty1 -- tail -f /dev/null
 
-        python -m pytest ${{ steps.pytest-args.outputs.args }} --junitxml=junit-${{ matrix.server || matrix.mark }}-${{ matrix.python }}.xml
+        python -m pytest ${{ steps.vars.outputs.pytest_args }} --junitxml=junit-${{ matrix.server || matrix.mark }}-${{ matrix.python }}.xml
 
     - name: Upload test results
       uses: actions/upload-artifact@v4
       if: success() || failure()
       with:
-        name: test-results-${{ matrix.server || matrix.mark }}
+        name: test-results-${{ steps.vars.outputs.artifact_key }}
         path: |
           mir-ci/mir_ci/junit-*.xml
           /tmp/pytest-of-*/*-current/**/log.html
@@ -97,7 +125,7 @@ jobs:
       name: Upload any core dumps
       uses: actions/upload-artifact@v4
       with:
-        name: core-dumps-${{ matrix.server || matrix.mark }}
+        name: core-dumps-${{ steps.vars.outputs.artifact_key }}
         path: corefile-*
         if-no-files-found: ignore
 
