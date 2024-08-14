@@ -54,7 +54,7 @@ class VirtualPointer(WaylandClient):
         pass
 
     def xdg_output_logical_size(self, xdg_output, width: int, height: int) -> None:
-        # Whenever the logical size changes, we updated the cached physical size
+        # Whenever the logical size changes, we update the cached physical size
         if xdg_output == self.xdg_outputs[0]:
             self.output_width = int(width * self.output_scale)
             self.output_height = int(height * self.output_scale)
