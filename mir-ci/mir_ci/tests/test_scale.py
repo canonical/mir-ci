@@ -51,7 +51,7 @@ def collect_assets(platform: str, resources: Collection[str], suite: str, varian
     },
 )
 @pytest.mark.env(GSETTINGS_BACKEND="keyfile")
-@pytest.mark.parametrize("server", servers(ServerCap.FLOATING_WINDOWS | ServerCap.DISPLAY_CONFIG))
+@pytest.mark.parametrize("server", servers(ServerCap.DISPLAY_CONFIG))
 @pytest.mark.parametrize("scale", [1.0, 1.5, 2.0])
 @pytest.mark.deps(
     debs=("gtk-4-examples",),
@@ -62,16 +62,17 @@ def collect_assets(platform: str, resources: Collection[str], suite: str, varian
         ("rpaframework-recognition", "RPA.recognition"),
     ),
 )
-class TestFractionalScaleV1:
-    async def test_fractional_scale_v1(self, robot_log, server, scale, tmp_path) -> None:
-        extensions = ("all",)  # TODO no need to enable all extensions
+class TestScale:
+    async def test_scale(self, robot_log, server, scale, tmp_path) -> None:
+        extensions = ("all",)  # TODO no need to enable all extension
+
         server_instance = DisplayServer(
             server,
             add_extensions=extensions,
             env={"MIR_SERVER_X11_OUTPUT": "1024x768", "MIR_SERVER_DISPLAY_SCALE": str(scale)},
         )
 
-        assets = collect_assets("wayland", ["kvm"], "fractional_scale_v1")
+        assets = collect_assets("wayland", ["kvm"], "scale")
 
         async with server_instance, server_instance.program(App(APP_PATH, AppType.deb)):
             tuple((tmp_path / k).symlink_to(v) for k, v in assets.items())
