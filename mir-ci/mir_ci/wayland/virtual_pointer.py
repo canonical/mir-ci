@@ -20,7 +20,7 @@ class Button(IntEnum):
 class VirtualPointer(WaylandClient):
     required_extensions = (ZwlrVirtualPointerManagerV1.name, ZxdgOutputManagerV1.name)
 
-    def __init__(self, display_name: str) -> None:
+    def __init__(self, display_name: str, output_scale=1.0) -> None:
         super().__init__(display_name)
         self.pointer_manager: Optional[ZwlrVirtualPointerManagerV1Proxy] = None
         self.pointer: Optional[ZwlrVirtualPointerV1Proxy] = None
@@ -29,6 +29,7 @@ class VirtualPointer(WaylandClient):
         self.xdg_outputs: List[ZxdgOutputV1Proxy] = []
         self.output_width = 0
         self.output_height = 0
+        self.output_scale = output_scale
 
     def registry_global(self, registry, id_num: int, iface_name: str, version: int) -> None:
         if iface_name == ZwlrVirtualPointerManagerV1.name:
@@ -53,9 +54,10 @@ class VirtualPointer(WaylandClient):
         pass
 
     def xdg_output_logical_size(self, xdg_output, width: int, height: int) -> None:
+        # Whenever the logical size changes, we update the cached physical size
         if xdg_output == self.xdg_outputs[0]:
-            self.output_width = width
-            self.output_height = height
+            self.output_width = int(width * self.output_scale)
+            self.output_height = int(height * self.output_scale)
 
     def move_to_absolute(self, x: float, y: float) -> None:
         assert self.output_width > 0, "Output width must be greater than 0"
