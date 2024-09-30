@@ -61,8 +61,6 @@ def collect_assets(platform: str, resources: Collection[str], suite: str, varian
                         ("git+https://github.com/canonical/checkbox.git#subdirectory=checkbox-ng", "plainbox"),
                     )
                 ),
-                pytest.mark.xfail(reason="Mouse acceleration only supported on some servers"),
-                pytest.mark.env(MIR_SERVER_MOUSE_ACCELERATION="none"),
             ),
         ),
     ),
