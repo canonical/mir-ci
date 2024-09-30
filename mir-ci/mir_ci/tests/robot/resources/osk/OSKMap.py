@@ -1,4 +1,4 @@
-from typing import Literal, Mapping
+from typing import Literal, Mapping, Union
 
 from robot.api.deco import keyword, library
 
@@ -48,8 +48,12 @@ KEYS: Mapping[str, Mapping[str, tuple[float, float]]] = {
 class OSKMap:
     @keyword
     def get_point_for_key(
-        self, layout: str, region: Mapping[Literal["left", "top", "right", "bottom"], int], key
+        self, layout: str, region: Mapping[Literal["left", "top", "right", "bottom", "path"], Union[int, str]], key
     ) -> tuple[int, int]:
+        assert type(region["left"]) is int
+        assert type(region["top"]) is int
+        assert type(region["right"]) is int
+        assert type(region["bottom"]) is int
         try:
             osk_width = region["right"] - region["left"]
             osk_height = region["bottom"] - region["top"]
