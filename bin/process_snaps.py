@@ -31,7 +31,7 @@ SOURCE_NAME = "mir"
 
 SNAPS = {
     "checkbox-mir": {
-        "edge": {"ppa": "release", "recipe": "checkbox-mir-edge"},
+        "edge": {"ppa": "release", "recipe": "checkbox-mir-edge", "release": "jammy"},
     },
     "confined-shell": {
         "beta": {"ppa": "rc", "recipe": "confined-shell-beta"},
