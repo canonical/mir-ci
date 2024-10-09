@@ -29,6 +29,12 @@ DEFAULT_RELEASE = "noble"
 TEAM = "mir-team"
 SOURCE_NAME = "mir"
 
+SNAPCRAFT_CANDIDATE = {
+    "channels": {
+        "snapcraft": "candidate",
+    },
+}
+
 SNAPS = {
     "checkbox-mir": {
         "edge": {"ppa": "release", "recipe": "checkbox-mir-edge", "release": "jammy"},
@@ -38,7 +44,7 @@ SNAPS = {
         "edge": {"ppa": "dev", "recipe": "confined-shell-edge"},
     },
     "graphics-test-tools": {
-        "20/beta": {"recipe": "graphics-test-tools-20-beta"},
+        "20/beta": {"recipe": "graphics-test-tools-20-beta", **SNAPCRAFT_CANDIDATE},
         "22/beta": {"recipe": "graphics-test-tools-22-beta"},
         "24/beta": {"recipe": "graphics-test-tools-24-beta"},
     },
@@ -55,7 +61,7 @@ SNAPS = {
         "edge": {"recipe": "mir-kiosk-scummvm-edge"},
     },
     "mir-test-tools": {
-        "20/beta": {"ppa": "rc", "recipe": "mir-test-tools-20-beta", "release": "focal"},
+        "20/beta": {"ppa": "rc", "recipe": "mir-test-tools-20-beta", "release": "focal", **SNAPCRAFT_CANDIDATE},
         "22/beta": {"ppa": "rc", "recipe": "mir-test-tools-22-beta", "release": "jammy"},
         "24/beta": {"ppa": "rc", "recipe": "mir-test-tools-24-beta"},
         "24/edge": {"ppa": "dev", "recipe": "mir-test-tools-24-edge"},
@@ -65,25 +71,25 @@ SNAPS = {
         "edge": {"ppa": "dev", "recipe": "miriway-edge"},
     },
     "ubuntu-frame": {
-        "20/beta": {"ppa": "rc", "recipe": "ubuntu-frame-20-beta", "release": "focal"},
+        "20/beta": {"ppa": "rc", "recipe": "ubuntu-frame-20-beta", "release": "focal", **SNAPCRAFT_CANDIDATE},
         "22/beta": {"ppa": "rc", "recipe": "ubuntu-frame-22-beta", "release": "jammy"},
         "24/beta": {"ppa": "rc", "recipe": "ubuntu-frame-24-beta"},
         "24/edge": {"ppa": "dev", "recipe": "ubuntu-frame-24-edge"},
     },
     "ubuntu-frame-osk": {
-        "20/beta": {"recipe": "ubuntu-frame-osk-20-beta"},
+        "20/beta": {"recipe": "ubuntu-frame-osk-20-beta", **SNAPCRAFT_CANDIDATE},
         "22/beta": {"recipe": "ubuntu-frame-osk-22-beta"},
         "24/beta": {"recipe": "ubuntu-frame-osk-24-beta"},
         "24/edge": {"recipe": "ubuntu-frame-osk-24-edge"},
     },
     "ubuntu-frame-vnc": {
-        "20/beta": {"recipe": "ubuntu-frame-vnc-20-beta"},
+        "20/beta": {"recipe": "ubuntu-frame-vnc-20-beta", **SNAPCRAFT_CANDIDATE},
         "22/beta": {"recipe": "ubuntu-frame-vnc-22-beta"},
         "24/beta": {"recipe": "ubuntu-frame-vnc-24-beta"},
         "24/edge": {"recipe": "ubuntu-frame-vnc-24-edge"},
     },
     "mesa-core20": {
-        "beta": {"recipe": "mesa-core20-beta"},
+        "beta": {"recipe": "mesa-core20-beta", **SNAPCRAFT_CANDIDATE},
     },
     "mesa-core22": {
         "beta": {"recipe": "mesa-core22-beta"},
@@ -334,7 +340,8 @@ if __name__ == '__main__':
             logger.info("::warning::Triggering %s…", snap_recipe.description or snap_recipe.name)
 
             snap_recipe.requestBuilds(archive=archive,
-                                      pocket=snap_recipe.auto_build_pocket)
+                                      pocket=snap_recipe.auto_build_pocket,
+                                      channels=snap_map.get("channels", {}))
             logger.debug("Triggered builds: %s", snap_recipe.web_link)
 
     for error in errors:
