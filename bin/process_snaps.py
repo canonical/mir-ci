@@ -107,9 +107,6 @@ SNAPS = {
     "nvidia-core22": {
         "beta": {"recipe": "nvidia-core22-beta"},
     },
-    "mir-kiosk-x11": {
-        "beta": {"ppa": "rc", "recipe": "mir-kiosk-x11-beta", "release": "focal"},
-    },
 }
 
 PENDING_BUILD = (
