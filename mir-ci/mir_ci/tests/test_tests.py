@@ -4,6 +4,7 @@ import random
 import time
 from collections import OrderedDict
 from contextlib import suppress
+from pathlib import Path
 from unittest import IsolatedAsyncioTestCase
 from unittest.mock import MagicMock, Mock, call, mock_open, patch
 
@@ -308,6 +309,11 @@ class TestCgroup:
     async def test_cgroup_path_raises_runtime_error_when_contents_are_none(self, mock_open):
         with pytest.raises(RuntimeError, match=f"Unable to find path for process with pid: {os.getpid()}"):
             await Cgroup.get_cgroup_dir(12345)
+
+    @patch("builtins.open", new_callable=mock_open, read_data="0::path")
+    async def test_group_path_warns_when_no_child_found(self, mock_open):
+        with pytest.warns(UserWarning, match="Unable to find child cgroup"):
+            assert await Cgroup.get_cgroup_dir(12345) == Path("/sys/fs/cgroup/path")
 
 
 @pytest.mark.self

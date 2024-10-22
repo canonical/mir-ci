@@ -1,6 +1,7 @@
 import asyncio
 import os
 import pathlib
+import warnings
 from typing import Iterator
 
 
@@ -29,7 +30,8 @@ class Cgroup:
             if path != parent_path:
                 return path
         else:
-            raise RuntimeError(f"Unable to read cgroup directory for pid: {pid}")
+            warnings.warn(f"Unable to find child cgroup for pid: {pid}")
+            return parent_path
 
     @staticmethod
     def _get_cgroup_dir_internal(pid: int) -> pathlib.Path:
