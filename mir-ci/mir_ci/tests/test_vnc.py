@@ -62,4 +62,4 @@ class TestVnc:
 
             async with server_instance, program:
                 async with robot:
-                    await robot.wait()
+                    await robot.wait(120)
