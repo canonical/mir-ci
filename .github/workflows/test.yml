@@ -21,11 +21,14 @@ jobs:
         server:
         - mir_kiosk
         - ubuntu_frame
-        - mir_test_tools
         channel: [stable]
         include:
         - server: ubuntu_frame
           channel: 24/edge
+
+        - server: mir_test_tools
+          channel: 22/stable
+          variant: noble/22/1024/1024x768
 
         - server: mir_test_tools
           channel: 24/edge
@@ -90,7 +93,7 @@ jobs:
     - name: Run the tests
       working-directory: mir-ci/mir_ci
       env:
-        MIR_CI_VARIANT: noble/1024/1024x768
+        MIR_CI_VARIANT: ${{ matrix.variant && matrix.variant || 'noble/1024/1024x768' }}
       run: |
         # set up coredumps
         ulimit -c unlimited
