@@ -50,6 +50,8 @@ class TestMirFlutterApp:
 
         async with server_instance, server_instance.program(App(app.command[0], app.app_type)) as app:
             tuple((tmp_path / k).symlink_to(v) for k, v in assets.items())
-            robot = server_instance.program(App(("robot", "-d", tmp_path, "--log", robot_log, tmp_path)))
+            robot = server_instance.program(
+                App(("robot", "--exitonfailure", "-d", tmp_path, "--log", robot_log, tmp_path))
+            )
             async with robot:
                 await robot.wait(120)
