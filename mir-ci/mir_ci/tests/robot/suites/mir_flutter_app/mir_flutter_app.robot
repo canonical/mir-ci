@@ -259,16 +259,18 @@ Slide Constraint Precedes Resize
 
 
 *** Keywords ***
+Wait Until ${template} Is Absent
+    Wait Until Keyword Succeeds                     5                       1
+    ...                     Run Keyword And Expect Error                    ImageNotFoundError
+    ...                     VIDEO.Match             ${template}             0
+
 Close Focused Toplevel Window
     Move Pointer To (0, 0)
     ${pos}=                 Move Pointer To ${WINDOW_REGULAR_0_FOCUSED}
     ${pos}=                 Displace ${pos} By (130, 0)
     Move Pointer To ${pos}
     Click LEFT Button
-    Click LEFT Button
-    Wait Until Keyword Succeeds                     5                       1
-    ...                     Run Keyword And Expect Error                    ImageNotFoundError
-    ...                     VIDEO.Match             ${WINDOW_REGULAR_0_FOCUSED}                     0
+    Wait Until ${WINDOW_REGULAR_0_FOCUSED} Is Absent
 
 Close Floating Toplevel Window
     Move Pointer To (0, 0)
@@ -276,9 +278,7 @@ Close Floating Toplevel Window
     ${pos}=                 Displace ${pos} By (138, 0)
     Move Pointer To ${pos}
     Click LEFT Button
-    Wait Until Keyword Succeeds                     5                       1
-    ...                     Run Keyword And Expect Error                    ImageNotFoundError
-    ...                     VIDEO.Match             ${WINDOW_FLOATING_REGULAR_0_FOCUSED}            0
+    Wait Until ${WINDOW_FLOATING_REGULAR_0_FOCUSED} Is Absent
 
 Close Dialog Window
     Move Pointer To (0, 0)
@@ -286,9 +286,7 @@ Close Dialog Window
     ${pos}=                 Displace ${pos} By (112, 0)
     Move Pointer To ${pos}
     Click LEFT Button
-    Wait Until Keyword Succeeds                     5                       1
-    ...                     Run Keyword And Expect Error                    ImageNotFoundError
-    ...                     VIDEO.Match             ${WINDOW_DIALOG_FOCUSED}                        0
+    Wait Until ${WINDOW_DIALOG_FOCUSED} Is Absent
 
 Select ${preset} Positioner Preset
     ${vertical_distance_between_options}=           Set Variable            48
