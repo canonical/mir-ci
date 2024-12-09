@@ -1,5 +1,7 @@
 *** Settings ***
-Resource    ${KVM_RESOURCE}
+Resource            ${KVM_RESOURCE}
+
+Test Teardown       VIDEO.Match    ${ZERO_WINDOWS}
 
 
 *** Variables ***
@@ -7,8 +9,6 @@ ${T}                                        ${CURDIR}
 
 ${ANCHOR_OPTION_TOP_LEFT}                   ${T}/anchor_option_top_left.png
 ${ANCHOR_OPTION_BOTTOM_RIGHT}               ${T}/anchor_option_bottom_right.png
-
-${BUTTON_CLOSE_FOCUSED}                     ${T}/button_close_focused.png
 
 ${DIALOG_CUSTOM_POSITIONER}                 ${T}/dialog_custom_positioner.png
 
@@ -30,6 +30,8 @@ ${WINDOW_SATELLITE_1}                       ${T}/window_satellite_1.png
 ${WINDOW_POPUP_1}                           ${T}/window_popup_1.png
 ${WINDOW_TIP_1}                             ${T}/window_tip_1.png
 
+${ZERO_WINDOWS}                             ${T}/zero_windows.png
+
 
 *** Test Cases ***
 Reference App Opens
@@ -43,12 +45,12 @@ Regular Window Opens
 Floating Regular Window Opens
     Open FLOATING_REGULAR Window
     VIDEO.Match             ${WINDOW_FLOATING_REGULAR_0_FOCUSED}
-    Close Focused Toplevel Window
+    Close Floating Toplevel Window
 
 Dialog Window Opens
     Open DIALOG Window
     VIDEO.Match             ${WINDOW_DIALOG_FOCUSED}
-    Close Focused Toplevel Window
+    Close Dialog Window
 
 Satellite Window Opens
     Open REGULAR Window
@@ -77,7 +79,7 @@ Floating Regular Window Stays On Top
     Click LEFT Button
     Walk Pointer To ${WINDOW_FLOATING_REGULAR_0_NON_FOCUSED}
     Click LEFT Button
-    Close Focused Toplevel Window
+    Close Floating Toplevel Window
 
 Dialog Is Modal To Parent
     Open REGULAR Window
@@ -97,7 +99,7 @@ Satellite Is Placed According To Custom Positioner
     Open FLOATING_REGULAR Window
     Open SATELLITE Window
     VIDEO.Match             ${EXPECTED_SATELLITE_PLACEMENT}
-    Close Focused Toplevel Window
+    Close Floating Toplevel Window
 
 Child Windows Move With Parent
     Open FLOATING_REGULAR Window
@@ -117,7 +119,7 @@ Child Windows Move With Parent
     Release LEFT Button
     VIDEO.Match             ${EXPECTED_WINDOW_AFTER_MOVE}
     Close Dialog Window
-    Close Focused Toplevel Window
+    Close Floating Toplevel Window
 
 Slide Constraint Is Applied
     Set Top Left Custom Positioner
@@ -129,7 +131,7 @@ Slide Constraint Is Applied
     Release LEFT Button
     Open POPUP Window
     VIDEO.Match             ${EXPECTED_POPUP_PLACEMENT_SLIDE}
-    Close Focused Toplevel Window
+    Close Floating Toplevel Window
 
 Flip Constraint Is Applied
     Set Top Left Custom Positioner
@@ -165,7 +167,7 @@ Flip Constraint Is Applied
     Release LEFT Button
     Open POPUP Window
     VIDEO.Match             ${EXPECTED_POPUP_PLACEMENT_FLIP}
-    Close Focused Toplevel Window
+    Close Floating Toplevel Window
 
 Resize Constraint Is Applied
     Set Top Left Custom Positioner
@@ -201,7 +203,7 @@ Resize Constraint Is Applied
     Release LEFT Button
     Open POPUP Window
     VIDEO.Match             ${EXPECTED_POPUP_PLACEMENT_RESIZE}
-    Close Focused Toplevel Window
+    Close Floating Toplevel Window
 
 Flip Constraint Precedes Slide
     Set Top Left Custom Positioner
@@ -227,7 +229,7 @@ Flip Constraint Precedes Slide
     Release LEFT Button
     Open POPUP Window
     VIDEO.Match             ${EXPECTED_POPUP_PLACEMENT_FLIP}
-    Close Focused Toplevel Window
+    Close Floating Toplevel Window
 
 Slide Constraint Precedes Resize
     Set Top Left Custom Positioner
@@ -253,19 +255,38 @@ Slide Constraint Precedes Resize
     Release LEFT Button
     Open POPUP Window
     VIDEO.Match             ${EXPECTED_POPUP_PLACEMENT_SLIDE}
-    Close Focused Toplevel Window
+    Close Floating Toplevel Window
 
 
 *** Keywords ***
+Wait Until ${template} Is Absent
+    Wait Until Keyword Succeeds                     5                       1
+    ...                     Run Keyword And Expect Error                    ImageNotFoundError
+    ...                     VIDEO.Match             ${template}             0
+
 Close Focused Toplevel Window
-    Walk Pointer To ${BUTTON_CLOSE_FOCUSED}
+    Move Pointer To (0, 0)
+    ${pos}=                 Move Pointer To ${WINDOW_REGULAR_0_FOCUSED}
+    ${pos}=                 Displace ${pos} By (130, 0)
+    Move Pointer To ${pos}
     Click LEFT Button
+    Wait Until ${WINDOW_REGULAR_0_FOCUSED} Is Absent
+
+Close Floating Toplevel Window
+    Move Pointer To (0, 0)
+    ${pos}=                 Move Pointer To ${WINDOW_FLOATING_REGULAR_0_FOCUSED}
+    ${pos}=                 Displace ${pos} By (138, 0)
+    Move Pointer To ${pos}
+    Click LEFT Button
+    Wait Until ${WINDOW_FLOATING_REGULAR_0_FOCUSED} Is Absent
 
 Close Dialog Window
-    ${pos}=                 Walk Pointer To ${WINDOW_DIALOG_FOCUSED}
+    Move Pointer To (0, 0)
+    ${pos}=                 Move Pointer To ${WINDOW_DIALOG_FOCUSED}
     ${pos}=                 Displace ${pos} By (112, 0)
-    Walk Pointer To ${pos}
+    Move Pointer To ${pos}
     Click LEFT Button
+    Wait Until ${WINDOW_DIALOG_FOCUSED} Is Absent
 
 Select ${preset} Positioner Preset
     ${vertical_distance_between_options}=           Set Variable            48
