@@ -1,8 +1,10 @@
 import functools
 import os
 import pathlib
+import re
 import shutil
 import subprocess
+import time
 import warnings
 from collections.abc import Iterator
 from typing import Any, Generator, List, Mapping, Optional, Union
@@ -46,6 +48,25 @@ def _deps_skip(request: pytest.FixtureRequest) -> None:
         request.keywords.setdefault("depfixtures", set()).add(request.fixturename)
         if request.keywords["depfixtures"] == DEP_FIXTURES.intersection(request.fixturenames):
             pytest.skip("dependency-only run")
+
+
+def _snap_install(snap: str, channel: str, classic: bool):
+    """
+    Install the (optionally classic) snap from the given channel. Tracks the change and prints
+    all changes in `Doing` state, raising an error if the change fails.
+    """
+    _classic = ("--classic",) if classic else ()
+    if change := subprocess.check_output(
+        ("sudo", "snap", "install", "--no-wait", snap, "--channel", channel, *_classic),
+        text=True,
+    ).strip():
+        while output := subprocess.check_output(("snap", "changes"), text=True):
+            if re.search(rf"^{change}\s+Done\s", output, re.MULTILINE):
+                return
+            if re.search(rf"^{change}\s+Error\s", output, re.MULTILINE):
+                raise RuntimeError(subprocess.check_output(("snap", "tasks", change), text=True))
+            print("\n".join(line for line in output.splitlines() if "Doing" in line), flush=True)
+            time.sleep(10)
 
 
 def _deps_install(request: pytest.FixtureRequest, spec: Union[str, Mapping[str, Any]]) -> app.App:
@@ -100,18 +121,14 @@ def _deps_install(request: pytest.FixtureRequest, spec: Union[str, Mapping[str, 
         if snap:
             checked_snaps = request.session.keywords.setdefault("snaps", set())
             if snap not in checked_snaps:
-                try:
-                    subprocess.check_call(("snap", "list", snap), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                except subprocess.CalledProcessError:
-                    _classic = ("--classic",) if classic else ()
-                    subprocess.check_call(("sudo", "snap", "install", snap, "--channel", channel, *_classic))
-                    if shutil.which(f"/snap/{snap}/current/bin/setup.sh"):
-                        subprocess.check_call(("sudo", f"/snap/{snap}/current/bin/setup.sh"))
-                    subprocess.call(
-                        ("sudo", "snap", "connect", f"{snap}:login-session-control"),
-                        stdout=subprocess.DEVNULL,
-                        stderr=subprocess.DEVNULL,
-                    )
+                _snap_install(snap, channel, classic)
+                if shutil.which(f"/snap/{snap}/current/bin/setup.sh"):
+                    subprocess.check_call(("sudo", f"/snap/{snap}/current/bin/setup.sh"))
+                subprocess.call(
+                    ("sudo", "snap", "connect", f"{snap}:login-session-control"),
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                )
                 if "MIR_CI_SNAP" in os.environ:
                     subprocess.call(
                         ("sudo", "snap", "connect", f"{snap}:wayland", os.environ["MIR_CI_SNAP"]),
