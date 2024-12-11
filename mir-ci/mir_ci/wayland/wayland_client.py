@@ -23,7 +23,8 @@ class WaylandClient:
             raise e
 
     def timestamp(self) -> int:
-        return int(time.monotonic() * 1000)
+        # ensure the value fits in a `uint_t`
+        return int(time.monotonic() * 1000) & 0xFFFFFFFF
 
     @abstractmethod
     def registry_global(self, registry, id_num: int, iface_name: str, version: int) -> None:
