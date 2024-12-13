@@ -105,7 +105,7 @@ SNAPS = {
         "asahi/beta": {"recipe": "mesa-2404-asahi-beta"},
     },
     "nvidia-core22": {
-        "beta": {"recipe": "nvidia-core22-beta"},
+        "edge": {"recipe": "nvidia-core22-edge"},
     },
 }
 
