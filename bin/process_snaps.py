@@ -29,18 +29,6 @@ DEFAULT_RELEASE = "noble"
 TEAM = "mir-team"
 SOURCE_NAME = "mir"
 
-SNAPCRAFT_CANDIDATE = {
-    "channels": {
-        "snapcraft": "candidate",
-    },
-}
-
-SNAPD_CANDIDATE = {
-    "channels": {
-        "snapd": "candidate"
-    }
-}
-
 SNAPS = {
     "checkbox-mir": {
         "edge": {"ppa": "release", "recipe": "checkbox-mir-edge", "release": "jammy"},
@@ -52,7 +40,7 @@ SNAPS = {
     "graphics-test-tools": {
         "20/beta": {"recipe": "graphics-test-tools-20-beta"},
         "22/beta": {"recipe": "graphics-test-tools-22-beta"},
-        "24/beta": {"recipe": "graphics-test-tools-24-beta", **SNAPD_CANDIDATE},
+        "24/beta": {"recipe": "graphics-test-tools-24-beta"},
     },
     "mir-kiosk": {
         "beta": {"ppa": "rc", "recipe": "mir-kiosk-beta", "release": "focal"},
@@ -69,8 +57,8 @@ SNAPS = {
     "mir-test-tools": {
         "20/beta": {"ppa": "rc", "recipe": "mir-test-tools-20-beta", "release": "focal"},
         "22/beta": {"ppa": "rc", "recipe": "mir-test-tools-22-beta", "release": "jammy"},
-        "24/beta": {"ppa": "rc", "recipe": "mir-test-tools-24-beta", **SNAPD_CANDIDATE},
-        "24/edge": {"ppa": "dev", "recipe": "mir-test-tools-24-edge", **SNAPD_CANDIDATE},
+        "24/beta": {"ppa": "rc", "recipe": "mir-test-tools-24-beta"},
+        "24/edge": {"ppa": "dev", "recipe": "mir-test-tools-24-edge"},
     },
     "miriway": {
         "beta": {"ppa": "rc", "recipe": "miriway-beta"},
@@ -79,20 +67,20 @@ SNAPS = {
     "ubuntu-frame": {
         "20/beta": {"ppa": "rc", "recipe": "ubuntu-frame-20-beta", "release": "focal"},
         "22/beta": {"ppa": "rc", "recipe": "ubuntu-frame-22-beta", "release": "jammy"},
-        "24/beta": {"ppa": "rc", "recipe": "ubuntu-frame-24-beta", **SNAPD_CANDIDATE},
-        "24/edge": {"ppa": "dev", "recipe": "ubuntu-frame-24-edge", **SNAPD_CANDIDATE},
+        "24/beta": {"ppa": "rc", "recipe": "ubuntu-frame-24-beta"},
+        "24/edge": {"ppa": "dev", "recipe": "ubuntu-frame-24-edge"},
     },
     "ubuntu-frame-osk": {
         "20/beta": {"recipe": "ubuntu-frame-osk-20-beta"},
         "22/beta": {"recipe": "ubuntu-frame-osk-22-beta"},
-        "24/beta": {"recipe": "ubuntu-frame-osk-24-beta", **SNAPD_CANDIDATE},
-        "24/edge": {"recipe": "ubuntu-frame-osk-24-edge", **SNAPD_CANDIDATE},
+        "24/beta": {"recipe": "ubuntu-frame-osk-24-beta"},
+        "24/edge": {"recipe": "ubuntu-frame-osk-24-edge"},
     },
     "ubuntu-frame-vnc": {
         "20/beta": {"recipe": "ubuntu-frame-vnc-20-beta"},
         "22/beta": {"recipe": "ubuntu-frame-vnc-22-beta"},
-        "24/beta": {"recipe": "ubuntu-frame-vnc-24-beta", **SNAPD_CANDIDATE},
-        "24/edge": {"recipe": "ubuntu-frame-vnc-24-edge", **SNAPD_CANDIDATE},
+        "24/beta": {"recipe": "ubuntu-frame-vnc-24-beta"},
+        "24/edge": {"recipe": "ubuntu-frame-vnc-24-edge"},
     },
     "mesa-core20": {
         "beta": {"recipe": "mesa-core20-beta"},
@@ -101,7 +89,7 @@ SNAPS = {
         "beta": {"recipe": "mesa-core22-beta"},
     },
     "mesa-2404": {
-        "beta": {"recipe": "mesa-2404-beta", **SNAPD_CANDIDATE},
+        "beta": {"recipe": "mesa-2404-beta"},
         "asahi/beta": {"recipe": "mesa-2404-asahi-beta"},
     },
     "nvidia-core22": {
