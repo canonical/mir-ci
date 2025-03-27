@@ -164,6 +164,7 @@ def mir_demo_server(*args, debs=("mir-test-tools", "mir-graphics-drivers-desktop
 def miriway(*args, channel="stable", classic=True, **kwargs):
     return snap("miriway", *args, channel=channel, classic=classic, **kwargs)
 
+
 @server(
     ServerCap.ALL
     ^ (

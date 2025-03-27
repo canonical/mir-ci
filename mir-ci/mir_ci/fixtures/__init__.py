@@ -23,7 +23,7 @@ def _dependency(
 
     ret = cmd
     if extra is not None:
-        ret = (ret, extra)
+        ret = (ret, extra)  # type: ignore
 
     return pytest.param(
         App(ret, app_type, extensions),
