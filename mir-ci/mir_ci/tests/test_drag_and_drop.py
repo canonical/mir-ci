@@ -56,7 +56,7 @@ def collect_assets(platform: str, resources: Collection[str], suite: str, varian
 @pytest.mark.parametrize("server", servers(ServerCap.DRAG_AND_DROP | ServerCap.SCREENCOPY))
 @pytest.mark.deps(
     debs=(
-        "libgirepository1.0-dev",
+        "libgirepository-2.0-dev",
         "libgtk-3-dev",
         "fonts-ubuntu",
         "adwaita-icon-theme-full",

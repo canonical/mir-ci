@@ -54,7 +54,10 @@ def collect_assets(platform: str, resources: Collection[str], suite: str, varian
 @pytest.mark.parametrize("server", servers(ServerCap.DISPLAY_CONFIG))
 @pytest.mark.parametrize("scale", [1.0, 1.5, 2.0])
 @pytest.mark.deps(
-    debs=("gtk-4-examples",),
+    debs=(
+        "libgirepository-2.0-dev",
+        "gtk-4-examples",
+    ),
     pip_pkgs=(
         ("pygobject", "gi"),
         ("robotframework~=6.1.1", "robot"),
