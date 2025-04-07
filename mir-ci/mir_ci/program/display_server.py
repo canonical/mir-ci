@@ -1,14 +1,16 @@
 import asyncio
 import os
 import re
+import subprocess
 import time
-from typing import Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 import inotify.adapters
+import yaml
 
 from ..interfaces.benchmarkable import Benchmarkable
 from ..lib.cgroups import Cgroup
-from ..program.app import App
+from ..program.app import App, AppType
 from ..program.program import Program
 
 display_appear_timeout = 10
@@ -94,3 +96,39 @@ class DisplayServer(Benchmarkable):
     @staticmethod
     def get_wayland_display() -> str:
         return "wayland-00" + str(os.getpid())
+
+
+class DisplayServerWithDisplayConfig:
+    def __init__(self, local_server):
+        self.local_server = local_server
+        self.cmd_wrapper = (
+            (lambda x: ["snap", "run", "--shell", local_server.command[0], "-c", " ".join(x)])
+            if local_server.app_type == AppType.snap
+            else lambda x: x
+        )
+        self.tmp_filename = subprocess.check_output(self.cmd_wrapper(["mktemp"]), encoding="utf-8").strip()
+        subprocess.check_output(self.cmd_wrapper(["rm", self.tmp_filename]), encoding="utf-8").strip()
+        self.server = DisplayServer(self.local_server, env={"MIR_SERVER_DISPLAY_CONFIG": f"static={self.tmp_filename}"})
+
+    async def __aenter__(self) -> "DisplayServerWithDisplayConfig":
+        await self.server.__aenter__()
+        return self
+
+    async def __aexit__(self, *args):
+        await self.server.__aexit__(*args)
+
+    def read_config(self) -> Any:
+        content = subprocess.check_output(
+            self.cmd_wrapper(["cat", self.tmp_filename]),
+            encoding="utf-8",
+        )
+        # the yaml parser doesn't like tabs before our comments
+        return yaml.safe_load(content.replace("\t#", "  #"))
+
+    def write_config(self, content: Any) -> None:
+        subprocess.run(
+            self.cmd_wrapper(["tee", self.tmp_filename]),
+            encoding="utf-8",
+            input=yaml.dump(content),
+            check=True,
+        )
