@@ -116,7 +116,8 @@ class Program(Benchmarkable):
                 {
                     k: v
                     for k, v in os.environ.items()
-                    if k in ("PATH", "XDG_RUNTIME_DIR", "DBUS_SESSION_BUS_ADDRESS") or k.startswith("MIR_SERVER_")
+                    if k in ("DISPLAY", "XAUTHORITY", "PATH", "XDG_RUNTIME_DIR", "DBUS_SESSION_BUS_ADDRESS")
+                    or k.startswith("MIR_SERVER_")
                 },
                 **self.env,
             )
