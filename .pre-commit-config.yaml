@@ -34,6 +34,8 @@ repos:
   rev: v1.15.0
   hooks:
   - id: mypy
+    additional_dependencies:
+    - types-PyYAML
 - repo: https://github.com/MarketSquare/robotframework-tidy
   rev: 4.16.0
   hooks:

@@ -145,12 +145,12 @@ def mir_kiosk(*args, id="mir_kiosk", **kwargs):
     return snap("mir-kiosk", *args, id=id, **kwargs)
 
 
-@server(ServerCap.ALL ^ (ServerCap.DISPLAY_CONFIG | ServerCap.MIR_SHELL_PROTO))
+@server(ServerCap.ALL ^ ServerCap.MIR_SHELL_PROTO)
 def confined_shell(*args, channel="edge", id="confined_shell", **kwargs):
     return snap("confined-shell", *args, channel=channel, id=id, **kwargs)
 
 
-@server(ServerCap.ALL ^ ServerCap.DISPLAY_CONFIG)
+@server(ServerCap.ALL)
 def mir_test_tools(*args, channel="24/beta", cmd=("mir-test-tools.demo-server",), id="mir_test_tools", **kwargs):
     return snap("mir-test-tools", channel=channel, cmd=(*cmd, *args), id=id, **kwargs)
 
