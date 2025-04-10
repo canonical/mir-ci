@@ -23,6 +23,7 @@ class OutputWatcher(WaylandClient):
             self.wl_outputs.append(registry.bind(id_num, WlOutput, min(WlOutput.version, version)))
             for key in self.callbacks:
                 self.wl_outputs[-1].dispatcher[key] = self.callbacks[key]
+            self.display.roundtrip()
 
     def connected(self) -> None:
         self.display.roundtrip()
