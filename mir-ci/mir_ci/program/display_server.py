@@ -130,5 +130,6 @@ class DisplayServerWithDisplayConfig:
             self.cmd_wrapper(["tee", self.tmp_filename]),
             encoding="utf-8",
             input=yaml.dump(content),
+            capture_output=True,
             check=True,
         )
