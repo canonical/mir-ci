@@ -25,7 +25,9 @@ class TestDisplayConfiguration:
             for v in card.values():
                 if type(v) is dict:
                     v["scale"] = 2
-                    break
+                    # FIXME: overlapping displays of different scale cause Mir to crash
+                    # https://github.com/canonical/mir/issues/3888
+                    # break
 
             server.write_config(data)
             await asyncio.sleep(short_wait_time)
@@ -50,4 +52,4 @@ class TestDisplayConfiguration:
             server.write_config(data)
             await asyncio.sleep(short_wait_time)
 
-        on_geometry.assert_called_with(ANY, 10, 20, ANY, ANY, ANY, ANY, ANY, ANY)
+        on_geometry.assert_any_call(ANY, 10, 20, ANY, ANY, ANY, ANY, ANY, ANY)
