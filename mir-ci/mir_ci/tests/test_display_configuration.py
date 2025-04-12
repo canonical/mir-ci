@@ -1,9 +1,9 @@
-import asyncio
 from unittest.mock import ANY, Mock
 
 import pytest
 from mir_ci import SLOWDOWN
 from mir_ci.fixtures.servers import ServerCap, servers
+from mir_ci.lib import await_call
 from mir_ci.program.display_server import DisplayServerWithDisplayConfig
 from mir_ci.wayland.output_watcher import OutputWatcher
 
@@ -18,7 +18,7 @@ class TestDisplayConfiguration:
         watcher = OutputWatcher(server.server.display_name, on_scale=on_scale)
 
         async with server, watcher:
-            await asyncio.sleep(short_wait_time)
+            await await_call(on_scale, ANY, ANY)
             data = server.read_config()
 
             card = data["layouts"]["default"]["cards"][0]
@@ -30,9 +30,7 @@ class TestDisplayConfiguration:
                     # break
 
             server.write_config(data)
-            await asyncio.sleep(short_wait_time)
-
-        on_scale.assert_called_with(ANY, 2)
+            await await_call(on_scale, ANY, 2)
 
     async def test_can_update_position(self, server) -> None:
         server = DisplayServerWithDisplayConfig(server)
@@ -40,7 +38,7 @@ class TestDisplayConfiguration:
         watcher = OutputWatcher(server.server.display_name, on_geometry=on_geometry)
 
         async with server, watcher:
-            await asyncio.sleep(short_wait_time)
+            await await_call(on_geometry, ANY, ANY, ANY, ANY, ANY, ANY, ANY, ANY, ANY)
             data = server.read_config()
 
             card = data["layouts"]["default"]["cards"][0]
@@ -50,6 +48,4 @@ class TestDisplayConfiguration:
                     break
 
             server.write_config(data)
-            await asyncio.sleep(short_wait_time)
-
-        on_geometry.assert_any_call(ANY, 10, 20, ANY, ANY, ANY, ANY, ANY, ANY)
+            await await_call(on_geometry, ANY, 10, 20, ANY, ANY, ANY, ANY, ANY, ANY)
