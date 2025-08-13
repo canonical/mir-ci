@@ -148,12 +148,12 @@ Flip Constraint Is Applied
     Click LEFT Button
     # Check 'flip X' checkbox
     ${pos}=                 Walk Pointer To ${DIALOG_CUSTOM_POSITIONER}
-    ${pos}=                 Displace ${pos} By (-5, 400)
+    ${pos}=                 Displace ${pos} By (-5, 410)
     Walk Pointer To ${pos}
     Click LEFT Button
     # Check 'flip Y' checkbox
     ${pos}=                 Walk Pointer To ${DIALOG_CUSTOM_POSITIONER}
-    ${pos}=                 Displace ${pos} By (70, 400)
+    ${pos}=                 Displace ${pos} By (70, 410)
     Walk Pointer To ${pos}
     Click LEFT Button
     # Walk Pointer To ${BUTTON_APPLY}
@@ -184,12 +184,12 @@ Resize Constraint Is Applied
     Click LEFT Button
     # Check 'resize X' checkbox
     ${pos}=                 Walk Pointer To ${DIALOG_CUSTOM_POSITIONER}
-    ${pos}=                 Displace ${pos} By (-5, 430)
+    ${pos}=                 Displace ${pos} By (-5, 440)
     Walk Pointer To ${pos}
     Click LEFT Button
     # Check 'resize Y' checkbox
     ${pos}=                 Walk Pointer To ${DIALOG_CUSTOM_POSITIONER}
-    ${pos}=                 Displace ${pos} By (70, 430)
+    ${pos}=                 Displace ${pos} By (70, 440)
     Walk Pointer To ${pos}
     Click LEFT Button
     # Walk Pointer To ${BUTTON_APPLY}
@@ -210,12 +210,12 @@ Flip Constraint Precedes Slide
     Open Custom Positioner Dialog
     # Check 'flip X' checkbox
     ${pos}=                 Walk Pointer To ${DIALOG_CUSTOM_POSITIONER}
-    ${pos}=                 Displace ${pos} By (-5, 400)
+    ${pos}=                 Displace ${pos} By (-5, 410)
     Walk Pointer To ${pos}
     Click LEFT Button
     # Check 'flip Y' checkbox
     ${pos}=                 Walk Pointer To ${DIALOG_CUSTOM_POSITIONER}
-    ${pos}=                 Displace ${pos} By (70, 400)
+    ${pos}=                 Displace ${pos} By (70, 410)
     Walk Pointer To ${pos}
     Click LEFT Button
     # Walk Pointer To ${BUTTON_APPLY}
@@ -236,12 +236,12 @@ Slide Constraint Precedes Resize
     Open Custom Positioner Dialog
     # Check 'resize X' checkbox
     ${pos}=                 Walk Pointer To ${DIALOG_CUSTOM_POSITIONER}
-    ${pos}=                 Displace ${pos} By (-5, 430)
+    ${pos}=                 Displace ${pos} By (-5, 440)
     Walk Pointer To ${pos}
     Click LEFT Button
     # Check 'resize Y' checkbox
     ${pos}=                 Walk Pointer To ${DIALOG_CUSTOM_POSITIONER}
-    ${pos}=                 Displace ${pos} By (70, 430)
+    ${pos}=                 Displace ${pos} By (70, 440)
     Walk Pointer To ${pos}
     Click LEFT Button
     # Walk Pointer To ${BUTTON_APPLY}
@@ -378,13 +378,13 @@ Open Child Anchor Dropdown List
 
 Press Set Defaults Button
     ${pos}=                 Move Pointer To ${DIALOG_CUSTOM_POSITIONER}
-    ${pos}=                 Displace ${pos} By (-55, 470)
+    ${pos}=                 Displace ${pos} By (-55, 480)
     Move Pointer To ${pos}
     Click LEFT Button
 
 Press Apply Button
     ${pos}=                 Move Pointer To ${DIALOG_CUSTOM_POSITIONER}
-    ${pos}=                 Displace ${pos} By (60, 470)
+    ${pos}=                 Displace ${pos} By (60, 480)
     Move Pointer To ${pos}
     Click LEFT Button
 
