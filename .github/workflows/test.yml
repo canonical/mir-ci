@@ -81,10 +81,11 @@ jobs:
     - name: Set up dependencies
       working-directory: mir-ci/mir_ci
       run: |
-        [ -n '${{ matrix.ppa }}' ] && sudo add-apt-repository --yes ppa:${{ matrix.ppa }}
+        [ -n '${{ matrix.ppa }}' ] && sudo add-apt-repository --yes --no-update ppa:${{ matrix.ppa }}
         SNAP=$( echo ${{ matrix.server }} | tr _ - )
         [ -n '${{ matrix.channel }}' ] && sudo snap install ${SNAP} --channel ${{ matrix.channel }}
         [ -x /snap/${SNAP}/current/bin/setup.sh ] && /snap/${SNAP}/current/bin/setup.sh
+        sudo apt-get update
         sudo apt-get --yes install pkg-config libwayland-dev ffmpeg
         pip install -e ..
         [ '${{ matrix.mark }}' == 'self' ] && pip install pytest-cov
