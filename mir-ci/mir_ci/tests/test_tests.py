@@ -334,9 +334,11 @@ class TestDisplayServer:
 
 @pytest.mark.self
 class TestOutputWatcher:
-    def test_can_register(self) -> None:
+    @patch("mir_ci.wayland.output_watcher.WaylandClient.__init__")
+    def test_can_register(self, mock_init) -> None:
         mock_fixture = MagicMock()
         watcher = OutputWatcher("test-display-name")
+        watcher.display = Mock()
         watcher.registry_global(mock_fixture, 12345, WlOutput.name, 1)
         mock_fixture.assert_has_calls(
             [
