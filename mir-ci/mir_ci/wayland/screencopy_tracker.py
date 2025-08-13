@@ -5,7 +5,7 @@ import os
 import stat
 from typing import Any, Dict, Optional
 
-from .protocols import WlOutput, WlShm, ZwlrScreencopyManagerV1
+from .protocols import WlOutput, WlShm, ZwlrScreencopyFrameV1, ZwlrScreencopyManagerV1
 from .protocols.wayland.wl_buffer import WlBufferProxy
 from .protocols.wayland.wl_output import WlOutputProxy
 from .protocols.wayland.wl_shm import WlShmProxy
@@ -33,6 +33,7 @@ def shm_open() -> int:
 
 class ScreencopyTracker(WaylandClient):
     required_extensions = (ZwlrScreencopyManagerV1.name,)
+    FRAME_FLAGS = ZwlrScreencopyFrameV1.flags
 
     def __init__(self, display_name: str) -> None:
         super().__init__(display_name)
@@ -40,6 +41,7 @@ class ScreencopyTracker(WaylandClient):
         self.output: Optional[WlOutputProxy] = None
         self.shm: Optional[WlShmProxy] = None
         self.frame: Optional[ZwlrScreencopyFrameV1Proxy] = None
+        self.frame_flags = self.FRAME_FLAGS(0)
         self.buffer: Optional[WlBufferProxy] = None
         self.shm_data: Optional[mmap.mmap] = None
         self.frame_count = 0
@@ -85,10 +87,14 @@ class ScreencopyTracker(WaylandClient):
             shm_pool = self.shm.create_pool(fd, buffer_size)
             libc.close(fd)
             self.buffer = shm_pool.create_buffer(0, width, height, stride, format)
+            self.flags = ScreencopyTracker.FRAME_FLAGS(0)
             shm_pool.destroy()
 
     def _frame_damage(self, frame, x: int, y: int, width: int, height: int) -> None:
         self.pending_damage += width * height
+
+    def _frame_flags(self, frame, flags: int) -> None:
+        self.frame_flags = ScreencopyTracker.FRAME_FLAGS(flags)
 
     def _frame_ready(self, frame, tv_sec_hi, tv_sec_lo, tv_nsec) -> None:
         self.frame_count += 1
@@ -107,6 +113,7 @@ class ScreencopyTracker(WaylandClient):
         self.frame = frame = self.screencopy_manager.capture_output(0, self.output)
         frame.dispatcher["buffer"] = self._frame_buffer
         frame.dispatcher["damage"] = self._frame_damage
+        frame.dispatcher["flags"] = self._frame_flags
         frame.dispatcher["ready"] = self._frame_ready
         self.display.roundtrip()
         assert self.buffer is not None, "No buffer info given"
