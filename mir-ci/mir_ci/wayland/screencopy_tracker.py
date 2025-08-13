@@ -51,6 +51,7 @@ class ScreencopyTracker(WaylandClient):
         self.buffer_size = 0
         self.buffer_stride = 0
         self.pending_damage = 0
+        self.pending_flags = self.FRAME_FLAGS(0)
 
     def registry_global(self, registry, id_num: int, iface_name: str, version: int) -> None:
         if iface_name == ZwlrScreencopyManagerV1.name:
@@ -87,17 +88,18 @@ class ScreencopyTracker(WaylandClient):
             shm_pool = self.shm.create_pool(fd, buffer_size)
             libc.close(fd)
             self.buffer = shm_pool.create_buffer(0, width, height, stride, format)
-            self.flags = ScreencopyTracker.FRAME_FLAGS(0)
             shm_pool.destroy()
 
     def _frame_damage(self, frame, x: int, y: int, width: int, height: int) -> None:
         self.pending_damage += width * height
 
     def _frame_flags(self, frame, flags: int) -> None:
-        self.frame_flags = ScreencopyTracker.FRAME_FLAGS(flags)
+        self.pending_flags = ScreencopyTracker.FRAME_FLAGS(flags)
 
     def _frame_ready(self, frame, tv_sec_hi, tv_sec_lo, tv_nsec) -> None:
         self.frame_count += 1
+        self.frame_flags = self.pending_flags
+        self.pending_flags = ScreencopyTracker.FRAME_FLAGS(0)
         self.total_damage += self.pending_damage if self.pending_damage else (self.buffer_width * self.buffer_height)
         self.pending_damage = 0
         assert self.frame is not None, "Frame is None"
