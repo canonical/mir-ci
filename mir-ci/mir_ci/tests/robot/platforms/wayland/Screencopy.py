@@ -102,7 +102,15 @@ class Screencopy(ScreencopyTracker):
         size = (self.buffer_width, self.buffer_height)
         assert all(dim > 0 for dim in size), "Not enough image data"
         stride = self.buffer_stride
-        image = Image.frombytes("RGBA", size, data, "raw", "RGBA", stride, -1)
+        image = Image.frombytes(
+            "RGBA",
+            size,
+            data,
+            "raw",
+            "RGBA",
+            stride,
+            ScreencopyTracker.FRAME_FLAGS.y_invert in self.frame_flags and -1 or 0,
+        )
         b, g, r, a, *_ = image.split()
         image = Image.merge("RGBA", (r, g, b, a))
         image.save(f"{self._screenshots_dir}/{self.frame_count:010d}.png", compress_level=1)

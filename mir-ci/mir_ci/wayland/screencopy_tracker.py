@@ -5,7 +5,7 @@ import os
 import stat
 from typing import Any, Dict, Optional
 
-from .protocols import WlOutput, WlShm, ZwlrScreencopyManagerV1
+from .protocols import WlOutput, WlShm, ZwlrScreencopyFrameV1, ZwlrScreencopyManagerV1
 from .protocols.wayland.wl_buffer import WlBufferProxy
 from .protocols.wayland.wl_output import WlOutputProxy
 from .protocols.wayland.wl_shm import WlShmProxy
@@ -33,6 +33,7 @@ def shm_open() -> int:
 
 class ScreencopyTracker(WaylandClient):
     required_extensions = (ZwlrScreencopyManagerV1.name,)
+    FRAME_FLAGS = ZwlrScreencopyFrameV1.flags
 
     def __init__(self, display_name: str) -> None:
         super().__init__(display_name)
@@ -40,6 +41,7 @@ class ScreencopyTracker(WaylandClient):
         self.output: Optional[WlOutputProxy] = None
         self.shm: Optional[WlShmProxy] = None
         self.frame: Optional[ZwlrScreencopyFrameV1Proxy] = None
+        self.frame_flags = self.FRAME_FLAGS(0)
         self.buffer: Optional[WlBufferProxy] = None
         self.shm_data: Optional[mmap.mmap] = None
         self.frame_count = 0
@@ -49,6 +51,7 @@ class ScreencopyTracker(WaylandClient):
         self.buffer_size = 0
         self.buffer_stride = 0
         self.pending_damage = 0
+        self.pending_flags = self.FRAME_FLAGS(0)
 
     def registry_global(self, registry, id_num: int, iface_name: str, version: int) -> None:
         if iface_name == ZwlrScreencopyManagerV1.name:
@@ -90,8 +93,13 @@ class ScreencopyTracker(WaylandClient):
     def _frame_damage(self, frame, x: int, y: int, width: int, height: int) -> None:
         self.pending_damage += width * height
 
+    def _frame_flags(self, frame, flags: int) -> None:
+        self.pending_flags = ScreencopyTracker.FRAME_FLAGS(flags)
+
     def _frame_ready(self, frame, tv_sec_hi, tv_sec_lo, tv_nsec) -> None:
         self.frame_count += 1
+        self.frame_flags = self.pending_flags
+        self.pending_flags = ScreencopyTracker.FRAME_FLAGS(0)
         self.total_damage += self.pending_damage if self.pending_damage else (self.buffer_width * self.buffer_height)
         self.pending_damage = 0
         assert self.frame is not None, "Frame is None"
@@ -107,6 +115,7 @@ class ScreencopyTracker(WaylandClient):
         self.frame = frame = self.screencopy_manager.capture_output(0, self.output)
         frame.dispatcher["buffer"] = self._frame_buffer
         frame.dispatcher["damage"] = self._frame_damage
+        frame.dispatcher["flags"] = self._frame_flags
         frame.dispatcher["ready"] = self._frame_ready
         self.display.roundtrip()
         assert self.buffer is not None, "No buffer info given"
