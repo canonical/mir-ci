@@ -115,7 +115,7 @@ jobs:
 
     - if: ${{ matrix.mark == 'self' }}
       name: Upload coverage data
-      uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@v5
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         directory: mir-ci/mir_ci
