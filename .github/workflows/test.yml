@@ -60,7 +60,7 @@ jobs:
       with:
         python-version: "3.11"
 
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
       with:
         lfs: true
 
@@ -146,7 +146,7 @@ jobs:
     needs: RunTests
     if: ${{ success() || failure() }}
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - name: Merge junit reports
       uses: actions/upload-artifact/merge@v4
