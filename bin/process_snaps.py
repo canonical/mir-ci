@@ -105,6 +105,11 @@ PENDING_BUILD = (
 )
 
 
+FAILED_BUILD = (
+    "Failed to build",
+)
+
+
 IGNORED_SOURCES = (
     "Deleted",
     "Obsolete",
@@ -270,8 +275,15 @@ if __name__ == '__main__':
                                 latest_source.display_name, latest_source.status)
                     continue
 
-                if any(build.buildstate in PENDING_BUILD
-                    for build in latest_source.getBuilds()):
+                builds = latest_source.getBuilds()
+
+                if failed_builds := tuple(build for build in builds if build.buildstate in FAILED_BUILD):
+                    for build in failed_builds:
+                        logger.error("::error::Build failed: %s", build.web_link)
+                    errors.append(RuntimeError("One or more builds failed"))
+                    continue
+
+                if any(build.buildstate in PENDING_BUILD for build in builds):
                     logger.info("Skipping %s: builds pending…",
                                 latest_source.display_name)
                     continue
