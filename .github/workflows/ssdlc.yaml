@@ -24,3 +24,8 @@ jobs:
           sbomber-ref: mir
           manifest: '${{ github.workspace }}/${{ github.event.inputs.manifest-path }}'
           artifact-name: "results"
+      - if: ${{ failure() && runner.debug }}
+        name: Setup tmate session
+        uses: canonical/action-tmate@main
+        with:
+          limit-access-to-actor: true
