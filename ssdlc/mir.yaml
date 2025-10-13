@@ -17,11 +17,11 @@ clients:
     package: mir-demos-meta
     ppa: mir-team/release
     variant: main
-    # pocket: updates  # canonical/v-m-s#39
+    # pocket: updates  # TODO: canonical/v-m-s#39
 
 artifacts:
 
-# canonical/v-m-s#39
+# TODO: canonical/v-m-s#39
 #  - &mir-focal
 #    <<: *mir
 #    name: mir-focal-amd64
@@ -31,7 +31,7 @@ artifacts:
 #      <<: *ssdlc-params
 #      version: "2.13.1"
 
-# canonical/v-m-s#41
+# TODO: canonical/v-m-s#41
 #  - <<: *mir-focal
 #    name: mir-focal-arm64
 #    arch: arm64

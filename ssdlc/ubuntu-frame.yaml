@@ -107,7 +107,7 @@ artifacts:
   - &ubuntu-frame-24
     <<: *ubuntu-frame
     name: ubuntu-frame-24-amd64
-    channel: 24/beta
+    channel: 24/beta  # TODO: move to stable once 2.23 is released
     arch: amd64
 
   - <<: *ubuntu-frame-24
@@ -155,7 +155,6 @@ artifacts:
   - &ubuntu-frame-osk-24
     <<: *ubuntu-frame-osk
     name: ubuntu-frame-osk-24-amd64
-    channel: 24/beta
     arch: amd64
 
   - <<: *ubuntu-frame-osk-24
@@ -203,7 +202,6 @@ artifacts:
   - &ubuntu-frame-vnc-24
     <<: *ubuntu-frame-vnc
     name: ubuntu-frame-vnc-24-amd64
-    channel: 24/beta
     arch: amd64
 
   - <<: *ubuntu-frame-vnc-24
