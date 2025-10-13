@@ -1,0 +1,305 @@
+# This is a manifest file for use with https://github.com/canonical/sbomber
+
+clients:
+  sbom:
+    service_url: https://sbom-request.canonical.com
+    department: devices_engineering
+    email: michal.sawicz@canonical.com
+    team: mir
+  secscan:
+    scanner: blackduck
+
+# Common definitions
+.:
+  - &ssdlc-params
+    channel: stable
+    version: ""
+    cycle: "25.10"
+
+  - &ubuntu-frame
+    type: snap
+    snap: ubuntu-frame
+    ssdlc_params:
+      <<: *ssdlc-params
+      name: ubuntu-frame
+
+  - &ubuntu-frame-osk
+    type: snap
+    snap: ubuntu-frame-osk
+    ssdlc_params:
+      <<: *ssdlc-params
+      name: ubuntu-frame-osk
+
+  - &ubuntu-frame-vnc
+    type: snap
+    snap: ubuntu-frame-vnc
+    ssdlc_params:
+      <<: *ssdlc-params
+      name: ubuntu-frame-vnc
+
+  - &mesa-core20
+    type: snap
+    snap: mesa-core20
+    ssdlc_params:
+      <<: *ssdlc-params
+      name: mesa-core20
+
+  - &mesa-core22
+    type: snap
+    snap: mesa-core22
+    ssdlc_params:
+      <<: *ssdlc-params
+      name: mesa-core22
+
+  - &mesa-2404
+    type: snap
+    snap: mesa-2404
+    ssdlc_params:
+      <<: *ssdlc-params
+      name: mesa-2404
+
+  - &mir-kiosk
+    type: snap
+    snap: mir-kiosk
+    ssdlc_params:
+      <<: *ssdlc-params
+      name: mir-kiosk
+
+artifacts:
+
+# Ubuntu Frame
+  - &ubuntu-frame-20
+    <<: *ubuntu-frame
+    name: ubuntu-frame-20-amd64
+    channel: 20/stable
+    arch: amd64
+
+  - <<: *ubuntu-frame-20
+    name: ubuntu-frame-20-arm64
+    arch: arm64
+
+  - <<: *ubuntu-frame-20
+    name: ubuntu-frame-20-armhf
+    arch: armhf
+
+  - <<: *ubuntu-frame-20
+    name: ubuntu-frame-20-riscv64
+    arch: riscv64
+
+  - &ubuntu-frame-22
+    <<: *ubuntu-frame
+    name: ubuntu-frame-22-amd64
+    channel: 22/stable
+    arch: amd64
+
+  - <<: *ubuntu-frame-22
+    name: ubuntu-frame-22-arm64
+    arch: arm64
+
+  - <<: *ubuntu-frame-22
+    name: ubuntu-frame-22-armhf
+    arch: armhf
+
+  - <<: *ubuntu-frame-22
+    name: ubuntu-frame-22-riscv64
+    arch: riscv64
+
+  - &ubuntu-frame-24
+    <<: *ubuntu-frame
+    name: ubuntu-frame-24-amd64
+    channel: 24/beta  # TODO: move to stable once 2.23 is released
+    arch: amd64
+
+  - <<: *ubuntu-frame-24
+    name: ubuntu-frame-24-arm64
+    arch: arm64
+
+  - <<: *ubuntu-frame-24
+    name: ubuntu-frame-24-armhf
+    arch: armhf
+
+  - <<: *ubuntu-frame-24
+    name: ubuntu-frame-24-riscv64
+    arch: riscv64
+
+# Ubuntu Frame OSK
+
+  - &ubuntu-frame-osk-20
+    <<: *ubuntu-frame-osk
+    name: ubuntu-frame-osk-20-amd64
+    channel: 20/stable
+    arch: amd64
+
+  - <<: *ubuntu-frame-osk-20
+    name: ubuntu-frame-osk-20-arm64
+    arch: arm64
+
+  - <<: *ubuntu-frame-osk-20
+    name: ubuntu-frame-osk-20-armhf
+    arch: armhf
+
+  - &ubuntu-frame-osk-22
+    <<: *ubuntu-frame-osk
+    name: ubuntu-frame-osk-22-amd64
+    channel: 22/stable
+    arch: amd64
+
+  - <<: *ubuntu-frame-osk-22
+    name: ubuntu-frame-osk-22-arm64
+    arch: arm64
+
+  - <<: *ubuntu-frame-osk-22
+    name: ubuntu-frame-osk-22-armhf
+    arch: armhf
+
+  - &ubuntu-frame-osk-24
+    <<: *ubuntu-frame-osk
+    name: ubuntu-frame-osk-24-amd64
+    arch: amd64
+
+  - <<: *ubuntu-frame-osk-24
+    name: ubuntu-frame-osk-24-arm64
+    arch: arm64
+
+  - <<: *ubuntu-frame-osk-24
+    name: ubuntu-frame-osk-24-armhf
+    arch: armhf
+
+  - <<: *ubuntu-frame-osk-24
+    name: ubuntu-frame-osk-24-riscv64
+    arch: riscv64
+
+# Ubuntu Frame VNC
+
+  - &ubuntu-frame-vnc-20
+    <<: *ubuntu-frame-vnc
+    name: ubuntu-frame-vnc-20-amd64
+    channel: 20/stable
+    arch: amd64
+
+  - <<: *ubuntu-frame-vnc-20
+    name: ubuntu-frame-vnc-20-arm64
+    arch: arm64
+
+  - <<: *ubuntu-frame-vnc-20
+    name: ubuntu-frame-vnc-20-armhf
+    arch: armhf
+
+  - &ubuntu-frame-vnc-22
+    <<: *ubuntu-frame-vnc
+    name: ubuntu-frame-vnc-22-amd64
+    channel: 22/stable
+    arch: amd64
+
+  - <<: *ubuntu-frame-vnc-22
+    name: ubuntu-frame-vnc-22-arm64
+    arch: arm64
+
+  - <<: *ubuntu-frame-vnc-22
+    name: ubuntu-frame-vnc-22-armhf
+    arch: armhf
+
+  - &ubuntu-frame-vnc-24
+    <<: *ubuntu-frame-vnc
+    name: ubuntu-frame-vnc-24-amd64
+    arch: amd64
+
+  - <<: *ubuntu-frame-vnc-24
+    name: ubuntu-frame-vnc-24-arm64
+    arch: arm64
+
+  - <<: *ubuntu-frame-vnc-24
+    name: ubuntu-frame-vnc-24-armhf
+    arch: armhf
+
+  - <<: *ubuntu-frame-vnc-24
+    name: ubuntu-frame-vnc-24-riscv64
+    arch: riscv64
+
+# Mesa 20.04
+
+  - <<: *mesa-core20
+    name: mesa-core20-amd64
+    arch: amd64
+
+  - <<: *mesa-core20
+    name: mesa-core20-arm64
+    arch: arm64
+
+  - <<: *mesa-core20
+    name: mesa-core20-armhf
+    arch: armhf
+
+  - <<: *mesa-core20
+    name: mesa-core20-ppc64el
+    arch: ppc64el
+
+  - <<: *mesa-core20
+    name: mesa-core20-riscv64
+    arch: riscv64
+
+  - <<: *mesa-core20
+    name: mesa-core20-s390x
+    arch: s390x
+
+# Mesa 22.04
+
+  - <<: *mesa-core22
+    name: mesa-core22-amd64
+    arch: amd64
+
+  - <<: *mesa-core22
+    name: mesa-core22-arm64
+    arch: arm64
+
+  - <<: *mesa-core22
+    name: mesa-core22-armhf
+    arch: armhf
+
+  - <<: *mesa-core22
+    name: mesa-core22-ppc64el
+    arch: ppc64el
+
+  - <<: *mesa-core22
+    name: mesa-core22-riscv64
+    arch: riscv64
+
+# Mesa 24.04
+
+  - <<: *mesa-2404
+    name: mesa-2404-amd64
+    arch: amd64
+
+  - <<: *mesa-2404
+    name: mesa-2404-arm64
+    arch: arm64
+
+  - <<: *mesa-2404
+    name: mesa-2404-armhf
+    arch: armhf
+
+  - <<: *mesa-2404
+    name: mesa-2404-ppc64el
+    arch: ppc64el
+
+  - <<: *mesa-2404
+    name: mesa-2404-riscv64
+    arch: riscv64
+
+  - <<: *mesa-2404
+    name: mesa-2404-s390x
+    arch: s390x
+
+# Mir Kiosk
+
+  - <<: *mir-kiosk
+    name: mir-kiosk-amd64
+    arch: amd64
+
+  - <<: *mir-kiosk
+    name: mir-kiosk-arm64
+    arch: arm64
+
+  - <<: *mir-kiosk
+    name: mir-kiosk-armhf
+    arch: armhf

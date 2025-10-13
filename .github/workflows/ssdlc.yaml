@@ -2,17 +2,20 @@ name: Run security scans
 
 on:
     workflow_dispatch:
-      inputs:
-        manifest-path:
-          description: 'Path to the sbomber manifest file'
-          required: true
-          default: 'ssdlc/<manifest>.yaml'
 
 jobs:
   SSDLC:
     runs-on: [self-hosted-linux-amd64-jammy-private-endpoint-medium]
     permissions:
       contents: read
+
+    strategy:
+      matrix:
+        manifest:
+        - mir
+        - ubuntu-frame
+      fail-fast: false
+
     steps:
       - uses: actions/checkout@v5
       - name: Install uv
@@ -22,5 +25,10 @@ jobs:
         uses: Saviq/sbomber/.github/actions/run@mir
         with:
           sbomber-ref: mir
-          manifest: '${{ github.workspace }}/${{ github.event.inputs.manifest-path }}'
-          artifact-name: "results"
+          manifest: ssdlc/${{ matrix.manifest }}.yaml
+          artifact-name: ${{ matrix.manifest }}-results
+      - if: ${{ failure() && runner.debug }}
+        name: Setup tmate session
+        uses: canonical/action-tmate@main
+        with:
+          limit-access-to-actor: true

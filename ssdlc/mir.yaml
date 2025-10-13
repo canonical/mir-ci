@@ -1,0 +1,64 @@
+# This is a manifest file for use with https://github.com/canonical/sbomber
+
+clients:
+  secscan:
+    scanner: osv
+
+# Common definitions
+.:
+  - &ssdlc-params
+      name: mir
+      cycle: "25.10"
+      channel: stable
+
+  - &mir
+    name: mir-focal-amd64
+    type: deb
+    package: mir-demos-meta
+    ppa: mir-team/release
+    variant: main
+    # pocket: updates  # TODO: canonical/v-m-s#39
+
+artifacts:
+
+# TODO: canonical/v-m-s#39
+#  - &mir-focal
+#    <<: *mir
+#    name: mir-focal-amd64
+#    base: focal
+#    arch: amd64
+#    ssdlc_params:
+#      <<: *ssdlc-params
+#      version: "2.13.1"
+
+# TODO: canonical/v-m-s#41
+#  - <<: *mir-focal
+#    name: mir-focal-arm64
+#    arch: arm64
+
+  - &mir-jammy
+    <<: *mir
+    name: mir-jammy-amd64
+    base: jammy
+    arch: amd64
+    pocket: updates
+    ssdlc_params:
+      <<: *ssdlc-params
+      version: "2.17.2"
+
+  - <<: *mir-jammy
+    name: mir-jammy-arm64
+    arch: arm64
+
+  - &mir-noble
+    <<: *mir
+    name: mir-noble-amd64
+    base: noble
+    arch: amd64
+    ssdlc_params:
+      <<: *ssdlc-params
+      version: "2.22.2"
+
+  - <<: *mir-noble
+    name: mir-noble-arm64
+    arch: arm64
