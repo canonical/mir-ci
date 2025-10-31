@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # coding: utf-8
 
+import difflib
 import json
 import logging
 import multiprocessing
@@ -10,6 +11,7 @@ import pprint
 import re
 import sys
 import subprocess
+from typing import Any
 import tempfile
 
 from launchpadlib import errors as lp_errors  # fades
@@ -28,6 +30,13 @@ LAUNCHPAD = "production"
 DEFAULT_RELEASE = "noble"
 TEAM = "mir-team"
 SOURCE_NAME = "mir"
+
+MESA_2404_PATHS = {
+    "check-paths": {
+        "snap/{architecture[0]}.list":
+            "https://raw.githubusercontent.com/canonical/gpu-snap/refs/heads/main/lists/mesa-2404.{architecture[0]}.list"
+    }
+}
 
 SNAPS = {
     "checkbox-mir": {
@@ -89,7 +98,8 @@ SNAPS = {
         "beta": {"recipe": "mesa-core22-beta"},
     },
     "mesa-2404": {
-        "beta": {"recipe": "mesa-2404-beta"},
+        "stable": {"recipe": "mesa-2404-beta", "check-usns": False, **MESA_2404_PATHS},
+        "beta": {"recipe": "mesa-2404-beta", **MESA_2404_PATHS},
         "asahi/beta": {"recipe": "mesa-2404-asahi-beta"},
     },
     "nvidia-core22": {
@@ -158,34 +168,84 @@ def get_store_snap(processor, snap, channel):
         return result
 
 
-def fetch_url(entry):
-    dest, uri = entry
-    r = requests.get(uri, stream=True)
-    logger.debug("Downloading %s to %s…", uri, dest)
-    if r.status_code == 200:
-        with open(dest, "wb") as f:
-            for chunk in r:
-                f.write(chunk)
-    return dest
+def fetch_url(entry: tuple[Any, pathlib.Path, str]):
+    """
+    Fetch a URL to a destination file if it does not exist.
+    """
+    context, dest, uri = entry
+    if not dest.exists():
+        r = requests.get(uri, stream=True)
+        logger.debug("Downloading %s to %s…", uri, dest)
+        if r.status_code == 200:
+            with open(dest, "wb") as f:
+                for chunk in r:
+                    f.write(chunk)
+    return context, dest
 
 
-def check_snap_notices(store_snaps):
-    with tempfile.TemporaryDirectory(dir=pathlib.Path.home()) as dir:
-        snaps = multiprocessing.Pool(8).map(
-            fetch_url,
-            ((pathlib.Path(dir) / f"{snap['package_name']}_{snap['revision']}.snap",
-                snap["download_url"])
-                for snap in store_snaps)
-        )
+def fetch_snaps(dir, store_snaps):
+    """
+    Download snaps from the store to a temporary directory.
+    """
+    return multiprocessing.Pool(8).map(
+        fetch_url,
+        ((snap,
+          pathlib.Path(dir) / f"{snap['package_name']}_{snap['revision']}.snap",
+          snap["download_url"])
+            for snap in store_snaps)
+    )
 
-        try:
-            notices = subprocess.check_output([CHECK_NOTICES_PATH] + CHECK_NOTICES_ARGS + snaps)
-            logger.debug("Got check_notices output:\n%s", notices.decode())
-        except subprocess.CalledProcessError as e:
-            logger.error("Failed to check notices:\n%s", e.output)
-        else:
-            notices = json.loads(notices)
-            return notices
+
+def check_snap_notices(dir, store_snaps):
+    """
+    Check the USN notices for the snaps.
+    """
+    snaps = fetch_snaps(dir, store_snaps)
+
+    try:
+        notices = subprocess.check_output([CHECK_NOTICES_PATH] + CHECK_NOTICES_ARGS + [s[1] for s in snaps])
+        logger.debug("Got check_notices output:\n%s", notices.decode())
+    except subprocess.CalledProcessError as e:
+        logger.error("Failed to check notices:\n%s", e.output)
+    else:
+        notices = json.loads(notices)
+        return notices
+
+
+def check_paths(dir, store_snaps, paths):
+    """
+    Compare the contents of the snapped files with those at the URLs
+    specified in the paths dictionary.
+    """
+    errors = []
+    for snap, dest in fetch_snaps(dir, store_snaps):
+        for k, v in paths.items():
+            try:
+                res = requests.get(v.format_map(snap))
+                res.raise_for_status()
+            except requests.exceptions.RequestException as ex:
+                msg = f"Failed to download list:\n  {res.url}\n  {ex}"
+                errors.append(RuntimeError(msg))
+                logger.error(msg)
+
+            try:
+                squash_path = k.format_map(snap)
+                snapped_contents = subprocess.check_output(("unsquashfs", "-cat", dest, squash_path))
+            except subprocess.CalledProcessError as ex:
+                msg = f"Failed to unsquash list:\n  {dest.name}\n  {ex}"
+                errors.append(RuntimeError(msg))
+                logger.error(msg)
+
+            if res.content != snapped_contents:
+                msg = f"Paths differ: {dest.name}:{squash_path} vs. {res.url}"
+                errors.append(ValueError(msg))
+                logger.error(f"::error::{msg}")
+                logger.error(
+                    "\n".join(difflib.unified_diff(res.content.decode("utf-8").splitlines(),
+                                                   snapped_contents.decode("utf-8").splitlines()))
+                )
+
+    return errors
 
 
 if __name__ == '__main__':
@@ -316,19 +376,29 @@ if __name__ == '__main__':
             else:
                 logger.debug("Got store versions: %s", versions_dict)
 
-            if all(store_snap is None
+            with tempfile.TemporaryDirectory(dir=pathlib.Path.home()) as dir:
+                if paths := snap_map.get("check-paths", {}):
+                    errors.extend(check_paths(dir, store_snaps, paths))
+
+                if all(store_snap is None
                    or mir_version is None
                    or mir_version == SNAP_VERSION_RE.match(store_snap["version"]).group("mir")
                    for store_snap in store_snaps):
 
-                if snap_map.get("check-usns", True) and check_notices:
-                    snap_notices = check_snap_notices(store_snaps)[snap]
+                    if snap_map.get("check-usns", True) and check_notices:
+                        snap_notices = check_snap_notices(dir, store_snaps)[snap]
 
-                    if any(snap_notices.values()):
-                        logger.info("Found USNs:\n%s", pprint.pformat(snap_notices))
+                        if any(snap_notices.values()):
+                            logger.info("Found USNs:\n%s", pprint.pformat(snap_notices))
+                        else:
+                            logger.info(
+                                "Skipping %s: store versions are current and no USNs found",
+                                snap
+                            )
+                            continue
                     else:
                         logger.info(
-                            "Skipping %s: store versions are current and no USNs found",
+                            "Skipping %s: store versions are current and USN checks are disabled",
                             snap
                         )
                         continue
