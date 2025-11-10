@@ -162,7 +162,7 @@ jobs:
         name: test-results
 
     - name: Report test results
-      uses: dorny/test-reporter@v1
+      uses: dorny/test-reporter@v2
       with:
         name: "Test results"
         path: '**/junit-*.xml'
