@@ -403,13 +403,6 @@ if __name__ == '__main__':
                         )
                         continue
 
-                else:
-                    logger.info(
-                        "Skipping %s: store versions are current",
-                        snap
-                    )
-                    continue
-
             # warning so it gets surfaced by GitHub Actions
             logger.info("::warning::Triggering %s…", snap_recipe.description or snap_recipe.name)
 
