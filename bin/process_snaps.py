@@ -336,6 +336,7 @@ if __name__ == '__main__':
                     continue
 
                 builds = latest_source.getBuilds()
+                snap_processors = {p.name for p in snap_recipe.processors}
 
                 if failed_builds := tuple(build for build in builds if build.buildstate in FAILED_BUILD):
                     for build in failed_builds:
@@ -343,13 +344,13 @@ if __name__ == '__main__':
                     errors.append(RuntimeError("One or more builds failed"))
                     continue
 
-                if any(build.buildstate in PENDING_BUILD for build in builds):
+                if any(build.buildstate in PENDING_BUILD for build in builds if build.arch_tag in snap_processors):
                     logger.info("Skipping %s: builds pending…",
                                 latest_source.display_name)
                     continue
 
                 if any(binary.status != "Published"
-                    for binary in latest_source.getPublishedBinaries()):
+                    for binary in latest_source.getPublishedBinaries() if binary.build.arch_tag in snap_processors):
                     logger.info("Skipping %s: binaries pending…",
                                 latest_source.display_name)
                     continue
