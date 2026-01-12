@@ -3,6 +3,8 @@ import os
 import pathlib
 from typing import Iterator
 
+from mir_ci import SLOWDOWN
+
 
 class Cgroup:
     def __init__(self, path: pathlib.Path) -> None:
@@ -19,7 +21,7 @@ class Cgroup:
 
     @staticmethod
     async def get_cgroup_dir(pid: int) -> pathlib.Path:
-        MAX_ATTEMPTS = 10
+        MAX_ATTEMPTS = int(10 * (SLOWDOWN + 1))
         parent_path = Cgroup._get_cgroup_dir_internal(os.getpid())
         path = Cgroup._get_cgroup_dir_internal(pid)
 
