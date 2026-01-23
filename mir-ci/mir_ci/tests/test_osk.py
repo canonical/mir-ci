@@ -75,7 +75,7 @@ class TestOSK:
             assert output_watcher.mode is not None, "Failed to get output mode from compositor"
 
             assets = collect_assets(
-                "wayland", ("kvm", "osk"), "osk", VARIANT / f"{0}/{0}x{1}".format(*output_watcher.mode)
+                "wayland", ("kvm", "osk"), "osk", VARIANT / "{0}/{0}x{1}".format(*output_watcher.mode)
             )
             tuple((tmp_path / k).symlink_to(v) for k, v in assets.items())
             robot = server_instance.program(App(("robot", "-d", tmp_path, "--log", robot_log, tmp_path)))
