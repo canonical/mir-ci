@@ -19,7 +19,7 @@ class OutputWatcher(WaylandClient):
         self.wl_outputs: List[WlOutputProxy] = []
         self.callbacks = {"geometry": on_geometry, "mode": on_mode, "scale": on_scale, "name": on_name}
         self.mode: Optional[tuple[int, int, int]] = None
-        self.done = False
+        self.done_event = asyncio.Event()
 
     def registry_global(self, registry, id_num: int, iface_name: str, version: int) -> None:
         if iface_name == WlOutput.name:
@@ -45,8 +45,7 @@ class OutputWatcher(WaylandClient):
             self.mode = (width, height, refresh)
 
     def on_done(self, wl_output: WlOutput) -> None:
-        self.done = True
+        self.done_event.set()
 
     async def wait_done(self) -> None:
-        while self.done is False:
-            await asyncio.sleep(0.1)
+        await self.done_event.wait()
