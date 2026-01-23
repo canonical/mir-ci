@@ -5,7 +5,7 @@ import time
 from collections import OrderedDict
 from contextlib import suppress
 from unittest import IsolatedAsyncioTestCase
-from unittest.mock import MagicMock, Mock, call, mock_open, patch
+from unittest.mock import ANY, MagicMock, Mock, call, mock_open, patch
 
 import pytest
 from mir_ci.fixtures.servers import ServerCap, _mir_ci_server, servers
@@ -344,9 +344,10 @@ class TestOutputWatcher:
             [
                 call.bind(12345, WlOutput, 1),
                 call.bind().dispatcher.__setitem__("geometry", None),
-                call.bind().dispatcher.__setitem__("mode", None),
                 call.bind().dispatcher.__setitem__("scale", None),
                 call.bind().dispatcher.__setitem__("name", None),
+                call.bind().dispatcher.__setitem__("mode", ANY),
+                call.bind().dispatcher.__setitem__("done", ANY),
             ]
         )
 
