@@ -388,9 +388,17 @@ if __name__ == '__main__':
 
                     if snap_map.get("check-usns", True) and check_notices:
                         snap_notices = check_snap_notices(dir, store_snaps)[snap]
+                        notice_values = tuple(snap_notices.values())
 
-                        if any(snap_notices.values()):
+                        if any(notice_values):
                             logger.info("Found USNs:\n%s", pprint.pformat(snap_notices))
+                            if not all(d == notice_values[0] for d in notice_values[1:]):
+                                logger.error(
+                                    "::error::Non-uniform USN notices for snap %s",
+                                    snap_recipe.web_link
+                                )
+                                errors.append(RuntimeError("Non-uniform USN notices for a snap"))
+                                continue
                         else:
                             logger.info(
                                 "Skipping %s: store versions are current and no USNs found",
