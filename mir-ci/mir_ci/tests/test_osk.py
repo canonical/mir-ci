@@ -1,3 +1,4 @@
+import asyncio
 import itertools
 from pathlib import Path
 from typing import Collection
@@ -8,6 +9,7 @@ from mir_ci.fixtures import apps, servers
 from mir_ci.program.app import App
 from mir_ci.program.display_server import DisplayServer
 from mir_ci.program.program import ProgramError
+from mir_ci.wayland.output_watcher import OutputWatcher
 from mir_ci.wayland.screencopy_tracker import ScreencopyTracker
 from mir_ci.wayland.virtual_pointer import VirtualPointer
 
@@ -64,9 +66,17 @@ class TestOSK:
             server,
             add_extensions=extensions,
         )
-        assets = collect_assets("wayland", ("kvm", "osk"), "osk")
+        output_watcher = OutputWatcher(server_instance.display_name)
 
-        async with server_instance, server_instance.program(app) as app, server_instance.program(osk) as osk:
+        async with server_instance, output_watcher, server_instance.program(app) as app, server_instance.program(
+            osk
+        ) as osk:
+            await asyncio.wait_for(output_watcher.wait_done(), timeout=5.0)
+            assert output_watcher.mode is not None, "Failed to get output mode from compositor"
+
+            assets = collect_assets(
+                "wayland", ("kvm", "osk"), "osk", VARIANT / "{0}/{0}x{1}".format(*output_watcher.mode)
+            )
             tuple((tmp_path / k).symlink_to(v) for k, v in assets.items())
             robot = server_instance.program(App(("robot", "-d", tmp_path, "--log", robot_log, tmp_path)))
             async with robot:
