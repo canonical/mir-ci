@@ -7,6 +7,8 @@ on:
     - .github/workflows/snap.yml
     - mir-ci/**
 
+permissions: {}
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.number && format('pr{0}', github.event.number) || github.ref_name }}
   cancel-in-progress: true
@@ -14,6 +16,7 @@ concurrency:
 jobs:
   arches:
     runs-on: ubuntu-24.04
+    permissions: {}
     outputs:
       arches: ${{ steps.get-arches.outputs.arches }}
 
@@ -30,6 +33,8 @@ jobs:
   checkbox-mir:
     needs: [arches]
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
 
     timeout-minutes: 360
 
@@ -40,13 +45,14 @@ jobs:
 
     steps:
     - name: Check out code
-      uses: actions/checkout@v6
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
       with:
         repository: canonical/checkbox-mir
         fetch-depth: 0
+        persist-credentials: false
 
     - name: Use the current mir-ci commit
-      uses: mikefarah/yq@master
+      uses: mikefarah/yq@5a7e72a743649b1b3a47d1a1d8214f3453173c51  # v4.52.4
       with:
         cmd: yq -i '.parts.mir-ci.source-commit="${{ github.sha }}"' snap/snapcraft.yaml
 
@@ -55,7 +61,7 @@ jobs:
         git lfs uninstall
 
     - name: Build and publish the snap
-      uses: canonical/actions/build-snap@release
+      uses: canonical/actions/build-snap@bd56f0f0934af9edbbd49378645727d7ef7a4571  # release @ 2025.06.05
       with:
         architecture: ${{ matrix.architecture }}
         snapcraft-token: ${{ secrets.SNAPCRAFT_TOKEN }}
