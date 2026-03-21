@@ -105,7 +105,7 @@ jobs:
         python -m pytest ${{ steps.vars.outputs.pytest_args }} --junitxml=junit-${{ matrix.server || matrix.mark }}-${{ matrix.python }}.xml
 
     - name: Upload test results
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       if: success() || failure()
       with:
         name: test-results-${{ steps.vars.outputs.artifact_key }}
@@ -129,7 +129,7 @@ jobs:
 
     - if: ${{ failure() }}
       name: Upload any core dumps
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
         name: core-dumps-${{ steps.vars.outputs.artifact_key }}
         path: corefile-*
