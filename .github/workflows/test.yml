@@ -73,25 +73,25 @@ jobs:
       name: Determine variables
       run: |
         PYTEST_ARGS=( --verbose --capture=no )
-        [ -n '${{ matrix.server }}' ] && PYTEST_ARGS+=( -k ${{ matrix.server }} )
-        [ -n '${{ matrix.mark }}' ] && PYTEST_ARGS+=( -m ${{ matrix.mark }} )
+        [ -n '${{ matrix.server }}' ] && PYTEST_ARGS+=( -k "${{ matrix.server }}" )
+        [ -n '${{ matrix.mark }}' ] && PYTEST_ARGS+=( -m "${{ matrix.mark }}" )
         [ '${{ matrix.mark }}' == 'self' ] && PYTEST_ARGS+=( --cov --cov-branch --cov-report=xml )
-        echo pytest_args=${PYTEST_ARGS[@]} >> $GITHUB_OUTPUT
+        echo "pytest_args=${PYTEST_ARGS[*]}" >> "$GITHUB_OUTPUT"
 
         ARTIFACT_KEY="${{ matrix.server || matrix.mark }}"
-        [ -n '${{ matrix.channel }}' ] && ARTIFACT_KEY+="-$( echo ${{ matrix.channel }} | tr / _ )"
-        [ -n '${{ matrix.ppa }}' ] && ARTIFACT_KEY+="-$( echo ${{ matrix.ppa }} | tr / _ )"
-        echo artifact_key=${ARTIFACT_KEY} >> $GITHUB_OUTPUT
+        [ -n '${{ matrix.channel }}' ] && ARTIFACT_KEY+="-$( echo "${{ matrix.channel }}" | tr / _ )"
+        [ -n '${{ matrix.ppa }}' ] && ARTIFACT_KEY+="-$( echo "${{ matrix.ppa }}" | tr / _ )"
+        echo "artifact_key=${ARTIFACT_KEY}" >> "$GITHUB_OUTPUT"
 
     - name: Set up dependencies
       working-directory: mir-ci/mir_ci
       env:
         PYTEST_ARGS: ${{ steps.vars.outputs.pytest_args }}
       run: |
-        [ -n '${{ matrix.ppa }}' ] && sudo add-apt-repository --yes --no-update ppa:${{ matrix.ppa }}
-        SNAP=$( echo ${{ matrix.server }} | tr _ - )
-        [ -n '${{ matrix.channel }}' ] && sudo snap install ${SNAP} --channel ${{ matrix.channel }}
-        [ -x /snap/${SNAP}/current/bin/setup.sh ] && /snap/${SNAP}/current/bin/setup.sh
+        [ -n '${{ matrix.ppa }}' ] && sudo add-apt-repository --yes --no-update "ppa:${{ matrix.ppa }}"
+        SNAP=$( echo "${{ matrix.server }}" | tr _ - )
+        [ -n '${{ matrix.channel }}' ] && sudo snap install "${SNAP}" --channel "${{ matrix.channel }}"
+        [ -x "/snap/${SNAP}/current/bin/setup.sh" ] && "/snap/${SNAP}/current/bin/setup.sh"
         sudo apt-get update
         sudo apt-get --yes install pkg-config libwayland-dev ffmpeg
         pip install -e ..
@@ -110,7 +110,7 @@ jobs:
 
         sudo systemd-run --uid 1001 -p Environment=XDG_SESSION_TYPE=wayland -p PAMName=login -p TTYPath=/dev/tty1 -- tail -f /dev/null
 
-        python -m pytest ${PYTEST_ARGS} --junitxml=junit-${{ matrix.server || matrix.mark }}-${{ matrix.python }}.xml
+        python -m pytest ${PYTEST_ARGS} --junitxml="junit-${{ matrix.server || matrix.mark }}.xml"
 
     - name: Upload test results
       uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f  # v7.0.0
