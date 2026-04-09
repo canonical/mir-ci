@@ -1,0 +1,11 @@
+self-hosted-runner:
+  labels:
+    - medium
+    - jammy
+    - private-endpoint
+
+paths:
+  .github/workflows/test.yml:
+    ignore:
+    - "shellcheck reported issue in this script: SC2086:info:7:18"
+    - "shellcheck reported issue in this script: SC2086:info:9:18"
