@@ -37,7 +37,7 @@ def wait_for_wayland_display(runtime_dir: str, name: str) -> None:
         return
     # Wait for display to appear
     for event in i.event_gen(timeout_s=display_appear_timeout, yield_nones=False):
-        (_, type_names, path, filename) = event
+        _, type_names, path, filename = event
         if filename == name:
             return
     raise RuntimeError("Wayland display " + name + " did not appear")
