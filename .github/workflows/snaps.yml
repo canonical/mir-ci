@@ -16,28 +16,34 @@ on:
     - .github/workflows/snaps.yml
     - bin/process_snaps.py
 
+permissions: {}
+
 jobs:
   ProcessSnaps:
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
 
     steps:
     - name: Check out code
-      uses: actions/checkout@v6
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+      with:
+        persist-credentials: false
 
     - name: Set up Python
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6.2.0
       with:
         python-version: '3.14'
 
     - name: Install Python dependencies
-      uses: py-actions/py-dependency-install@v4
+      uses: py-actions/py-dependency-install@30aa0023464ed4b5b116bd9fbdab87acf01a484e  # v4.1.0
 
     - name: Install Snap dependencies
       run: |
         sudo snap install review-tools
 
     - name: Set up Launchpad credentials
-      uses: DamianReeves/write-file-action@v1.3
+      uses: DamianReeves/write-file-action@6929a9a6d1807689191dcc8bbe62b54d70a32b42  # v1.3
       with:
         path: lp_credentials
         contents: ${{ secrets.LAUNCHPAD_CREDENTIALS }}

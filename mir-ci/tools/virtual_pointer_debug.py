@@ -10,8 +10,7 @@ states = {"down": True, "up": False}
 
 
 def show_help() -> None:
-    print(
-        f"""
+    print(f"""
 Usage: {os.path.basename(__file__)} [ARGS, COMMANDS...]
 
 Args:
@@ -26,8 +25,7 @@ Commands:
 
 Buttons: left, right, middle
 Button states: up, down
-"""
-    )
+""")
 
 
 async def main() -> None:

@@ -42,8 +42,7 @@ class TestVnc:
         server_instance = DisplayServer(server, add_extensions=extensions)
         program = server_instance.program(app)
 
-        robot_test_case = dedent(
-            """\
+        robot_test_case = dedent("""\
             Vnc
                 Sleep    1
                 HID.Type String    Hello World
@@ -53,8 +52,7 @@ class TestVnc:
                 Press LEFT Button
                 Walk Pointer To Proportional (1, 0.6)
                 Release LEFT Button
-        """
-        )
+        """)
 
         with tempfile.NamedTemporaryFile(mode="w+", suffix=".robot", buffering=1) as robot_file:
             robot_file.write(ROBOT_TEMPLATE.format(settings=ROBOT_SETTINGS, test_case=robot_test_case))

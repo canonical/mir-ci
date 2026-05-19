@@ -3,9 +3,11 @@ name: Run security scans
 on:
     workflow_dispatch:
 
+permissions: {}
+
 jobs:
   SSDLC:
-    runs-on: [self-hosted-linux-amd64-jammy-private-endpoint-medium]
+    runs-on: [self-hosted, medium, jammy, private-endpoint]
     permissions:
       contents: read
 
@@ -17,18 +19,20 @@ jobs:
       fail-fast: false
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          persist-credentials: false
       - name: Install uv
         uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b  # v8.1.0
       - name: Run sbomber
         # FIXME: switch to official action when ready
-        uses: Saviq/sbomber/.github/actions/run@mir
+        uses: Saviq/sbomber/.github/actions/run@a8028d3fb8070c2b19eef4a2b7a46fa92aab9268  # mir @ 2025.10.10
         with:
           sbomber-ref: mir
           manifest: ssdlc/${{ matrix.manifest }}.yaml
           artifact-name: ${{ matrix.manifest }}-results
       - if: ${{ failure() && runner.debug }}
         name: Setup tmate session
-        uses: canonical/action-tmate@main
+        uses: canonical/action-tmate@bda82e73586a62bf621881aab872a527c8a46e2d  # main @ 2026.03.02
         with:
           limit-access-to-actor: true

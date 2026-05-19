@@ -36,8 +36,7 @@ def collect_assets(platform: str, resources: Collection[str], suite: str, varian
 
 @pytest.mark.xdg(
     XDG_CONFIG_HOME={
-        "glib-2.0/settings/keyfile": dedent(
-            """\
+        "glib-2.0/settings/keyfile": dedent("""\
             [org/gnome/desktop/interface]
             color-scheme='prefer-light'
             gtk-theme='Adwaita'
@@ -46,8 +45,7 @@ def collect_assets(platform: str, resources: Collection[str], suite: str, varian
             cursor-theme='Adwaita'
             cursor-size=24
             font-antialiasing='grayscale'
-        """
-        ),
+        """),
     },
 )
 @pytest.mark.env(GSETTINGS_BACKEND="keyfile")

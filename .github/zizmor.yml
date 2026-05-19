@@ -1,0 +1,9 @@
+rules:
+  dangerous-triggers:
+    ignore:
+    - test-report.yaml:3:1  # this workflow only processes uploaded artifacts, doesn't even check out the code
+  secrets-outside-env:  # repo automation doesn't yet support environments: canonical/canonical-repo-automation#364
+    ignore:
+    - snap.yml
+    - snaps.yml
+    - test.yml

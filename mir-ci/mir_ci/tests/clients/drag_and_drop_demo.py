@@ -17,8 +17,8 @@ class ExchangeType(str, Enum):
     PIXBUF = "pixbuf"
 
 
-(TARGET_ENTRY_TEXT, TARGET_ENTRY_PIXBUF) = range(2)
-(COLUMN_TEXT, COLUMN_PIXBUF) = range(2)
+TARGET_ENTRY_TEXT, TARGET_ENTRY_PIXBUF = range(2)
+COLUMN_TEXT, COLUMN_PIXBUF = range(2)
 
 DRAG_ACTION = Gdk.DragAction.COPY
 
