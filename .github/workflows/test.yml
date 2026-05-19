@@ -113,7 +113,7 @@ jobs:
         python -m pytest ${PYTEST_ARGS} --junitxml="junit-${{ matrix.server || matrix.mark }}.xml"
 
     - name: Upload test results
-      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f  # v7.0.0
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
       if: success() || failure()
       with:
         name: test-results-${{ steps.vars.outputs.artifact_key }}
@@ -123,7 +123,7 @@ jobs:
 
     - if: ${{ matrix.mark == 'self' }}
       name: Upload coverage data
-      uses: codecov/codecov-action@1af58845a975a7985b0beb0cbe6fbbb71a41dbad  # v5.5.3
+      uses: codecov/codecov-action@e79a6962e0d4c0c17b229090214935d2e33f8354  # v6.0.1
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         directory: mir-ci/mir_ci
@@ -137,7 +137,7 @@ jobs:
 
     - if: ${{ failure() }}
       name: Upload any core dumps
-      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f  # v7.0.0
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
       with:
         name: core-dumps-${{ steps.vars.outputs.artifact_key }}
         path: corefile-*
@@ -145,6 +145,6 @@ jobs:
 
     - if: ${{ failure() && runner.debug }}
       name: Setup tmate session
-      uses: mxschmitt/action-tmate@172994372753cb896adac383df48b1d7a2dae4d1  # v3.23
+      uses: mxschmitt/action-tmate@c0afd6f790e3a5564914980036ebf83216678101  # v3.23
       with:
         limit-access-to-actor: true
