@@ -53,6 +53,24 @@ A test suite will FAIL if the dependencies are not installed.
 > sudo snap install ubuntu-frame --channel=24
 > ```
 
+## Listing available tests
+To discover all available tests without running them, use pytest's
+collection mode:
+
+```sh
+pytest --collect-only
+
+# For a compact list of test IDs:
+pytest --collect-only -q
+```
+
+You can also limit collection to a specific marker (e.g. `smoke`,
+`performance`, or `self`):
+
+```sh
+pytest --collect-only -m smoke
+```
+
 ## Running
 To run the tests from a VT or SSH session on **real hardware**, run:
 
