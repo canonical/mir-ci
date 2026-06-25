@@ -12,6 +12,9 @@ The projects tested are:
 - [Miriway](https://github.com/Miriway/Miriway)
 - [Mir Kiosk](https://snapcraft.io/mir-kiosk)
 
+These tests are run in Canonical's lab across many different devices. The results
+of these runs are displayed on an internal dashboard for security reasons.
+
 ## Setup
 Install the dependencies and set up the virtual environment:
 
@@ -37,25 +40,21 @@ To install dependencies for a specific test, run:
 pytest -k <test_name> --deps
 ```
 
-## Running Tests
-> [!IMPORTANT]  
-> These tests require a session that is NOT currently running any graphical session.
-> Make sure that you are logged out of the desktop session before running the tests.
+A test suite will FAIL if the dependencies are not installed.
 
 > [!WARNING]
-> The Mir-based servers need DRM master to drive a real display, and the kernel only
-> grants this to the process owning the **active virtual terminal (VT)**. A remote SSH
-> or `tty` login runs on a pseudo-terminal, which is not a VT, so the servers fail to
-> start with errors like `Failed to acquire DRM master: Operation not permitted` and
-> `Failed to find any platforms for current system`.
+> I have noticed that the `--deps` installer may install older versions of
+> certain snaps (e.g. Ubuntu Frame). Unfortunately, these versions may not be compatible
+> with the hardware that your computer is running. It is advised that if a test fails to
+> run, you should try to install a later version of its dependencies manually.
 >
-> To run against a real display, log in on a physical VT (e.g. Ctrl+Alt+F3) with the
-> desktop session logged out. To run headless or over SSH, use the virtual X11 server
-> (`xvfb-run -a pytest`, see below), which renders via Mir's X11 platform and never
-> touches DRM/KMS.
+> For example, frame 24 can be installed with:
+> ```sh
+> sudo snap install ubuntu-frame --channel=24
+> ```
 
-To run all tests, execute pytest. Note that this will take over your entire graphical
-session while it runs, and it will take a long time:
+## Running
+To run the tests from a VT or SSH session on **real hardware**, run:
 
 ```sh
 source venv/bin/activate  # Always source the virtual environment first
@@ -71,7 +70,13 @@ pytest -k <test_suite>
 pytest -k <test_suite_a> or <test_suite_b>
 ```
 
-To run inside of a virtual X11 server:
+For example, to run the `ubuntu_frame` test suite:
+
+```sh
+pytest -k ubuntu_frame
+```
+
+To run inside of a virtual **X11 server**, run:
 ```sh
 sudo apt install xvfb
 xvfb-run -a pytest
