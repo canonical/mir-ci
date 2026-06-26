@@ -8,7 +8,7 @@ clients:
 .:
   - &ssdlc-params
       name: mir
-      cycle: "25.10"
+      cycle: "26.10"
       channel: stable
 
   - &mir
@@ -57,8 +57,21 @@ artifacts:
     arch: amd64
     ssdlc_params:
       <<: *ssdlc-params
-      version: "2.22.2"
+      version: "2.28.0"
 
   - <<: *mir-noble
     name: mir-noble-arm64
+    arch: arm64
+
+  - &mir-resolute
+    <<: *mir
+    name: mir-resolute-amd64
+    base: resolute
+    arch: amd64
+    ssdlc_params:
+      <<: *ssdlc-params
+      version: "2.28.0"
+
+  - <<: *mir-resolute
+    name: mir-resolute-arm64
     arch: arm64

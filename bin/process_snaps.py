@@ -50,6 +50,7 @@ SNAPS = {
         "20/beta": {"recipe": "graphics-test-tools-20-beta"},
         "22/beta": {"recipe": "graphics-test-tools-22-beta"},
         "24/beta": {"recipe": "graphics-test-tools-24-beta"},
+        "26/beta": {"recipe": "graphics-test-tools-26-beta"},
     },
     "mir-kiosk": {
         "beta": {"ppa": "rc", "recipe": "mir-kiosk-beta", "release": "focal"},
@@ -68,6 +69,8 @@ SNAPS = {
         "22/beta": {"ppa": "rc", "recipe": "mir-test-tools-22-beta", "release": "jammy"},
         "24/beta": {"ppa": "rc", "recipe": "mir-test-tools-24-beta"},
         "24/edge": {"ppa": "dev", "recipe": "mir-test-tools-24-edge"},
+        "26/beta": {"ppa": "rc", "recipe": "mir-test-tools-26-beta", "release": "resolute"},
+        "26/edge": {"ppa": "dev", "recipe": "mir-test-tools-26-edge", "release": "resolute"},
     },
     "miriway": {
         "beta": {"ppa": "rc", "recipe": "miriway-beta"},
@@ -78,18 +81,22 @@ SNAPS = {
         "22/beta": {"ppa": "rc", "recipe": "ubuntu-frame-22-beta", "release": "jammy"},
         "24/beta": {"ppa": "rc", "recipe": "ubuntu-frame-24-beta"},
         "24/edge": {"ppa": "dev", "recipe": "ubuntu-frame-24-edge"},
+        "26/beta": {"ppa": "rc", "recipe": "ubuntu-frame-26-beta", "release": "resolute"},
+        "26/edge": {"ppa": "dev", "recipe": "ubuntu-frame-26-edge", "release": "resolute"},
     },
     "ubuntu-frame-osk": {
         "20/beta": {"recipe": "ubuntu-frame-osk-20-beta"},
         "22/beta": {"recipe": "ubuntu-frame-osk-22-beta"},
         "24/beta": {"recipe": "ubuntu-frame-osk-24-beta"},
         "24/edge": {"recipe": "ubuntu-frame-osk-24-edge"},
+        "26/beta": {"recipe": "ubuntu-frame-osk-26-beta"},
     },
     "ubuntu-frame-vnc": {
         "20/beta": {"recipe": "ubuntu-frame-vnc-20-beta"},
         "22/beta": {"recipe": "ubuntu-frame-vnc-22-beta"},
         "24/beta": {"recipe": "ubuntu-frame-vnc-24-beta"},
         "24/edge": {"recipe": "ubuntu-frame-vnc-24-edge"},
+        "26/beta": {"recipe": "ubuntu-frame-vnc-26-beta"},
     },
     "mesa-core20": {
         "beta": {"recipe": "mesa-core20-beta"},
@@ -101,6 +108,9 @@ SNAPS = {
         "stable": {"recipe": "mesa-2404-beta", "check-usns": False, **MESA_2404_PATHS},
         "beta": {"recipe": "mesa-2404-beta", **MESA_2404_PATHS},
         "asahi/beta": {"recipe": "mesa-2404-asahi-beta"},
+    },
+    "mesa-2604": {
+        "beta": {"recipe": "mesa-2604-beta"},
     },
     "nvidia-core22": {
         "edge": {"recipe": "nvidia-core22-edge"},

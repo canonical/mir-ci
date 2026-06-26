@@ -14,7 +14,7 @@ clients:
   - &ssdlc-params
     channel: stable
     version: ""
-    cycle: "25.10"
+    cycle: "26.10"
 
   - &ubuntu-frame
     type: snap
@@ -57,6 +57,15 @@ clients:
     ssdlc_params:
       <<: *ssdlc-params
       name: mesa-2404
+
+  - &mesa-2604
+    type: snap
+    snap: mesa-2604
+    channel: edge
+    ssdlc_params:
+      <<: *ssdlc-params
+      name: mesa-2604
+      channel: edge
 
   - &mir-kiosk
     type: snap
@@ -107,7 +116,7 @@ artifacts:
   - &ubuntu-frame-24
     <<: *ubuntu-frame
     name: ubuntu-frame-24-amd64
-    channel: 24/beta  # TODO: move to stable once 2.23 is released
+    channel: 24
     arch: amd64
 
   - <<: *ubuntu-frame-24
@@ -120,6 +129,24 @@ artifacts:
 
   - <<: *ubuntu-frame-24
     name: ubuntu-frame-24-riscv64
+    arch: riscv64
+
+  - &ubuntu-frame-26
+    <<: *ubuntu-frame
+    name: ubuntu-frame-26-amd64
+    arch: amd64
+    channel: 26
+
+  - <<: *ubuntu-frame-26
+    name: ubuntu-frame-26-arm64
+    arch: arm64
+
+  - <<: *ubuntu-frame-26
+    name: ubuntu-frame-26-armhf
+    arch: armhf
+
+  - <<: *ubuntu-frame-26
+    name: ubuntu-frame-26-riscv64
     arch: riscv64
 
 # Ubuntu Frame OSK
@@ -169,6 +196,24 @@ artifacts:
     name: ubuntu-frame-osk-24-riscv64
     arch: riscv64
 
+  - &ubuntu-frame-osk-26
+    <<: *ubuntu-frame-osk
+    name: ubuntu-frame-osk-26-amd64
+    arch: amd64
+    channel: 26
+
+  - <<: *ubuntu-frame-osk-26
+    name: ubuntu-frame-osk-26-arm64
+    arch: arm64
+
+  - <<: *ubuntu-frame-osk-26
+    name: ubuntu-frame-osk-26-armhf
+    arch: armhf
+
+  - <<: *ubuntu-frame-osk-26
+    name: ubuntu-frame-osk-26-riscv64
+    arch: riscv64
+
 # Ubuntu Frame VNC
 
   - &ubuntu-frame-vnc-20
@@ -214,6 +259,24 @@ artifacts:
 
   - <<: *ubuntu-frame-vnc-24
     name: ubuntu-frame-vnc-24-riscv64
+    arch: riscv64
+
+  - &ubuntu-frame-vnc-26
+    <<: *ubuntu-frame-vnc
+    name: ubuntu-frame-vnc-26-amd64
+    arch: amd64
+    channel: 26
+
+  - <<: *ubuntu-frame-vnc-26
+    name: ubuntu-frame-vnc-26-arm64
+    arch: arm64
+
+  - <<: *ubuntu-frame-vnc-26
+    name: ubuntu-frame-vnc-26-armhf
+    arch: armhf
+
+  - <<: *ubuntu-frame-vnc-26
+    name: ubuntu-frame-vnc-26-riscv64
     arch: riscv64
 
 # Mesa 20.04
@@ -288,6 +351,31 @@ artifacts:
 
   - <<: *mesa-2404
     name: mesa-2404-s390x
+    arch: s390x
+
+# Mesa 26.04
+  - <<: *mesa-2604
+    name: mesa-2604-amd64
+    arch: amd64
+
+  - <<: *mesa-2604
+    name: mesa-2604-arm64
+    arch: arm64
+
+  - <<: *mesa-2604
+    name: mesa-2604-armhf
+    arch: armhf
+
+  - <<: *mesa-2604
+    name: mesa-2604-ppc64el
+    arch: ppc64el
+
+  - <<: *mesa-2604
+    name: mesa-2604-riscv64
+    arch: riscv64
+
+  - <<: *mesa-2604
+    name: mesa-2604-s390x
     arch: s390x
 
 # Mir Kiosk
