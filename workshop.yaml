@@ -11,9 +11,6 @@ base: ubuntu@26.04
 # action installs a supported Python (3.12) with pyenv and every action runs
 # against it. Python packages are installed with pip into that interpreter,
 # matching how the tests run on Canonical's lab machines.
-#
-# Note: the mir_kiosk suite remains unavailable because its snap requires a
-# real VT, which an LXD container does not provide.
 
 actions:
   # Install pyenv + a supported Python, the test harness, and the `mir_ci`
