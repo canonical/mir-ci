@@ -101,8 +101,7 @@ workshop run mir-ci -- test --junitxml=junit.xml
 >   a manually attached GPU needs a Mesa build that matches the host hardware);
 > - the `wlr-screencopy` client path used by those tests cannot complete its
 >   `wl_shm` buffer hand-off under purely software rendering;
-> - per-app CPU metrics need a delegated `cpu` cgroup controller, and some apps
->   (e.g. `qterminal`) crash under software rendering.
+> - per-app CPU metrics need a delegated `cpu` cgroup controller.
 >
 > The `gnome_shell` suite runs headless in the container: when it detects it is
 > nested inside an existing X11 or Wayland session (as it is under Xvfb here),

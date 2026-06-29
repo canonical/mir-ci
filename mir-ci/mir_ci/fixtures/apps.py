@@ -3,7 +3,7 @@ import pytest
 from . import deb, snap
 
 
-def qterminal(*args: str, debs=("qterminal", "qtwayland5"), marks=(), **kwargs):
+def qterminal(*args: str, debs=("qterminal", "qtwayland5", "qt6-wayland"), marks=(), **kwargs):
     marks = (pytest.mark.xdg(XDG_CONFIG_HOME={"qterminal.org/qterminal.ini": "[General]\nAskOnExit=false"}), *marks)
     return deb("qterminal", *args, debs=debs, marks=marks, **kwargs)
 
