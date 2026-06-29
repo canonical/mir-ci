@@ -128,7 +128,7 @@ def _mir_ci_server():
 
 @server(ServerCap.ALL ^ (ServerCap.FLOATING_WINDOWS | ServerCap.DISPLAY_CONFIG | ServerCap.MIR_SHELL_PROTO))
 def ubuntu_frame():
-    return snap("ubuntu-frame", channel="22/stable", id="ubuntu_frame")
+    return snap("ubuntu-frame", channel="24/stable", id="ubuntu_frame")
 
 
 @server(
@@ -177,8 +177,27 @@ def miriway(*args, channel="stable", classic=True, **kwargs):
 )
 def gnome_shell(
     *args,
-    cmd=("gnome-shell", "--wayland", "--no-x11", "--wayland-display", DisplayServer.get_wayland_display()),
+    cmd=None,
     id="gnome_shell",
     **kwargs,
 ):
+    if cmd is None:
+        wayland_display = DisplayServer.get_wayland_display()
+        # mutter's native backend needs a logind seat and a VT, which aren't
+        # available when nested inside another display (e.g. under Xvfb in a
+        # container). In that case run headless with a virtual monitor, the way
+        # GNOME's own CI does. On real hardware with a seat, use the native
+        # backend.
+        nested = bool(os.environ.get("WAYLAND_DISPLAY") or os.environ.get("DISPLAY"))
+        if nested:
+            cmd = (
+                "gnome-shell",
+                "--headless",
+                "--virtual-monitor",
+                "1280x1024",
+                "--wayland-display",
+                wayland_display,
+            )
+        else:
+            cmd = ("gnome-shell", "--wayland", "--no-x11", "--wayland-display", wayland_display)
     return deb("gnome-shell", *args, cmd=(*cmd, *args), id=id, **kwargs)
