@@ -15,114 +15,94 @@ The projects tested are:
 These tests are run in Canonical's lab across many different devices. The results
 of these runs are displayed on an internal dashboard for security reasons.
 
-## Setup
-Install the dependencies and set up the virtual environment:
+## Running the tests
+The recommended way to run `mir-ci` is inside a [Workshop](https://ubuntu.com/workshop/docs/)
+container. Workshop is a Canonical tool that wraps a project and its
+dependencies into an LXD container, so anyone can run `mir-ci` without
+installing anything on their host. A ready-made [`workshop.yaml`](./workshop.yaml)
+is included at the root of this repository.
+
+> [!TIP]
+> Prefer to run the tests directly on your host instead? See
+> [Running mir-ci on your local setup](./docs/running-locally.md).
+
+### Install Workshop
+Workshop relies on LXD 6.8+:
+
+```sh
+sudo snap install --channel=6/stable lxd
+sudo snap install --classic workshop
+```
+
+### Launch the workshop
+From the root of a checkout of this repository:
 
 ```sh
 git clone https://github.com/canonical/mir-ci
-cd mir-ci/mir-ci/mir_ci
+cd mir-ci
 
-python3 -m venv venv
-source venv/bin/activate
-pip install -e ..
+workshop launch
 ```
 
-Next, install the test environment for the tests that you are interested in. To
-install all of the test dependencies, run:
+This creates an Ubuntu 26.04 container with the project bind-mounted at
+`/project`. Next, install a supported Python (via pyenv), the `mir_ci`
+package, and its test harness:
 
 ```sh
-pytest --deps
+workshop run mir-ci -- setup
 ```
 
-To install dependencies for a specific test, run:
+### Install the test dependencies
+Install the dependencies (snaps, debs, and pip packages) for the tests you are
+interested in. To install everything:
 
 ```sh
-pytest -k <test_name> --deps
+workshop run mir-ci -- deps
 ```
 
-A test suite will FAIL if the dependencies are not installed.
-
-> [!WARNING]
-> I have noticed that the `--deps` installer may install older versions of
-> certain snaps (e.g. Ubuntu Frame). Unfortunately, these versions may not be compatible
-> with the hardware that your computer is running. It is advised that if a test fails to
-> run, you should try to install a later version of its dependencies manually.
->
-> For example, frame 24 can be installed with:
-> ```sh
-> sudo snap install ubuntu-frame --channel=24
-> ```
-
-## Listing available tests
-To discover all available tests without running them, use pytest's
-collection mode:
+To install dependencies for a specific test, forward a pytest selector:
 
 ```sh
-pytest --collect-only
-
-# For a compact list of test IDs:
-pytest --collect-only -q
+workshop run mir-ci -- deps -k ubuntu_frame
 ```
 
-You can also limit collection to a specific marker (e.g. `smoke`,
-`performance`, or `self`):
+> [!NOTE]
+> The first `setup` run builds Python 3.12 with pyenv (a few minutes), because
+> some suites depend on `rpaframework`, which does not yet support the Python
+> 3.14 that ships in Ubuntu 26.04. The only suite that cannot run in the
+> container is `mir_kiosk`: its snap needs a real VT that an LXD container does
+> not provide.
+
+### Run the tests
+The `test` action runs the suite inside a virtual X11 server. Any extra
+arguments are forwarded straight to `pytest`:
 
 ```sh
-pytest --collect-only -m smoke
+# Run everything
+workshop run mir-ci -- test
+
+# Run a specific test suite
+workshop run mir-ci -- test -k ubuntu_frame
+
+# Run multiple test suites
+workshop run mir-ci -- test -k "ubuntu_frame or miriway"
+
+# Record test properties
+workshop run mir-ci -- test --junitxml=junit.xml
 ```
 
-## Running
-To run the tests from a VT or SSH session on **real hardware**, run:
+Other convenience actions are available:
 
 ```sh
-source venv/bin/activate  # Always source the virtual environment first
-pytest
+workshop run mir-ci -- list        # collect the available tests without running them
+workshop run mir-ci -- list -m smoke   # limit collection to a marker
+workshop run mir-ci -- self-test   # run the test suite's own self tests
+workshop run mir-ci -- lint        # run the pre-commit static analysis
 ```
 
-You can also run a specific test suite with:
-
-```sh
-pytest -k <test_suite>
-
-# Or run multiple test suites with:
-pytest -k <test_suite_a> or <test_suite_b>
-```
-
-For example, to run the `ubuntu_frame` test suite:
-
-```sh
-pytest -k ubuntu_frame
-```
-
-To run inside of a virtual **X11 server**, run:
-```sh
-sudo apt install xvfb
-xvfb-run -a pytest
-```
-
-To record test properties:
-```sh
-xvfb-run -a pytest --junitxml=junit.xml
-```
-
-### Self Tests
-Because it is a complex piece of software, we have tests for the test suite itself.
-You can run those tests with:
-
-```sh
-pytest -m self
-```
-
-## Static Analysis
-The `pre-commit` tool is used for static analysis.
-
-```sh
-pip install pre-commit
-pre-commit run
-
-# To run before each commit:
-pre-commit install
-```
+To get an interactive shell inside the container, run `workshop shell`. From
+there you can work directly with the project at `/project/mir-ci/mir_ci`, as
+described in [Running mir-ci on your local setup](./docs/running-locally.md).
 
 ## Debug runs in GitHub Actions
 1. Restart a failing run, checking the "Enable debug logging" box
