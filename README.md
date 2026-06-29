@@ -89,32 +89,6 @@ workshop run mir-ci -- test -k "ubuntu_frame or miriway"
 workshop run mir-ci -- test --junitxml=junit.xml
 ```
 
-> [!IMPORTANT]
-> These are graphics/hardware integration tests that Canonical runs on real lab
-> devices. A headless LXD container reliably runs the subset that does not need
-> hardware acceleration, a seat/session, or per-app cgroup CPU accounting (server
-> startup, app launches that don't crash on software rendering, and the harness'
-> own self tests). Suites that exercise the screencopy/scaling pipeline,
-> on-screen keyboard, drag-and-drop, VNC, or GPU-accelerated apps are expected to
-> fail in a plain container because:
-> - the container has no GPU by default (LXD does not pass one through, and even
->   a manually attached GPU needs a Mesa build that matches the host hardware);
-> - the `wlr-screencopy` client path used by those tests cannot complete its
->   `wl_shm` buffer hand-off under purely software rendering;
-> - per-app CPU metrics need a delegated `cpu` cgroup controller.
->
-> The `gnome_shell` suite runs headless in the container: when it detects it is
-> nested inside an existing X11 or Wayland session (as it is under Xvfb here),
-> the fixture launches GNOME Shell with `--headless --virtual-monitor`, the same
-> way GNOME's own CI does, so it does not need a logind seat or a VT. On real
-> hardware with a seat it still uses mutter's native backend.
->
-> These limitations are environmental, not a fault of the `workshop.yaml` setup:
-> dependency installation, the compositors, and the test harness all work, and
-> the headless-capable tests pass. Run the full suite on real hardware (see
-> [Running mir-ci on your local setup](./docs/running-locally.md)) for complete
-> coverage.
-
 Other convenience actions are available:
 
 ```sh
