@@ -65,7 +65,7 @@ You can also run a specific test suite with:
 pytest -k <test_suite>
 
 # Or run multiple test suites with:
-pytest -k <test_suite_a> or <test_suite_b>
+pytest -k "<test_suite_a> or <test_suite_b>"
 ```
 
 For example, to run the `ubuntu_frame` test suite:

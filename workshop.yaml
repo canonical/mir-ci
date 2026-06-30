@@ -1,115 +1,69 @@
 name: mir-ci
 base: ubuntu@26.04
 
-# `mir-ci` runs inside an Ubuntu container, so no extra SDKs are required.
+# `mir-ci` runs inside an Ubuntu container.
 #
-# Some test dependencies installed at runtime by `--deps` (rpaframework and
-# rpaframework-recognition, used by the OSK, scale, VNC, drag-and-drop, and
-# Flutter suites) declare `requires_python <3.14` and pin `numpy<2.0`, which
-# are not installable on the Python 3.14 that ships in Ubuntu 26.04. To keep
-# the latest 26.04 base while still satisfying those dependencies, the `setup`
-# action installs a supported Python (3.12) with pyenv and every action runs
-# against it. Python packages are installed with pip into that interpreter,
-# matching how the tests run on Canonical's lab machines.
+# - The `uv` SDK provides `uv`, which manages the Python interpreter and the
+#   test harness. Several test dependencies installed at runtime by `--deps`
+#   (e.g. `rpaframework`) declare `requires_python <3.14` and pin `numpy<2.0`,
+#   which are not installable on the Python 3.14 that ships in Ubuntu 26.04, so
+#   the harness runs against a uv-managed Python 3.12. uv downloads a prebuilt
+#   CPython, so there is no need to build Python from source.
+# - The `project-deps` SDK installs the system packages the build and tests
+#   need (e.g. `libwayland-dev` for the pywayland protocol scanner, `snapd` for
+#   the server snaps, `xvfb` to run the servers headless, and `pre-commit` for
+#   the lint action). Edit it with `workshop sketch-sdk mir-ci` and re-eject
+#   with `--eject --name deps`.
+sdks:
+  - name: uv
+  - name: project-deps
 
 actions:
-  # Install pyenv + a supported Python, the test harness, and the `mir_ci`
-  # package itself. Run this once after `workshop launch` (and again after
-  # pulling changes that touch the dependencies). Building Python from source
-  # takes a few minutes the first time.
+  # Create the virtual environment and install the `mir_ci` package in editable
+  # mode. Run this once after `workshop launch` (and again after pulling changes
+  # that touch the dependencies).
   setup: |
-    sudo apt-get update
-    # System tools plus the headers pyenv needs to build CPython, and
-    # libwayland-dev for the pywayland protocol scanner.
-    sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-      git \
-      snapd \
-      xvfb \
-      curl \
-      ca-certificates \
-      build-essential \
-      pkg-config \
-      libwayland-dev \
-      libssl-dev \
-      zlib1g-dev \
-      libbz2-dev \
-      libreadline-dev \
-      libsqlite3-dev \
-      libncursesw5-dev \
-      xz-utils \
-      tk-dev \
-      libxml2-dev \
-      libxmlsec1-dev \
-      libffi-dev \
-      liblzma-dev
-
-    # Install pyenv (idempotent) and a Python the test dependencies support.
-    export PYENV_ROOT="$HOME/.pyenv"
-    if [ ! -d "$PYENV_ROOT" ]; then
-      curl -fsSL https://pyenv.run | bash
-    fi
-    export PATH="$PYENV_ROOT/bin:$PATH"
-    eval "$(pyenv init -)"
-    PY_VERSION=3.12.8
-    pyenv install --skip-existing "$PY_VERSION"
-    pyenv global "$PY_VERSION"
-
-    # Install the Python dependencies into the pyenv interpreter (not the
-    # system one), so no `--break-system-packages` is needed.
-    pip install --upgrade pip
-    pip install \
-      pytest \
-      pytest-asyncio \
-      pywayland \
-      hatchling \
-      editables \
-      distro \
-      deepmerge \
-      inotify \
-      pyyaml \
-      requests
-    # Install mir_ci in editable mode. `--no-build-isolation` makes the
-    # pywayland protocol build hook use the pip-installed pywayland and
-    # hatchling above, and `--no-deps` avoids re-resolving the runtime deps
-    # already installed above.
-    pip install -e /project/mir-ci --no-deps --no-build-isolation
+    set -eu
+    cd /project/mir-ci
+    # A supported Python for the runtime test dependencies (see above).
+    # `--seed` installs pip into the venv, which the `--deps` action uses to
+    # install the test suites' Python dependencies.
+    uv venv --clear --seed --python 3.12 "$HOME/.venv"
+    # Install mir_ci and its harness. uv builds the pywayland protocol bindings
+    # via the project's build hook using the system `libwayland-dev`.
+    VIRTUAL_ENV="$HOME/.venv" uv pip install -e .
 
   # Install the dependencies (snaps, debs, pip packages) needed by the tests.
   # Forward any pytest selector, e.g. `workshop run mir-ci -- deps -k ubuntu_frame`.
-  # With no arguments it installs the dependencies for every test.
+  # With no arguments it installs the dependencies for all tests.
   deps: |
-    export PYENV_ROOT="$HOME/.pyenv"
-    export PATH="$PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH"
+    export PATH="$HOME/.venv/bin:$PATH"
     cd /project/mir-ci/mir_ci
     python3 -m pytest --deps "$@"
 
   # List the available tests without running them.
   # e.g. `workshop run mir-ci -- list` or `workshop run mir-ci -- list -m smoke`.
   list: |
-    export PYENV_ROOT="$HOME/.pyenv"
-    export PATH="$PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH"
+    export PATH="$HOME/.venv/bin:$PATH"
     cd /project/mir-ci/mir_ci
     python3 -m pytest --collect-only -q "$@"
 
-  # Run the integration tests inside a virtual X11 server.
+  # Run the integration tests inside a virtual X11 server (Xvfb). The server
+  # snaps bring their own Mir and render through Xvfb's X11 platform; the deb
+  # servers use the system Mir the same way.
   # Forward any pytest argument, e.g. `workshop run mir-ci -- test -k ubuntu_frame`.
   test: |
-    export PYENV_ROOT="$HOME/.pyenv"
-    export PATH="$PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH"
+    export PATH="$HOME/.venv/bin:$PATH"
     cd /project/mir-ci/mir_ci
     xvfb-run -a python3 -m pytest "$@"
 
   # Run the test suite's own self tests.
   self-test: |
-    export PYENV_ROOT="$HOME/.pyenv"
-    export PATH="$PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH"
+    export PATH="$HOME/.venv/bin:$PATH"
     cd /project/mir-ci/mir_ci
     xvfb-run -a python3 -m pytest -m self "$@"
 
-  # Run the static analysis checks (pre-commit).
+  # Run the static analysis checks (pre-commit, installed by the project-deps SDK).
   lint: |
-    export PYENV_ROOT="$HOME/.pyenv"
-    export PATH="$PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH"
     cd /project/mir-ci
-    pip install --quiet pre-commit
     pre-commit run --all-files "$@"

@@ -45,8 +45,8 @@ workshop launch
 ```
 
 This creates an Ubuntu 26.04 container with the project bind-mounted at
-`/project`. Next, install a supported Python (via pyenv), the `mir_ci`
-package, and its test harness:
+`/project`. Next, set up the virtual environment and install the `mir_ci`
+package and its test harness:
 
 ```sh
 workshop run mir-ci -- setup
@@ -67,13 +67,14 @@ workshop run mir-ci -- deps -k ubuntu_frame
 ```
 
 > [!NOTE]
-> The first `setup` run builds Python 3.12 with pyenv (a few minutes), because
-> some suites depend on `rpaframework`, which does not yet support the Python
-> 3.14 that ships in Ubuntu 26.04.
+> The `setup` action installs a uv-managed Python 3.12, because some suites
+> depend on `rpaframework`, which does not yet support the Python 3.14 that
+> ships in Ubuntu 26.04. uv downloads a prebuilt CPython, so nothing is compiled.
 
 ### Run the tests
-The `test` action runs the suite inside a virtual X11 server. With no selector
-it runs every suite Any extra arguments are forwarded straight to `pytest`:
+The `test` action runs the suite inside a virtual X11 server (Xvfb). With no
+selector it runs every suite. Any extra arguments are forwarded straight to
+`pytest`:
 
 ```sh
 # Run everything

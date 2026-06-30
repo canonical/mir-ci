@@ -1,0 +1,11 @@
+export DEBIAN_FRONTEND=noninteractive
+apt-get update
+apt-get install -y --no-install-recommends \
+  ca-certificates \
+  git \
+  snapd \
+  pkg-config \
+  libwayland-dev \
+  xvfb \
+  ffmpeg \
+  pre-commit
