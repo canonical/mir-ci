@@ -6,3 +6,20 @@ set -eu
 cd /project/mir-ci
 uv venv --clear --seed --python 3.12 "$HOME/.venv"
 VIRTUAL_ENV="$HOME/.venv" uv pip install -e .
+
+# Wire up the snaps pre-seeded by setup-base the same way the test harness does
+# in `--deps` mode (see _deps_install in mir_ci/pytest_plugin.py): run each
+# snap's setup.sh and connect its `wayland` and `login-session-control`
+# interfaces, so the tests they back can run without a separate wiring step.
+# This runs on every launch/refresh against the live instance (as the workshop
+# user, hence `sudo`, like the `deps` action), which is more reliable than
+# wiring during the base-image build. Iterating over the installed snaps avoids
+# repeating the list in setup-base; every operation is best-effort because a
+# snap only has the interfaces (and setup.sh) that apply to it.
+for installed in $(snap list 2>/dev/null | awk 'NR > 1 { print $1 }'); do
+  if [ -x "/snap/$installed/current/bin/setup.sh" ]; then
+    sudo "/snap/$installed/current/bin/setup.sh" || true
+  fi
+  sudo snap connect "$installed:login-session-control" 2>/dev/null || true
+  sudo snap connect "$installed:wayland" 2>/dev/null || true
+done

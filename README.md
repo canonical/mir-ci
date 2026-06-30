@@ -48,8 +48,9 @@ This creates an Ubuntu 26.04 container with the project bind-mounted at
 `/project`. The virtual environment and the `mir_ci` package are built
 automatically as part of `workshop launch`, so no manual setup step is needed.
 
-Before running the tests, install their dependencies (snaps, debs, and pip
-packages) with the `deps` action:
+Before running the tests, install any dependencies that are not already part of
+the container image (e.g. Python packages, or snaps/debs for tests that aren't
+pre-seeded) with the `deps` action:
 
 ```sh
 # Install the dependencies for all tests
@@ -62,9 +63,12 @@ workshop run mir-ci -- deps -k ubuntu_frame
 Run `deps` again whenever you add or change a test that needs new dependencies.
 
 > [!NOTE]
-> The server and application snaps (and the common app debs) are pre-seeded into
-> the container image at launch, so `deps` usually only has to wire up snap
-> interface connections and is quick.
+> The server and application snaps (and the common app debs) are pre-seeded
+> *and* wired up (their `setup.sh`, `wayland` and `login-session-control`
+> interfaces) when the container image is built, so the tests they back can be
+> run straight away without a separate `deps` step. A snap that cannot be
+> installed in a headless container (e.g. `mir-kiosk`, which needs a VT) is
+> skipped.
 
 > [!NOTE]
 > The environment uses a uv-managed Python 3.12, because some suites depend on
