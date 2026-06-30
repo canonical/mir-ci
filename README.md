@@ -45,31 +45,31 @@ workshop launch
 ```
 
 This creates an Ubuntu 26.04 container with the project bind-mounted at
-`/project`. Next, set up the virtual environment and install the `mir_ci`
-package and its test harness:
+`/project`. The virtual environment and the `mir_ci` package are built
+automatically as part of `workshop launch`, so no manual setup step is needed.
+
+Before running the tests, install their dependencies (snaps, debs, and pip
+packages) with the `deps` action:
 
 ```sh
-workshop run mir-ci -- setup
-```
-
-### Install the test dependencies
-Install the dependencies (snaps, debs, and pip packages) for the tests you are
-interested in. To install everything:
-
-```sh
+# Install the dependencies for all tests
 workshop run mir-ci -- deps
-```
 
-To install dependencies for a specific test, forward a pytest selector:
-
-```sh
+# Or limit the dependencies to the tests you are interested in
 workshop run mir-ci -- deps -k ubuntu_frame
 ```
 
+Run `deps` again whenever you add or change a test that needs new dependencies.
+
 > [!NOTE]
-> The `setup` action installs a uv-managed Python 3.12, because some suites
-> depend on `rpaframework`, which does not yet support the Python 3.14 that
-> ships in Ubuntu 26.04. uv downloads a prebuilt CPython, so nothing is compiled.
+> The server and application snaps (and the common app debs) are pre-seeded into
+> the container image at launch, so `deps` usually only has to wire up snap
+> interface connections and is quick.
+
+> [!NOTE]
+> The environment uses a uv-managed Python 3.12, because some suites depend on
+> `rpaframework`, which does not yet support the Python 3.14 that ships in
+> Ubuntu 26.04. uv downloads a prebuilt CPython, so nothing is compiled.
 
 ### Run the tests
 The `test` action runs the suite inside a virtual X11 server (Xvfb). With no

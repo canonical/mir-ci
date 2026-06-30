@@ -1,0 +1,8 @@
+set -eu
+# Build the Python environment automatically on `workshop launch`/`refresh` so
+# the tests are ready to run without a manual setup step. uv provides a
+# supported Python (the system 3.14 is too new for some test dependencies) and
+# builds the pywayland protocol bindings against the system libwayland-dev.
+cd /project/mir-ci
+uv venv --clear --seed --python 3.12 "$HOME/.venv"
+VIRTUAL_ENV="$HOME/.venv" uv pip install -e .
