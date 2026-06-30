@@ -32,16 +32,6 @@ pytest -k <test_name> --deps
 
 A test suite will FAIL if the dependencies are not installed.
 
-> [!WARNING]
-> I have noticed that the `--deps` installer may install older versions of
-> certain snaps (e.g. Ubuntu Frame). Unfortunately, these versions may not be compatible
-> with the hardware that your computer is running. It is advised that if a test fails to
-> run, you should try to install a later version of its dependencies manually.
->
-> For example, frame 24 can be installed with:
-> ```sh
-> sudo snap install ubuntu-frame --channel=24
-> ```
 
 ## Listing available tests
 To discover all available tests without running them, use pytest's
