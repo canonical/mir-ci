@@ -3,49 +3,37 @@ base: ubuntu@26.04
 
 # `mir-ci` runs inside an Ubuntu container.
 #
-# - The `uv` SDK provides `uv`, which manages the Python interpreter and the
-#   test harness. Several test dependencies installed at runtime by `--deps`
-#   (e.g. `rpaframework`) declare `requires_python <3.14` and pin `numpy<2.0`,
-#   which are not installable on the Python 3.14 that ships in Ubuntu 26.04, so
-#   the harness runs against a uv-managed Python 3.12. uv downloads a prebuilt
-#   CPython, so there is no need to build Python from source.
-# - The `project-deps` SDK installs the system packages the build and tests
-#   need (e.g. `libwayland-dev` for the pywayland protocol scanner, `snapd` for
-#   the server snaps, `xvfb` to run the servers headless, and `pre-commit` for
-#   the lint action). It also pre-seeds the server and application snaps (and the
-#   common app debs) into the base image so `workshop launch` produces a
-#   ready-to-test container and the `deps` action only has to wire up snap
-#   interface connections. Its `setup-project` hook also builds the virtual
-#   environment and installs the `mir_ci` package automatically on
-#   `workshop launch`/`refresh`, so no manual setup step is needed. Edit it with
+# - The `uv` SDK manages the Python interpreter and the test harness. Some
+#   runtime `--deps` (e.g. `rpaframework`) require Python <3.14, so the harness
+#   runs against a uv-managed Python 3.12 rather than the 3.14 in Ubuntu 26.04.
+# - The `project-deps` SDK installs the system packages the build and tests need
+#   and pre-seeds the server/application snaps into the base image, so
+#   `workshop launch` yields a ready-to-test container. Its `setup-project` hook
+#   also builds the virtual environment and installs `mir_ci`. Edit it with
 #   `workshop sketch-sdk mir-ci` and re-eject with `--eject --name deps`.
 sdks:
   - name: uv
   - name: project-deps
 
 actions:
-  # Install the dependencies (snaps, debs, pip packages) needed by the tests.
-  # The virtual environment and the `mir_ci` package are built automatically on
-  # launch; run this to install the test dependencies before running the tests
-  # (and again after adding or changing a test that needs new dependencies).
-  # Forward any pytest selector, e.g. `workshop run mir-ci -- deps -k ubuntu_frame`.
-  # With no arguments it installs the dependencies for all tests.
+  # Install the test dependencies (snaps, debs, pip packages). The venv and
+  # `mir_ci` are built on launch; run this before the tests and again after
+  # adding a test that needs new dependencies. Forward any pytest selector, e.g.
+  # `workshop run mir-ci -- deps -k ubuntu_frame`; with none it covers all tests.
   deps: |
     export PATH="$HOME/.venv/bin:$PATH"
     cd /project/mir-ci/mir_ci
     python3 -m pytest --deps "$@"
 
-  # List the available tests without running them.
-  # e.g. `workshop run mir-ci -- list` or `workshop run mir-ci -- list -m smoke`.
+  # List the available tests without running them, e.g.
+  # `workshop run mir-ci -- list -m smoke`.
   list: |
     export PATH="$HOME/.venv/bin:$PATH"
     cd /project/mir-ci/mir_ci
     python3 -m pytest --collect-only -q "$@"
 
-  # Run the integration tests inside a virtual X11 server (Xvfb). The server
-  # snaps bring their own Mir and render through Xvfb's X11 platform; the deb
-  # servers use the system Mir the same way.
-  # Forward any pytest argument, e.g. `workshop run mir-ci -- test -k ubuntu_frame`.
+  # Run the integration tests inside a virtual X11 server (Xvfb). Forward any
+  # pytest argument, e.g. `workshop run mir-ci -- test -k ubuntu_frame`.
   test: |
     export PATH="$HOME/.venv/bin:$PATH"
     cd /project/mir-ci/mir_ci
@@ -57,7 +45,7 @@ actions:
     cd /project/mir-ci/mir_ci
     xvfb-run -a python3 -m pytest -m self "$@"
 
-  # Run the static analysis checks (pre-commit, installed by the project-deps SDK).
+  # Run the static analysis checks (pre-commit).
   lint: |
     cd /project/mir-ci
     pre-commit run --all-files "$@"

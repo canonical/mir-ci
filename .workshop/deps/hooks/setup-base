@@ -14,21 +14,19 @@ apt-get install -y --no-install-recommends \
   qtwayland5 \
   qt6-wayland
 
-# Pre-seed the server and application snaps the tests use into the base image so
-# that `workshop launch` produces a ready-to-test environment and the `deps`
-# action has little left to do. These mirror the snaps declared in
-# mir_ci/fixtures/servers.py and mir_ci/fixtures/apps.py. Each install is
-# best-effort: some snaps are unavailable on every series, and a failure here
-# must not abort provisioning (the `deps`/`test` actions install whatever is
-# still missing at run time).
+# Pre-seed the snaps the tests use into the base image so `workshop launch`
+# yields a ready-to-test environment. These mirror the snaps in
+# mir_ci/fixtures/servers.py and apps.py. Each install is best-effort: some
+# snaps aren't available on every series, and the `deps`/`test` actions install
+# whatever is still missing at run time.
 snap wait system seed.loaded || true
-snap install ubuntu-frame --channel=24/stable || echo "WARNING: could not pre-seed ubuntu-frame"
-snap install mir-kiosk || echo "WARNING: could not pre-seed mir-kiosk"
-snap install mir-test-tools --channel=24/beta || echo "WARNING: could not pre-seed mir-test-tools"
-snap install confined-shell --channel=edge || echo "WARNING: could not pre-seed confined-shell"
-snap install miriway --channel=stable --classic || echo "WARNING: could not pre-seed miriway"
-snap install wpe-webkit-mir-kiosk || echo "WARNING: could not pre-seed wpe-webkit-mir-kiosk"
-snap install mir-kiosk-neverputt || echo "WARNING: could not pre-seed mir-kiosk-neverputt"
-snap install mir-kiosk-scummvm || echo "WARNING: could not pre-seed mir-kiosk-scummvm"
-snap install mir-kiosk-kodi || echo "WARNING: could not pre-seed mir-kiosk-kodi"
-snap install ubuntu-frame-osk --channel=22/stable || echo "WARNING: could not pre-seed ubuntu-frame-osk"
+snap install ubuntu-frame --channel=24/stable || true
+snap install mir-kiosk || true
+snap install mir-test-tools --channel=24/beta || true
+snap install confined-shell --channel=edge || true
+snap install miriway --channel=stable --classic || true
+snap install wpe-webkit-mir-kiosk || true
+snap install mir-kiosk-neverputt || true
+snap install mir-kiosk-scummvm || true
+snap install mir-kiosk-kodi || true
+snap install ubuntu-frame-osk --channel=22/stable || true
