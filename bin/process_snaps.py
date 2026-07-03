@@ -38,6 +38,13 @@ MESA_2404_PATHS = {
     }
 }
 
+MESA_2604_PATHS = {
+    "check-paths": {
+        "snap/{architecture[0]}.list":
+            "https://raw.githubusercontent.com/canonical/gpu-snap/refs/heads/main/lists/mesa-2604.{architecture[0]}.list"
+    }
+}
+
 SNAPS = {
     "checkbox-mir": {
         "edge": {"ppa": "release", "recipe": "checkbox-mir-edge", "release": "jammy"},
@@ -107,7 +114,8 @@ SNAPS = {
         "asahi/beta": {"recipe": "mesa-2404-asahi-beta"},
     },
     "mesa-2604": {
-        "beta": {"recipe": "mesa-2604-beta"},
+        "stable": {"recipe": "mesa-2604-beta", "check-usns": False, **MESA_2604_PATHS},
+        "beta": {"recipe": "mesa-2604-beta", **MESA_2604_PATHS},
     },
     "nvidia-core22": {
         "edge": {"recipe": "nvidia-core22-edge"},
