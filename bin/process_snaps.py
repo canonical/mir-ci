@@ -27,7 +27,7 @@ logger.setLevel(logging.DEBUG)
 
 APPLICATION = "mir-ci"
 LAUNCHPAD = "production"
-DEFAULT_RELEASE = "noble"
+DEFAULT_RELEASE = "resolute"
 TEAM = "mir-team"
 SOURCE_NAME = "mir"
 
@@ -74,9 +74,9 @@ SNAPS = {
     "mir-test-tools": {
         "20/beta": {"ppa": "rc", "recipe": "mir-test-tools-20-beta", "release": "focal"},
         "22/beta": {"ppa": "rc", "recipe": "mir-test-tools-22-beta", "release": "jammy"},
-        "24/beta": {"ppa": "rc", "recipe": "mir-test-tools-24-beta"},
-        "26/beta": {"ppa": "rc", "recipe": "mir-test-tools-26-beta", "release": "resolute"},
-        "26/edge": {"ppa": "dev", "recipe": "mir-test-tools-26-edge", "release": "resolute"},
+        "24/beta": {"ppa": "rc", "recipe": "mir-test-tools-24-beta", "release": "noble"},
+        "26/beta": {"ppa": "rc", "recipe": "mir-test-tools-26-beta"},
+        "26/edge": {"ppa": "dev", "recipe": "mir-test-tools-26-edge"},
     },
     "miriway": {
         "beta": {"ppa": "rc", "recipe": "miriway-beta"},
@@ -85,9 +85,9 @@ SNAPS = {
     "ubuntu-frame": {
         "20/beta": {"ppa": "rc", "recipe": "ubuntu-frame-20-beta", "release": "focal"},
         "22/beta": {"ppa": "rc", "recipe": "ubuntu-frame-22-beta", "release": "jammy"},
-        "24/beta": {"ppa": "rc", "recipe": "ubuntu-frame-24-beta"},
-        "26/beta": {"ppa": "rc", "recipe": "ubuntu-frame-26-beta", "release": "resolute"},
-        "26/edge": {"ppa": "dev", "recipe": "ubuntu-frame-26-edge", "release": "resolute"},
+        "24/beta": {"ppa": "rc", "recipe": "ubuntu-frame-24-beta", "release": "noble"},
+        "26/beta": {"ppa": "rc", "recipe": "ubuntu-frame-26-beta"},
+        "26/edge": {"ppa": "dev", "recipe": "ubuntu-frame-26-edge"},
     },
     "ubuntu-frame-osk": {
         "20/beta": {"recipe": "ubuntu-frame-osk-20-beta"},
