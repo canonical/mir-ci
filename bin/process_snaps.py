@@ -139,7 +139,8 @@ IGNORED_SOURCES = (
 MIR_VERSION_RE = re.compile(r"^(?P<version>[0-9\.]+)"              # major.minor.patch
                             r"(?:(?P<build>[+~](?:rc|dev)[0-9]+)"  # optional [~+]{rc,dev}* build tag
                             r"-g(?P<commit>[0-9a-f]+))?"           # ... with git suffix
-                            r"-(?P<distro>[^-]+)$")                # distro
+                            r"-(?P<distro>[^-]+)"                  # distro
+                            r"(?P<extra>.*)$" )                    # extra
 
 SNAP_VERSION_RE = re.compile(r"^(?:(?P<server>.+)-mir)?"
                              r"(?P<mir>.+?)"
