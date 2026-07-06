@@ -335,9 +335,11 @@ if __name__ == '__main__':
 
                 logger.debug("Latest source: %s", latest_source.display_name)
 
-                mir_version = (
-                    "".join(v or "" for v in MIR_VERSION_RE.fullmatch(latest_source.source_package_version).groups()[0:2])
-                )
+                match = MIR_VERSION_RE.fullmatch(latest_source.source_package_version)
+                if not match:
+                    logger.error("::error::Failed to parse version '%s' for %s", latest_source.source_package_version, latest_source.display_name)
+                    continue
+                mir_version = "".join(v or "" for v in match.groups()[0:2])
                 logger.debug("Parsed upstream version: %s", mir_version)
 
                 if latest_source.status != "Published":
