@@ -31,6 +31,8 @@ DEFAULT_RELEASE = "resolute"
 TEAM = "mir-team"
 SOURCE_NAME = "mir"
 
+CORE20_CHANNELS = {"snapcraft": "8.x"}
+
 MESA_2404_PATHS = {
     "check-paths": {
         "snap/{architecture[0]}.list":
@@ -54,7 +56,7 @@ SNAPS = {
         "edge": {"ppa": "dev", "recipe": "confined-shell-edge"},
     },
     "graphics-test-tools": {
-        "20/beta": {"recipe": "graphics-test-tools-20-beta"},
+        "20/beta": {"recipe": "graphics-test-tools-20-beta", **CORE20_CHANNELS},
         "22/beta": {"recipe": "graphics-test-tools-22-beta"},
         "24/beta": {"recipe": "graphics-test-tools-24-beta"},
         "26/beta": {"recipe": "graphics-test-tools-26-beta"},
@@ -72,7 +74,7 @@ SNAPS = {
         "edge": {"recipe": "mir-kiosk-scummvm-edge"},
     },
     "mir-test-tools": {
-        "20/beta": {"ppa": "rc", "recipe": "mir-test-tools-20-beta", "release": "focal"},
+        "20/beta": {"ppa": "rc", "recipe": "mir-test-tools-20-beta", "release": "focal", **CORE20_CHANNELS},
         "22/beta": {"ppa": "rc", "recipe": "mir-test-tools-22-beta", "release": "jammy"},
         "24/beta": {"ppa": "rc", "recipe": "mir-test-tools-24-beta", "release": "noble"},
         "26/beta": {"ppa": "rc", "recipe": "mir-test-tools-26-beta"},
@@ -83,27 +85,27 @@ SNAPS = {
         "edge": {"ppa": "dev", "recipe": "miriway-edge"},
     },
     "ubuntu-frame": {
-        "20/beta": {"ppa": "rc", "recipe": "ubuntu-frame-20-beta", "release": "focal"},
+        "20/beta": {"ppa": "rc", "recipe": "ubuntu-frame-20-beta", "release": "focal", **CORE20_CHANNELS},
         "22/beta": {"ppa": "rc", "recipe": "ubuntu-frame-22-beta", "release": "jammy"},
         "24/beta": {"ppa": "rc", "recipe": "ubuntu-frame-24-beta", "release": "noble"},
         "26/beta": {"ppa": "rc", "recipe": "ubuntu-frame-26-beta"},
         "26/edge": {"ppa": "dev", "recipe": "ubuntu-frame-26-edge"},
     },
     "ubuntu-frame-osk": {
-        "20/beta": {"recipe": "ubuntu-frame-osk-20-beta"},
+        "20/beta": {"recipe": "ubuntu-frame-osk-20-beta", **CORE20_CHANNELS},
         "22/beta": {"recipe": "ubuntu-frame-osk-22-beta"},
         "24/beta": {"recipe": "ubuntu-frame-osk-24-beta"},
         "26/beta": {"recipe": "ubuntu-frame-osk-26-beta"},
         "26/edge": {"recipe": "ubuntu-frame-osk-26-edge"},
     },
     "ubuntu-frame-vnc": {
-        "20/beta": {"recipe": "ubuntu-frame-vnc-20-beta"},
+        "20/beta": {"recipe": "ubuntu-frame-vnc-20-beta", **CORE20_CHANNELS},
         "22/beta": {"recipe": "ubuntu-frame-vnc-22-beta"},
         "24/beta": {"recipe": "ubuntu-frame-vnc-24-beta"},
         "26/beta": {"recipe": "ubuntu-frame-vnc-26-beta"},
     },
     "mesa-core20": {
-        "beta": {"recipe": "mesa-core20-beta"},
+        "beta": {"recipe": "mesa-core20-beta", **CORE20_CHANNELS},
     },
     "mesa-core22": {
         "beta": {"recipe": "mesa-core22-beta"},
