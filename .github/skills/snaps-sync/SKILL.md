@@ -13,8 +13,8 @@ Use this skill to keep recipe entries in `SNAPS` aligned with Launchpad.
 2. Extract Launchpad recipe slugs from `/~mir-team/+snap/<name>` links.
 3. Extract all `"recipe": "..."` values from `bin/process_snaps.py`.
 4. Diff the two sets and identify:
-- `Launchpad recipes not in SNAPS` (candidates to add)
-- `SNAPS recipes not found on Launchpad page` (candidates to remove)
+   - `Launchpad recipes not in SNAPS` (candidates to add)
+   - `SNAPS recipes not found on Launchpad page` (candidates to remove)
 5. Add missing entries in `SNAPS` under the correct snap/channel block.
 6. Remove stale entries from `SNAPS` that no longer exist on Launchpad.
 7. Re-run the diff command and confirm both mismatch lists are empty (or document accepted exceptions).
