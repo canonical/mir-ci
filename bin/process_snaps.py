@@ -31,7 +31,11 @@ DEFAULT_RELEASE = "resolute"
 TEAM = "mir-team"
 SOURCE_NAME = "mir"
 
-CORE20_CHANNELS = {"snapcraft": "8.x"}
+CORE20_CHANNELS = {
+    "channels": {
+        "snapcraft": "8.x"
+    }
+}
 
 MESA_2404_PATHS = {
     "check-paths": {
