@@ -13,10 +13,9 @@ sdks:
   - name: project-deps
 
 actions:
-  # Install the test dependencies (snaps, debs, pip packages). The venv and
-  # `mir_ci` are built on launch; run this before the tests and again after
-  # adding a test that needs new dependencies. Forward any pytest selector, e.g.
-  # `workshop run mir-ci -- deps -k ubuntu_frame`; with none it covers all tests.
+  # Install the dependencies (snaps, debs, pip packages) needed by the tests.
+  # Forward any pytest selector, e.g. `workshop run mir-ci -- deps -k ubuntu_frame`.
+  # Given no arguments it installs the dependencies for all tests.
   deps: |
     cd /project/mir-ci/mir_ci
     python3 -m pytest --deps "$@"
