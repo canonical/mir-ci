@@ -49,7 +49,8 @@ And to run it before each commit:
 1. restart a failing run, checking the "Enable debug logging" box
 2. wait for any step to fail
 3. find the tmate connection details in the job logs:
-   ```
+
+   ```text
    Web shell: https://tmate.io/t/...
    SSH: ssh ...@xxx.tmate.io
    ```

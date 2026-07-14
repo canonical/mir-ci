@@ -63,3 +63,32 @@ repos:
     - AlignTestCasesSection:enabled=true
     - --configure
     - AlignTemplatedTestCases:enabled=true
+
+- repo: https://github.com/executablebooks/mdformat
+  rev: 2d496dbc18e31b83a1596685347ffe0b6041daf0  # frozen: 1.0.0
+  hooks:
+  - id: mdformat
+    additional_dependencies:
+    - mdformat-black
+    - mdformat-beautysh
+    - mdformat-gfm
+    - mdformat-myst
+    exclude: ^mir-ci/readme.md$
+
+- repo: https://github.com/jackdewinter/pymarkdown
+  rev: 6d3c1b70d44ea2202b23552af93aca3b5017ee83  # frozen: v0.9.36
+  hooks:
+  - id: pymarkdown
+    alias: pymarkdown-fix
+    name: PyMarkdown (autofix)
+    args:
+    - --config=.pymarkdown.json
+    - fix
+    exclude: ^mir-ci/readme.md$
+  - id: pymarkdown
+    alias: pymarkdown-scan
+    name: PyMarkdown (scan)
+    args:
+    - --config=.pymarkdown.json
+    - scan
+    exclude: ^mir-ci/readme.md$
