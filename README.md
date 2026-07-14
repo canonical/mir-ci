@@ -1,4 +1,5 @@
 # mir-ci
+
 `mir-ci` contains integration tests for Mir-based projects, covering specific
 applications, output scaling, on-screen keyboards, drag and drop, and more.
 
@@ -12,12 +13,14 @@ The projects tested are:
 - [Mir Kiosk](https://snapcraft.io/mir-kiosk)
 
 ## Running the tests
+
 The recommended way to run `mir-ci` is inside a
 [Workshop](https://ubuntu.com/workshop/docs/) container, which wraps the project
 and its dependencies into an LXD container. A ready-made
 [`workshop.yaml`](./workshop.yaml) is included.
 
 ### Install Workshop
+
 Workshop needs LXD 6.8+:
 
 ```sh
@@ -26,6 +29,7 @@ sudo snap install --classic workshop
 ```
 
 ### Launch the workshop
+
 ```sh
 git clone https://github.com/canonical/mir-ci
 cd mir-ci
@@ -51,6 +55,7 @@ workshop run mir-ci -- deps -k ubuntu_frame  # a subset
 > which doesn't support the Python 3.14 in Ubuntu 26.04.
 
 ### Run the tests
+
 The `test` action runs the suite inside Xvfb; extra arguments are forwarded to
 `pytest`:
 
@@ -72,9 +77,10 @@ workshop run mir-ci -- lint        # pre-commit static analysis
 Use `workshop shell` for an interactive shell in the container.
 
 ## Debug runs in GitHub Actions
+
 1. Restart a failing run with "Enable debug logging" checked.
-2. Wait for a step to fail.
-3. Find the tmate connection details in the job logs:
+1. Wait for a step to fail.
+1. Find the tmate connection details in the job logs:
    ```sh
    Web shell: https://tmate.io/t/...
    SSH: ssh ...@xxx.tmate.io
