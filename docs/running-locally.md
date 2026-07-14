@@ -7,6 +7,7 @@
 > your host.
 
 ## Setup
+
 ```sh
 git clone https://github.com/canonical/mir-ci
 cd mir-ci/mir-ci/mir_ci
@@ -24,12 +25,14 @@ pytest -k <test_name> --deps  # a specific test
 ```
 
 ## Listing tests
+
 ```sh
 pytest --collect-only -q       # compact list of test IDs
 pytest --collect-only -m smoke  # limit to a marker
 ```
 
 ## Running
+
 Always source the virtual environment first. On **real hardware** (from a VT or
 SSH session):
 
@@ -49,6 +52,7 @@ xvfb-run -a pytest --junitxml=junit.xml  # record test properties
 ```
 
 ### Self tests
+
 The suite has tests for itself:
 
 ```sh
@@ -56,6 +60,7 @@ pytest -m self
 ```
 
 ## Static analysis
+
 ```sh
 pip install pre-commit
 pre-commit run
