@@ -1,0 +1,33 @@
+export DEBIAN_FRONTEND=noninteractive
+export PATH="$HOME/.venv/bin:$PATH"
+apt-get update
+apt-get install -y --no-install-recommends \
+  ca-certificates \
+  git \
+  snapd \
+  pkg-config \
+  libwayland-dev \
+  xvfb \
+  ffmpeg \
+  pre-commit \
+  pluma \
+  qterminal \
+  qtwayland5 \
+  qt6-wayland
+
+# Pre-seed the snaps the tests use into the base image so `workshop launch`
+# yields a ready-to-test environment. These mirror the snaps in
+# mir_ci/fixtures/servers.py and apps.py. Each install is best-effort: some
+# snaps aren't available on every series, and the `deps`/`test` actions install
+# whatever is still missing at run time.
+snap wait system seed.loaded || true
+snap install ubuntu-frame --channel=24/stable || true
+snap install mir-kiosk || true
+snap install mir-test-tools --channel=24/beta || true
+snap install confined-shell --channel=edge || true
+snap install miriway --channel=stable --classic || true
+snap install wpe-webkit-mir-kiosk || true
+snap install mir-kiosk-neverputt || true
+snap install mir-kiosk-scummvm || true
+snap install mir-kiosk-kodi || true
+snap install ubuntu-frame-osk --channel=22/stable || true

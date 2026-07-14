@@ -1,0 +1,21 @@
+set -eu
+# Build the Python environment on launch/refresh so the tests are ready without
+# a manual setup step. uv provides a supported Python (the system 3.14 is too
+# new for some test dependencies) and builds the pywayland bindings against the
+# system libwayland-dev. The venv lives in $HOME and persists across refreshes,
+# so only create it when missing.
+cd mir-ci
+[ -x "$HOME/.venv/bin/python" ] || uv venv --seed --python 3.12 "$HOME/.venv"
+VIRTUAL_ENV="$HOME/.venv" uv pip install -e .
+
+# Wire up the pre-seeded snaps the same way `--deps` does (see _deps_install in
+# mir_ci/pytest_plugin.py): run each snap's setup.sh and connect its `wayland`
+# and `login-session-control` interfaces. Iterating over the installed snaps
+# avoids repeating the setup-base list; every step is best-effort.
+for installed in $(snap list 2>/dev/null | awk 'NR > 1 { print $1 }'); do
+  if [ -x "/snap/$installed/current/bin/setup.sh" ]; then
+    sudo "/snap/$installed/current/bin/setup.sh" || true
+  fi
+  sudo snap connect "$installed:login-session-control" 2>/dev/null || true
+  sudo snap connect "$installed:wayland" 2>/dev/null || true
+done

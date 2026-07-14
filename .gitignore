@@ -3,3 +3,4 @@ __pycache__
 mir-ci/mir_ci/junit.xml
 .python-version
 venv
+.workshop.lock

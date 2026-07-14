@@ -5,7 +5,6 @@ build-backend = "hatchling.build"
 [project]
 name = "mir_ci"
 version = "0.0.1"
-readme = "readme.md"
 requires-python = ">=3.8"
 dependencies = [
     "distro",

@@ -1,0 +1,43 @@
+name: mir-ci
+base: ubuntu@26.04
+
+# `mir-ci` runs inside an Ubuntu container.
+#
+# - The `uv` SDK manages the Python interpreter and the test harness. Some
+#   runtime `--deps` (e.g. `rpaframework`) require Python <3.14, so the harness
+#   runs against a uv-managed Python 3.12 rather than the 3.14 in Ubuntu 26.04.
+# - The `project-deps` SDK installs the system packages the build and tests need
+#   and pre-seeds the server/application snaps into the base image.
+sdks:
+  - name: uv
+  - name: project-deps
+
+actions:
+  # Install the dependencies (snaps, debs, pip packages) needed by the tests.
+  # Forward any pytest selector, e.g. `workshop run mir-ci -- deps -k ubuntu_frame`.
+  # Given no arguments it installs the dependencies for all tests.
+  deps: |
+    cd /project/mir-ci/mir_ci
+    python3 -m pytest --deps "$@"
+
+  # List the available tests without running them, e.g.
+  # `workshop run mir-ci -- list -m smoke`.
+  list: |
+    cd /project/mir-ci/mir_ci
+    python3 -m pytest --collect-only -q "$@"
+
+  # Run the integration tests inside a virtual server.
+  # Forward any pytest argument, e.g. `workshop run mir-ci -- test -k ubuntu_frame`.
+  test: |
+    cd /project/mir-ci/mir_ci
+    xvfb-run -a python3 -m pytest "$@"
+
+  # Run the test suite's own self tests.
+  self-test: |
+    cd /project/mir-ci/mir_ci
+    xvfb-run -a python3 -m pytest -m self "$@"
+
+  # Run the static analysis checks (pre-commit).
+  lint: |
+    cd /project/mir-ci
+    pre-commit run --all-files "$@"
