@@ -27,14 +27,27 @@ logger.setLevel(logging.DEBUG)
 
 APPLICATION = "mir-ci"
 LAUNCHPAD = "production"
-DEFAULT_RELEASE = "noble"
+DEFAULT_RELEASE = "resolute"
 TEAM = "mir-team"
 SOURCE_NAME = "mir"
+
+CORE20_CHANNELS = {
+    "channels": {
+        "snapcraft": "8.x"
+    }
+}
 
 MESA_2404_PATHS = {
     "check-paths": {
         "snap/{architecture[0]}.list":
             "https://raw.githubusercontent.com/canonical/gpu-snap/refs/heads/main/lists/mesa-2404.{architecture[0]}.list"
+    }
+}
+
+MESA_2604_PATHS = {
+    "check-paths": {
+        "snap/{architecture[0]}.list":
+            "https://raw.githubusercontent.com/canonical/gpu-snap/refs/heads/main/lists/mesa-2604.{architecture[0]}.list"
     }
 }
 
@@ -47,7 +60,7 @@ SNAPS = {
         "edge": {"ppa": "dev", "recipe": "confined-shell-edge"},
     },
     "graphics-test-tools": {
-        "20/beta": {"recipe": "graphics-test-tools-20-beta"},
+        "20/beta": {"recipe": "graphics-test-tools-20-beta", **CORE20_CHANNELS},
         "22/beta": {"recipe": "graphics-test-tools-22-beta"},
         "24/beta": {"recipe": "graphics-test-tools-24-beta"},
         "26/beta": {"recipe": "graphics-test-tools-26-beta"},
@@ -65,41 +78,38 @@ SNAPS = {
         "edge": {"recipe": "mir-kiosk-scummvm-edge"},
     },
     "mir-test-tools": {
-        "20/beta": {"ppa": "rc", "recipe": "mir-test-tools-20-beta", "release": "focal"},
+        "20/beta": {"ppa": "rc", "recipe": "mir-test-tools-20-beta", "release": "focal", **CORE20_CHANNELS},
         "22/beta": {"ppa": "rc", "recipe": "mir-test-tools-22-beta", "release": "jammy"},
-        "24/beta": {"ppa": "rc", "recipe": "mir-test-tools-24-beta"},
-        "24/edge": {"ppa": "dev", "recipe": "mir-test-tools-24-edge"},
-        "26/beta": {"ppa": "rc", "recipe": "mir-test-tools-26-beta", "release": "resolute"},
-        "26/edge": {"ppa": "dev", "recipe": "mir-test-tools-26-edge", "release": "resolute"},
+        "24/beta": {"ppa": "rc", "recipe": "mir-test-tools-24-beta", "release": "noble"},
+        "26/beta": {"ppa": "rc", "recipe": "mir-test-tools-26-beta"},
+        "26/edge": {"ppa": "dev", "recipe": "mir-test-tools-26-edge"},
     },
     "miriway": {
         "beta": {"ppa": "rc", "recipe": "miriway-beta"},
         "edge": {"ppa": "dev", "recipe": "miriway-edge"},
     },
     "ubuntu-frame": {
-        "20/beta": {"ppa": "rc", "recipe": "ubuntu-frame-20-beta", "release": "focal"},
+        "20/beta": {"ppa": "rc", "recipe": "ubuntu-frame-20-beta", "release": "focal", **CORE20_CHANNELS},
         "22/beta": {"ppa": "rc", "recipe": "ubuntu-frame-22-beta", "release": "jammy"},
-        "24/beta": {"ppa": "rc", "recipe": "ubuntu-frame-24-beta"},
-        "24/edge": {"ppa": "dev", "recipe": "ubuntu-frame-24-edge"},
-        "26/beta": {"ppa": "rc", "recipe": "ubuntu-frame-26-beta", "release": "resolute"},
-        "26/edge": {"ppa": "dev", "recipe": "ubuntu-frame-26-edge", "release": "resolute"},
+        "24/beta": {"ppa": "rc", "recipe": "ubuntu-frame-24-beta", "release": "noble"},
+        "26/beta": {"ppa": "rc", "recipe": "ubuntu-frame-26-beta"},
+        "26/edge": {"ppa": "dev", "recipe": "ubuntu-frame-26-edge"},
     },
     "ubuntu-frame-osk": {
-        "20/beta": {"recipe": "ubuntu-frame-osk-20-beta"},
+        "20/beta": {"recipe": "ubuntu-frame-osk-20-beta", **CORE20_CHANNELS},
         "22/beta": {"recipe": "ubuntu-frame-osk-22-beta"},
         "24/beta": {"recipe": "ubuntu-frame-osk-24-beta"},
-        "24/edge": {"recipe": "ubuntu-frame-osk-24-edge"},
         "26/beta": {"recipe": "ubuntu-frame-osk-26-beta"},
+        "26/edge": {"recipe": "ubuntu-frame-osk-26-edge"},
     },
     "ubuntu-frame-vnc": {
-        "20/beta": {"recipe": "ubuntu-frame-vnc-20-beta"},
+        "20/beta": {"recipe": "ubuntu-frame-vnc-20-beta", **CORE20_CHANNELS},
         "22/beta": {"recipe": "ubuntu-frame-vnc-22-beta"},
         "24/beta": {"recipe": "ubuntu-frame-vnc-24-beta"},
-        "24/edge": {"recipe": "ubuntu-frame-vnc-24-edge"},
         "26/beta": {"recipe": "ubuntu-frame-vnc-26-beta"},
     },
     "mesa-core20": {
-        "beta": {"recipe": "mesa-core20-beta"},
+        "beta": {"recipe": "mesa-core20-beta", **CORE20_CHANNELS},
     },
     "mesa-core22": {
         "beta": {"recipe": "mesa-core22-beta"},
@@ -110,7 +120,8 @@ SNAPS = {
         "asahi/beta": {"recipe": "mesa-2404-asahi-beta"},
     },
     "mesa-2604": {
-        "beta": {"recipe": "mesa-2604-beta"},
+        "stable": {"recipe": "mesa-2604-beta", "check-usns": False, **MESA_2604_PATHS},
+        "beta": {"recipe": "mesa-2604-beta", **MESA_2604_PATHS},
     },
     "nvidia-core22": {
         "edge": {"recipe": "nvidia-core22-edge"},
@@ -139,7 +150,8 @@ IGNORED_SOURCES = (
 MIR_VERSION_RE = re.compile(r"^(?P<version>[0-9\.]+)"              # major.minor.patch
                             r"(?:(?P<build>[+~](?:rc|dev)[0-9]+)"  # optional [~+]{rc,dev}* build tag
                             r"-g(?P<commit>[0-9a-f]+))?"           # ... with git suffix
-                            r"-(?P<distro>[^-]+)$")                # distro
+                            r"-(?P<distro>[^-]+)"                  # distro
+                            r"(?P<extra>.*)$" )                    # extra
 
 SNAP_VERSION_RE = re.compile(r"^(?:(?P<server>.+)-mir)?"
                              r"(?P<mir>.+?)"
@@ -335,9 +347,11 @@ if __name__ == '__main__':
 
                 logger.debug("Latest source: %s", latest_source.display_name)
 
-                mir_version = (
-                    "".join(v or "" for v in MIR_VERSION_RE.fullmatch(latest_source.source_package_version).groups()[0:2])
-                )
+                match = MIR_VERSION_RE.fullmatch(latest_source.source_package_version)
+                if not match:
+                    logger.error("::error::Failed to parse version '%s' for %s", latest_source.source_package_version, latest_source.display_name)
+                    continue
+                mir_version = "".join(v or "" for v in match.groups()[0:2])
                 logger.debug("Parsed upstream version: %s", mir_version)
 
                 if latest_source.status != "Published":
