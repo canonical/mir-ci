@@ -182,9 +182,9 @@ def gnome_shell(
     **kwargs,
 ):
     if cmd is None:
-        # mutter's native backend needs a logind seat and a VT, which aren't
-        # available when nested (e.g. under Xvfb); run headless there instead.
         cmd = ("gnome-shell", "--wayland-display", DisplayServer.get_wayland_display())
-        nested = os.environ.get("WAYLAND_DISPLAY") or os.environ.get("DISPLAY")
-        cmd += ("--headless", "--virtual-monitor", "1280x1024") if nested else ("--wayland", "--no-x11")
+    # mutter's native backend needs a logind seat and a VT, which aren't
+    # available when nested (e.g. under Xvfb); run headless there instead.
+    nested = os.environ.get("WAYLAND_DISPLAY") or os.environ.get("DISPLAY")
+    cmd += ("--headless", "--virtual-monitor", "1280x1024") if nested else ("--wayland", "--no-x11")
     return deb("gnome-shell", *args, cmd=(*cmd, *args), id=id, **kwargs)
