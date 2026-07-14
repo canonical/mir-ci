@@ -11,18 +11,11 @@ The projects tested are:
 - [Miriway](https://github.com/Miriway/Miriway)
 - [Mir Kiosk](https://snapcraft.io/mir-kiosk)
 
-They run in Canonical's lab across many devices, with results on an internal
-dashboard.
-
 ## Running the tests
 The recommended way to run `mir-ci` is inside a
 [Workshop](https://ubuntu.com/workshop/docs/) container, which wraps the project
 and its dependencies into an LXD container. A ready-made
 [`workshop.yaml`](./workshop.yaml) is included.
-
-> [!TIP]
-> Prefer to run on your host directly? See
-> [Running mir-ci on your local setup](./docs/running-locally.md).
 
 ### Install Workshop
 Workshop needs LXD 6.8+:

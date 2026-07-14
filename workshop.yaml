@@ -7,10 +7,7 @@ base: ubuntu@26.04
 #   runtime `--deps` (e.g. `rpaframework`) require Python <3.14, so the harness
 #   runs against a uv-managed Python 3.12 rather than the 3.14 in Ubuntu 26.04.
 # - The `project-deps` SDK installs the system packages the build and tests need
-#   and pre-seeds the server/application snaps into the base image, so
-#   `workshop launch` yields a ready-to-test container. Its `setup-project` hook
-#   also builds the virtual environment and installs `mir_ci`. Edit it with
-#   `workshop sketch-sdk mir-ci` and re-eject with `--eject --name deps`.
+#   and pre-seeds the server/application snaps into the base image.
 sdks:
   - name: uv
   - name: project-deps
@@ -21,27 +18,23 @@ actions:
   # adding a test that needs new dependencies. Forward any pytest selector, e.g.
   # `workshop run mir-ci -- deps -k ubuntu_frame`; with none it covers all tests.
   deps: |
-    export PATH="$HOME/.venv/bin:$PATH"
     cd /project/mir-ci/mir_ci
     python3 -m pytest --deps "$@"
 
   # List the available tests without running them, e.g.
   # `workshop run mir-ci -- list -m smoke`.
   list: |
-    export PATH="$HOME/.venv/bin:$PATH"
     cd /project/mir-ci/mir_ci
     python3 -m pytest --collect-only -q "$@"
 
-  # Run the integration tests inside a virtual X11 server (Xvfb). Forward any
-  # pytest argument, e.g. `workshop run mir-ci -- test -k ubuntu_frame`.
+  # Run the integration tests inside a virtual server.
+  # Forward any pytest argument, e.g. `workshop run mir-ci -- test -k ubuntu_frame`.
   test: |
-    export PATH="$HOME/.venv/bin:$PATH"
     cd /project/mir-ci/mir_ci
     xvfb-run -a python3 -m pytest "$@"
 
   # Run the test suite's own self tests.
   self-test: |
-    export PATH="$HOME/.venv/bin:$PATH"
     cd /project/mir-ci/mir_ci
     xvfb-run -a python3 -m pytest -m self "$@"
 

@@ -3,6 +3,4 @@ __pycache__
 mir-ci/mir_ci/junit.xml
 .python-version
 venv
-
-# Workshop local state — must stay in the project dir but never be committed
 .workshop.lock
