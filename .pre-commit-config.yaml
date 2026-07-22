@@ -12,7 +12,7 @@ repos:
   - id: check-yaml
   - id: check-added-large-files
 - repo: https://github.com/zizmorcore/zizmor-pre-commit
-  rev: e3eebf65325ccc992422292cb7a4baee967cf815  # frozen: v1.26.1
+  rev: 067260dc5fe6ea86b7551bfd6f8b3ba4e6c93129  # frozen: v1.28.0
   hooks:
   - id: zizmor
     args:
@@ -41,7 +41,7 @@ repos:
   - id: isort
     args: [-l, "120", --profile, black]
 - repo: https://github.com/pre-commit/mirrors-mypy
-  rev: 0cbe8f6e54466b1b48f9d41f44abb4d06c061b5e  # frozen: v2.2.0
+  rev: 41e691678310dfd3833f7ab4e180ddb014310356  # frozen: v2.3.0
   hooks:
   - id: mypy
     additional_dependencies:
@@ -65,7 +65,7 @@ repos:
     - AlignTemplatedTestCases:enabled=true
 
 - repo: https://github.com/executablebooks/mdformat
-  rev: 2d496dbc18e31b83a1596685347ffe0b6041daf0  # frozen: 1.0.0
+  rev: 82912cdaea4fb830f751504486a7879c70526547  # frozen: 1.0.0
   hooks:
   - id: mdformat
     additional_dependencies:
@@ -76,7 +76,7 @@ repos:
     exclude: ^mir-ci/readme.md$
 
 - repo: https://github.com/jackdewinter/pymarkdown
-  rev: 6d3c1b70d44ea2202b23552af93aca3b5017ee83  # frozen: v0.9.36
+  rev: b7c6d5936ef699bcf5af0b0c2558118d3eba24d6  # frozen: v0.9.39
   hooks:
   - id: pymarkdown
     alias: pymarkdown-fix
