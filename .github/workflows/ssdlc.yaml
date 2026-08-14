@@ -23,7 +23,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Install uv
-        uses: astral-sh/setup-uv@ae62891fec2bb8e7d6c99fc78c9fec3a63790f8d  # v10.0.0
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d  # v10.0.1
       - name: Run sbomber
         # FIXME: switch to official action when ready
         uses: Saviq/sbomber/.github/actions/run@a8028d3fb8070c2b19eef4a2b7a46fa92aab9268  # mir @ 2025.10.10
