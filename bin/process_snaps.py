@@ -66,16 +66,16 @@ SNAPS = {
         "26/beta": {"recipe": "graphics-test-tools-26-beta"},
     },
     "mir-kiosk": {
-        "beta": {"ppa": "rc", "recipe": "mir-kiosk-beta", "release": "focal"},
+        "beta": {"ppa": "rc", "recipe": "mir-kiosk-beta", "release": "focal", **CORE20_CHANNELS},
     },
     "mir-kiosk-kodi": {
         "edge": {"recipe": "mir-kiosk-kodi-edge", "non-uniform": True},
     },
     "mir-kiosk-neverputt": {
-        "edge": {"recipe": "mir-kiosk-neverputt-edge"},
+        "edge": {"recipe": "mir-kiosk-neverputt-edge", **CORE20_CHANNELS},
     },
     "mir-kiosk-scummvm": {
-        "edge": {"recipe": "mir-kiosk-scummvm-edge"},
+        "edge": {"recipe": "mir-kiosk-scummvm-edge", **CORE20_CHANNELS},
     },
     "mir-test-tools": {
         "20/beta": {"ppa": "rc", "recipe": "mir-test-tools-20-beta", "release": "focal", **CORE20_CHANNELS},
