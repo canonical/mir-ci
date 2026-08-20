@@ -52,7 +52,7 @@ jobs:
         persist-credentials: false
 
     - name: Use the current mir-ci commit
-      uses: mikefarah/yq@1b9b4ac5187171d2e5e3129be0cfa827c7f9d53d  # v4.53.3
+      uses: mikefarah/yq@e95064cd018c0e3d71ef83e4272b4722571dfa64  # v4.53.5
       with:
         cmd: yq -i '.parts.mir-ci.source-commit="${{ github.sha }}"' snap/snapcraft.yaml
 
