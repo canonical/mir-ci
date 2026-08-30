@@ -12,7 +12,7 @@ repos:
   - id: check-yaml
   - id: check-added-large-files
 - repo: https://github.com/zizmorcore/zizmor-pre-commit
-  rev: 451b56af716f9f0d0c2b816503a3fd0cf8b036fa  # frozen: v1.29.0
+  rev: cef8b8350da46d8114c7e6b7272aebdccdf193ce  # frozen: v1.30.0
   hooks:
   - id: zizmor
     args:
@@ -27,7 +27,7 @@ repos:
   - id: black
     args: [--line-length=120]
 - repo: https://github.com/PyCQA/autoflake
-  rev: 988e469555a54b0b16e39faf16ae84ff247fd337  # frozen: v2.3.3
+  rev: 6d9dd2716540ab776f29c7b896cd3052ef4619b2  # frozen: v2.4.0
   hooks:
   - id: autoflake
 - repo: https://github.com/PyCQA/flake8
@@ -36,7 +36,7 @@ repos:
   - id: flake8
     args: [--max-line-length=120]
 - repo: https://github.com/PyCQA/isort
-  rev: a333737ed43df02b18e6c95477ea1b285b3de15a  # frozen: 8.0.1
+  rev: 131f4adcd5582bfc53928ab0d740eceb8b506b6c  # frozen: 9.0.1
   hooks:
   - id: isort
     args: [-l, "120", --profile, black]
