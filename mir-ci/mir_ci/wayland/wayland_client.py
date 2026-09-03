@@ -6,7 +6,7 @@ from typing import Optional
 import pywayland
 import pywayland.client
 
-from .protocols.wayland.wl_registry import WlRegistryProxy
+from .protocols.wayland import WlRegistryProxy
 
 
 class WaylandClient:
