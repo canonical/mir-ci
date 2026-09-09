@@ -5,7 +5,7 @@ import time
 from collections import OrderedDict
 from contextlib import suppress
 from unittest import IsolatedAsyncioTestCase
-from unittest.mock import ANY, MagicMock, Mock, call, mock_open, patch
+from unittest.mock import ANY, AsyncMock, MagicMock, Mock, call, mock_open, patch
 
 import pytest
 from mir_ci.fixtures.servers import ServerCap, _mir_ci_server, servers
@@ -330,6 +330,16 @@ class TestDisplayServer:
             server.record_properties(mock_fixture)
 
         mock_fixture.assert_has_calls([call("server_mode", "123x456 78.9Hz"), call("server_renderer", "Mock renderer")])
+
+    async def test_display_server_exits_program_context(self) -> None:
+        server = DisplayServer(App("foo"))
+        server.start_time = 0
+        server.server = Mock()
+        server.server.__aexit__ = AsyncMock()
+
+        await server.__aexit__()
+
+        server.server.__aexit__.assert_awaited_once_with()
 
 
 @pytest.mark.self

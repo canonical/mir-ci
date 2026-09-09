@@ -91,7 +91,7 @@ class DisplayServer(Benchmarkable):
         if sleep_time > 0:
             await asyncio.sleep(sleep_time)
         assert self.server
-        await self.server.kill()
+        await self.server.__aexit__()
 
     @staticmethod
     def get_wayland_display() -> str:
