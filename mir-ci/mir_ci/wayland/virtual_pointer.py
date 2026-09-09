@@ -2,11 +2,9 @@ from enum import IntEnum
 from typing import List, Optional
 
 from .protocols import WlOutput, ZwlrVirtualPointerManagerV1, ZxdgOutputManagerV1
-from .protocols.wayland.wl_output import WlOutputProxy
-from .protocols.wlr_virtual_pointer_unstable_v1.zwlr_virtual_pointer_manager_v1 import ZwlrVirtualPointerManagerV1Proxy
-from .protocols.wlr_virtual_pointer_unstable_v1.zwlr_virtual_pointer_v1 import ZwlrVirtualPointerV1Proxy
-from .protocols.xdg_output_unstable_v1.zxdg_output_manager_v1 import ZxdgOutputManagerV1Proxy
-from .protocols.xdg_output_unstable_v1.zxdg_output_v1 import ZxdgOutputV1Proxy
+from .protocols.wayland import WlOutputProxy
+from .protocols.wlr_virtual_pointer_unstable_v1 import ZwlrVirtualPointerManagerV1Proxy, ZwlrVirtualPointerV1Proxy
+from .protocols.xdg_output_unstable_v1 import ZxdgOutputManagerV1Proxy, ZxdgOutputV1Proxy
 from .wayland_client import WaylandClient
 
 

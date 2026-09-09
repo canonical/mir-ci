@@ -6,11 +6,8 @@ import stat
 from typing import Any, Dict, Optional
 
 from .protocols import WlOutput, WlShm, ZwlrScreencopyFrameV1, ZwlrScreencopyManagerV1
-from .protocols.wayland.wl_buffer import WlBufferProxy
-from .protocols.wayland.wl_output import WlOutputProxy
-from .protocols.wayland.wl_shm import WlShmProxy
-from .protocols.wlr_screencopy_unstable_v1.zwlr_screencopy_frame_v1 import ZwlrScreencopyFrameV1Proxy
-from .protocols.wlr_screencopy_unstable_v1.zwlr_screencopy_manager_v1 import ZwlrScreencopyManagerV1Proxy
+from .protocols.wayland import WlBufferProxy, WlOutputProxy, WlShmProxy
+from .protocols.wlr_screencopy_unstable_v1 import ZwlrScreencopyFrameV1Proxy, ZwlrScreencopyManagerV1Proxy
 from .wayland_client import WaylandClient
 
 libc = ctypes.cdll.LoadLibrary(None)  # type: ignore

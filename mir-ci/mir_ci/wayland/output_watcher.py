@@ -2,7 +2,7 @@ import asyncio
 from typing import Callable, List, Optional
 
 from .protocols import WlOutput
-from .protocols.wayland.wl_output import WlOutputProxy
+from .protocols.wayland import WlOutputProxy
 from .wayland_client import WaylandClient
 
 
