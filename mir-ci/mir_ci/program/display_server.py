@@ -8,13 +8,14 @@ from typing import Any, Dict, Optional, Tuple
 import inotify.adapters
 import yaml
 
+from .. import SLOWDOWN
 from ..interfaces.benchmarkable import Benchmarkable
 from ..lib.cgroups import Cgroup
 from ..program.app import App, AppType
 from ..program.program import Program
 
-display_appear_timeout = 10
-min_mir_run_time = 0.1
+display_appear_timeout = 10 * SLOWDOWN
+min_mir_run_time = 0.1 * SLOWDOWN
 
 
 SERVER_MODE_RE = re.compile(r"Current mode ([0-9x]+ [0-9.]+Hz)")
