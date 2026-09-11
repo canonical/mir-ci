@@ -1,0 +1,101 @@
+export DEBIAN_FRONTEND=noninteractive
+export PATH="$HOME/.venv/bin:$PATH"
+apt-get update
+apt-get install -y --no-install-recommends \
+  ca-certificates \
+  ffmpeg \
+  fonts-noto-color-emoji \
+  git \
+  libwayland-dev \
+  pkg-config \
+  pluma \
+  python3-livereload \
+  pre-commit \
+  qt6-wayland \
+  qterminal \
+  qtwayland5 \
+  snapd \
+  tree \
+  xvfb
+
+snap wait system seed.loaded || true
+snap install yarf
+snap connect yarf:wayland
+
+# Mount the 'mir_ci' folder in '$HOME' to let YARF access the suite
+cat <<'EOF' > /etc/systemd/system/home-workshop-mir_ci.mount
+[Unit]
+Description=Bind mount mir-ci package source into workspace
+Requires=wait-for-mir_ci.service
+After=wait-for-mir_ci.service
+
+[Mount]
+What=/project/mir-ci/mir_ci
+Where=/home/workshop/mir_ci
+Type=none
+Options=bind
+DirectoryMode=0755
+TimeoutSec=30
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+cat <<'EOF' > /etc/systemd/system/wait-for-mir_ci.service
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/sh -c 'until [ -d /project/mir-ci/mir_ci ]; do sleep 1; done'
+TimeoutStartSec=0
+EOF
+
+systemctl daemon-reload
+systemctl enable --now --no-block home-workshop-mir_ci.mount
+
+# Expose the pytest temp directory
+cat <<'EOF' > /etc/systemd/system/pytest-temp.service
+[Unit]
+Description=Pytest temp directory
+After=network.target
+
+[Service]
+Type=simple
+ExecStartPre=/bin/mkdir --parents /home/workshop/pytest-temp
+ExecStart=/bin/sh -c '/usr/bin/livereload --host $( hostname -f ) --port 8001 /home/workshop/pytest-temp'
+
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+systemctl enable --now --no-block pytest-temp.service
+
+# Pre-seed the snaps the tests use into the base image so `workshop launch`
+# yields a ready-to-test environment. These mirror the snaps in
+# mir_ci/fixtures/servers.py and apps.py. Each install is best-effort: some
+# snaps aren't available on every series, and the `deps`/`test` actions install
+# whatever is still missing at run time.
+snap install ubuntu-frame --channel=24/stable || true
+snap install mir-kiosk || true
+snap install mir-test-tools --channel=24/beta || true
+snap install confined-shell --channel=edge || true
+snap install miriway --channel=stable --classic || true
+snap install wpe-webkit-mir-kiosk || true
+snap install mir-kiosk-neverputt || true
+snap install mir-kiosk-scummvm || true
+snap install mir-kiosk-kodi || true
+snap install ubuntu-frame-osk --channel=22/stable || true
+
+# Wire up the pre-seeded snaps the same way `--deps` does (see _deps_install in
+# mir_ci/pytest_plugin.py): run each snap's setup.sh and connect its `wayland`
+# and `login-session-control` interfaces. Iterating over the installed snaps
+# avoids repeating the setup-base list; every step is best-effort.
+for installed in $(snap list 2>/dev/null | awk 'NR > 1 { print $1 }'); do
+  if [ -x "/snap/$installed/current/bin/setup.sh" ]; then
+    sudo "/snap/$installed/current/bin/setup.sh" || true
+  fi
+  sudo snap connect "$installed:login-session-control" 2>/dev/null || true
+  sudo snap connect "$installed:wayland" 2>/dev/null || true
+done

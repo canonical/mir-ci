@@ -10,34 +10,51 @@ base: ubuntu@26.04
 #   and pre-seeds the server/application snaps into the base image.
 sdks:
   - name: uv
-  - name: project-deps
+  - name: project-mir-ci
 
 actions:
   # Install the dependencies (snaps, debs, pip packages) needed by the tests.
   # Forward any pytest selector, e.g. `workshop run mir-ci -- deps -k ubuntu_frame`.
   # Given no arguments it installs the dependencies for all tests.
   deps: |
-    cd /project/mir-ci/mir_ci
-    python3 -m pytest --deps "$@"
+    cd mir-ci/mir_ci
+    uv run pytest --deps "$@"
 
   # List the available tests without running them, e.g.
   # `workshop run mir-ci -- list -m smoke`.
   list: |
-    cd /project/mir-ci/mir_ci
-    python3 -m pytest --collect-only -q "$@"
+    cd mir-ci/mir_ci
+    uv run pytest --collect-only -q "$@"
 
   # Run the integration tests inside a virtual server.
   # Forward any pytest argument, e.g. `workshop run mir-ci -- test -k ubuntu_frame`.
   test: |
-    cd /project/mir-ci/mir_ci
-    xvfb-run -a python3 -m pytest "$@"
+    cd ~/mir_ci
+    xvfb-run -a uv run pytest --basetemp ~/pytest-temp "$@" || RET=$?
+    cd ~/pytest-temp && tree -H '.' -P 'report.html' --prune -o index.html
+    echo "Pytest report available at http://$( hostname -f ):8001" >&2
+    exit $RET
+
+  see: |
+    if [ -z "$DISPLAY" ]; then
+      echo "Connect the 'desktop' interface first" >&2
+      exit 1
+    fi
+    cd ~/mir_ci
+    uv run pytest --basetemp ~/pytest-temp "$@" || RET=$?
+    cd ~/pytest-temp && tree -H '.' -P 'report.html' --prune -o index.html
+    echo "Pytest report available at http://$( hostname -f ):8001" >&2
+    exit $RET
 
   # Run the test suite's own self tests.
   self-test: |
-    cd /project/mir-ci/mir_ci
-    xvfb-run -a python3 -m pytest -m self "$@"
+    cd ~/mir_ci
+    xvfb-run -a uv run pytest --basetemp ~/pytest-temp -m self "$@" || RET=$?
+    cd ~/pytest-temp && tree -H '.' -P 'report.html' --prune -o index.html
+    echo "Pytest report available at http://$( hostname -f ):8001" >&2
+    exit $RET
 
   # Run the static analysis checks (pre-commit).
   lint: |
-    cd /project/mir-ci
+    cd mir-ci
     pre-commit run --all-files "$@"

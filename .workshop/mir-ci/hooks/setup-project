@@ -1,0 +1,17 @@
+set -eu
+
+cat << 'EOF' > ~/.profile
+unset WAYLAND_DISPLAY
+export MIR_CI_VARIANT=noble
+EOF
+
+source ~/.profile
+
+# Build the Python environment on launch/refresh so the tests are ready without
+# a manual setup step. uv provides a supported Python (the system 3.14 is too
+# new for some test dependencies) and builds the pywayland bindings against the
+# system libwayland-dev. The venv lives in $HOME and persists across refreshes,
+# so only create it when missing.
+cd mir-ci
+uv venv --seed --python 3.12
+uv pip install -e .
