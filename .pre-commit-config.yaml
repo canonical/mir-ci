@@ -76,7 +76,7 @@ repos:
     exclude: ^mir-ci/readme.md$
 
 - repo: https://github.com/jackdewinter/pymarkdown
-  rev: b7c6d5936ef699bcf5af0b0c2558118d3eba24d6  # frozen: v0.9.39
+  rev: a5244c8d64d6269063cbf3d933c23167aa2e2156  # frozen: v0.9.40
   hooks:
   - id: pymarkdown
     alias: pymarkdown-fix
