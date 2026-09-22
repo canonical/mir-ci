@@ -61,11 +61,10 @@ clients:
   - &mesa-2604
     type: snap
     snap: mesa-2604
-    channel: edge
+    channel: stable
     ssdlc_params:
       <<: *ssdlc-params
       name: mesa-2604
-      channel: edge
 
   - &mir-kiosk
     type: snap
