@@ -1,7 +1,7 @@
 self-hosted-runner:
   labels:
     - medium
-    - jammy
+    - noble
     - private-endpoint
 
 paths:
