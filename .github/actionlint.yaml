@@ -3,6 +3,7 @@ self-hosted-runner:
     - medium
     - noble
     - private-endpoint
+    - ubuntu-26.04
 
 paths:
   .github/workflows/test.yml:
