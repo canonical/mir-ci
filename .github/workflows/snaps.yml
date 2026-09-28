@@ -2,14 +2,13 @@ name: Snaps
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.number && format('pr{0}', github.event.number) || github.ref_name }}
-  cancel-in-progress: true
 
 on:
   merge_group:
     types: [checks_requested]
   workflow_dispatch:
   schedule:
-  - cron: '0 * * * *'
+  - cron: '0 */2 * * *'
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
     paths:
@@ -23,6 +22,8 @@ jobs:
     runs-on: ubuntu-26.04
     permissions:
       contents: read
+
+    timeout-minutes: 150
 
     steps:
     - name: Check out code
