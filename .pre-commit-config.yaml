@@ -22,7 +22,7 @@ repos:
   hooks:
   - id: actionlint
 - repo: https://github.com/psf/black
-  rev: 87928e6d6761a4a6d22250e1fee5601b3998086e  # frozen: 26.5.1
+  rev: 4f1883b1f15305a0e83a7c87991f46292bf09f85  # frozen: 26.10.0
   hooks:
   - id: black
     args: [--line-length=120]
@@ -41,7 +41,7 @@ repos:
   - id: isort
     args: [-l, "120", --profile, black]
 - repo: https://github.com/pre-commit/mirrors-mypy
-  rev: 7ff8d35ae36a7d2b968f2f90b4c723e292e594ee  # frozen: v2.3.1
+  rev: 2834ec6639549dd6796205c8f011dedcd587288b  # frozen: v2.4.0
   hooks:
   - id: mypy
     additional_dependencies:
