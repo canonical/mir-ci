@@ -12,7 +12,7 @@ repos:
   - id: check-yaml
   - id: check-added-large-files
 - repo: https://github.com/zizmorcore/zizmor-pre-commit
-  rev: fa412071e4f5d44d44f9e365f4676f9df92456a2  # frozen: v1.30.1
+  rev: c92afdf2c6ca336aaa8f39e2bd8d48f62dbd8e1f  # frozen: v1.31.1
   hooks:
   - id: zizmor
     args:
@@ -22,7 +22,7 @@ repos:
   hooks:
   - id: actionlint
 - repo: https://github.com/psf/black
-  rev: 4f1883b1f15305a0e83a7c87991f46292bf09f85  # frozen: 26.10.0
+  rev: 258e7dbf348bc23cb70b8cdf693481c04634ebcc  # frozen: 26.10.1
   hooks:
   - id: black
     args: [--line-length=120]
@@ -76,7 +76,7 @@ repos:
     exclude: ^mir-ci/readme.md$
 
 - repo: https://github.com/jackdewinter/pymarkdown
-  rev: a5244c8d64d6269063cbf3d933c23167aa2e2156  # frozen: v0.9.40
+  rev: 25eba0fb2eb4bd1d59dc69a59cb9976d821106e7  # frozen: v0.9.41
   hooks:
   - id: pymarkdown
     alias: pymarkdown-fix
