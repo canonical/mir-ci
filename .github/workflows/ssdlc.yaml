@@ -7,7 +7,7 @@ permissions: {}
 
 jobs:
   SSDLC:
-    runs-on: [self-hosted, medium, noble, private-endpoint]
+    runs-on: self-hosted-linux-amd64-noble-private-endpoint-medium
     permissions:
       contents: read
 

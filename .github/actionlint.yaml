@@ -1,8 +1,6 @@
 self-hosted-runner:
   labels:
-    - medium
-    - noble
-    - private-endpoint
+    - self-hosted-linux-amd64-noble-private-endpoint-medium
     - ubuntu-26.04
 
 paths:
