@@ -115,7 +115,7 @@ artifacts:
   - &ubuntu-frame-24
     <<: *ubuntu-frame
     name: ubuntu-frame-24-amd64
-    channel: 24
+    channel: 24/stable
     arch: amd64
 
   - <<: *ubuntu-frame-24
@@ -134,7 +134,7 @@ artifacts:
     <<: *ubuntu-frame
     name: ubuntu-frame-26-amd64
     arch: amd64
-    channel: 26
+    channel: 26/beta
 
   - <<: *ubuntu-frame-26
     name: ubuntu-frame-26-arm64
@@ -199,7 +199,7 @@ artifacts:
     <<: *ubuntu-frame-osk
     name: ubuntu-frame-osk-26-amd64
     arch: amd64
-    channel: 26
+    channel: 26/beta
 
   - <<: *ubuntu-frame-osk-26
     name: ubuntu-frame-osk-26-arm64
@@ -264,7 +264,7 @@ artifacts:
     <<: *ubuntu-frame-vnc
     name: ubuntu-frame-vnc-26-amd64
     arch: amd64
-    channel: 26
+    channel: 26/beta
 
   - <<: *ubuntu-frame-vnc-26
     name: ubuntu-frame-vnc-26-arm64
