@@ -168,6 +168,10 @@ CHECK_NOTICES_PATH = "/snap/bin/review-tools.check-notices"
 CHECK_NOTICES_ARGS = []
 
 
+def github_link(url):
+    return f"[{url}]({url})"
+
+
 def get_store_snap(processor, snap, channel):
     logger.debug("Checking for snap %s on %s in channel %s", snap, processor, channel)
     data = {
@@ -259,7 +263,7 @@ def check_paths(dir, store_snaps, paths):
                 logger.error(msg)
 
             if res.content != snapped_contents:
-                msg = f"Paths differ: {dest.name}:{squash_path} vs. {res.url}"
+                msg = f"Paths differ: {dest.name}:{squash_path} vs. {github_link(res.url)}"
                 errors.append(ValueError(msg))
                 logger.error(f"::error::{msg}")
                 logger.error(
@@ -364,7 +368,7 @@ if __name__ == '__main__':
 
                 if failed_builds := tuple(build for build in builds if build.buildstate in FAILED_BUILD):
                     for build in failed_builds:
-                        logger.error("::error::Build failed: %s", build.web_link)
+                        logger.error("::error::Build failed: %s", github_link(build.web_link))
                     errors.append(RuntimeError("One or more builds failed"))
                     continue
 
@@ -396,7 +400,7 @@ if __name__ == '__main__':
             versions = {snap["version"] for snap in store_snaps}
             versions_dict = {snap["architecture"][0]: snap["version"] for snap in store_snaps}
             if len(versions) > 1 and not snap_map.get("non-uniform", False):
-                logger.error("::error::Non-uniform versions of snap %s: %s", snap_recipe.web_link, versions_dict)
+                logger.error("::error::Non-uniform versions of snap %s: %s", github_link(snap_recipe.web_link), versions_dict)
                 errors.append(RuntimeError("Non-uniform versions of snap"))
             else:
                 logger.debug("Got store versions: %s", versions_dict)
@@ -419,7 +423,7 @@ if __name__ == '__main__':
                             if not all(d == notice_values[0] for d in notice_values[1:]):
                                 logger.error(
                                     "::error::Non-uniform USN notices for snap %s",
-                                    snap_recipe.web_link
+                                    github_link(snap_recipe.web_link)
                                 )
                                 errors.append(RuntimeError("Non-uniform USN notices for a snap"))
                                 continue
