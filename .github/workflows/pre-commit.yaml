@@ -24,7 +24,7 @@ jobs:
       with:
         python-version: "3.14"
     - run: |
-        sudo apt-get --yes install pkg-config libwayland-dev
+        sudo apt-get --yes install pkg-config libwayland-dev wayland-protocols
         pip install -e mir-ci
     - uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd  # v3.0.1
     - uses: pre-commit-ci/lite-action@062bca0919bc9d6e66755cc05074b70c77e111fc  # v1.2.0
