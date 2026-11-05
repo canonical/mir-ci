@@ -5,8 +5,8 @@ set -eu
 # system libwayland-dev. The venv lives in $HOME and persists across refreshes,
 # so only create it when missing.
 cd mir-ci
-[ -x "$HOME/.venv/bin/python" ] || uv venv --seed --python 3.12 "$HOME/.venv"
-VIRTUAL_ENV="$HOME/.venv" uv pip install -e .
+uv venv --seed --python 3.12
+uv pip install -e .
 
 # Wire up the pre-seeded snaps the same way `--deps` does (see _deps_install in
 # mir_ci/pytest_plugin.py): run each snap's setup.sh and connect its `wayland`
