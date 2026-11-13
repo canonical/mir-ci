@@ -1,3 +1,4 @@
+import asyncio
 import itertools
 from pathlib import Path
 from textwrap import dedent
@@ -8,6 +9,7 @@ from mir_ci import VARIANT
 from mir_ci.fixtures.servers import ServerCap, servers
 from mir_ci.program.app import App, AppType
 from mir_ci.program.display_server import DisplayServer
+from mir_ci.wayland.output_watcher import OutputWatcher
 
 TESTS_PATH = Path(__file__).parent
 APP_PATH = "gtk4-demo"
@@ -72,12 +74,16 @@ class TestScale:
             add_extensions=extensions,
             env={"MIR_SERVER_X11_OUTPUT": "1024x768", "MIR_SERVER_DISPLAY_SCALE": str(scale)},
         )
+        output_watcher = OutputWatcher(server_instance.display_name)
 
-        assets = collect_assets("wayland", ["kvm"], "scale")
+        async with server_instance, output_watcher, server_instance.program(App(APP_PATH, AppType.deb)):
+            await asyncio.wait_for(output_watcher.wait_done(), timeout=5.0)
+            assert output_watcher.mode is not None, "Failed to get output mode from compositor"
 
-        async with server_instance, server_instance.program(App(APP_PATH, AppType.deb)):
+            assets = collect_assets(
+                "wayland", ("kvm", "osk"), "scale", VARIANT / "{0}/{0}x{1}".format(*output_watcher.mode)
+            )
             tuple((tmp_path / k).symlink_to(v) for k, v in assets.items())
-
             robot = server_instance.program(
                 App(("robot", "-d", tmp_path, "--log", robot_log, "--variable", f"SCALE:{scale}", tmp_path))
             )
