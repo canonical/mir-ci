@@ -55,7 +55,7 @@ class ScreencopyTracker(WaylandClient):
             self.screencopy_manager = registry.bind(
                 id_num, ZwlrScreencopyManagerV1, min(ZwlrScreencopyManagerV1.version, version)
             )
-        elif iface_name == WlOutput.name:
+        elif iface_name == WlOutput.name and self.output is None:
             self.output = registry.bind(id_num, WlOutput, min(WlOutput.version, version))
         elif iface_name == WlShm.name:
             self.shm = registry.bind(id_num, WlShm, min(WlShm.version, version))
